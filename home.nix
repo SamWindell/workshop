@@ -45,6 +45,9 @@ in
 
     pkgs.sqlite # needed by nvim smart-open plugin
 
+    pkgs.gh
+    pkgs.git
+
     # pkgs.neovide
 
     specialArgs.overlays.zig.master-2023-12-01
@@ -124,21 +127,6 @@ in
 
   # nicer grep
   programs.ripgrep.enable = true;
-
-  # GitHub CLI tool
-  programs.gh.enable = true;
-
-  programs.git = {
-    enable = true;
-    userName = "Sam Windell";
-    userEmail = "info@frozenplain.com";
-    extraConfig = {
-      init = {
-        defaultBranch = "main";
-      };
-    };
-    ignores = [ ".DS_Store" ];
-  };
 
   programs.starship.enable = true;
 
