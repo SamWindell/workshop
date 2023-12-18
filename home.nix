@@ -73,8 +73,7 @@ in
     #   org.gradle.daemon.idletimeout=3600000
     # '';
 
-    ".config/nvim/nvim-init.lua".source = ./nvim/nvim-init.lua;
-    ".config/nvim/lua/".source = ./nvim/lua;
+    ".config/nvim/lua/".source = ./nvim;
     ".config/starship.toml".source = ./starship.toml;
     ".config/alacritty/alacritty.yml".source = ./alacritty.yml;
   };
