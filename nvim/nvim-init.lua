@@ -630,7 +630,7 @@ dap.adapters.codelldb = {
     type = 'server',
     port = "${port}",
     executable = {
-        command = path_api.concat { vim.fn.stdpath "data", "mason", "bin", is_windows and "codelldb.cmd" or "codelldb" },
+        command = codelldb_path,
         args = { "--port", "${port}" },
 
         -- On windows you may have to uncomment this:
@@ -748,7 +748,7 @@ require("neodev").setup({})
 require("mason").setup()
 
 require("mason-lspconfig").setup({
-    ensure_installed = { "lua_ls", "cmake", "clangd", "svelte", "html", "tsserver" }
+    ensure_installed = { "lua_ls", "cmake", "svelte", "html", "tsserver" }
 })
 
 local on_attach = function(_, bufnr)

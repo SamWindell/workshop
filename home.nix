@@ -31,6 +31,8 @@ in
 
     pkgs.cmake
     pkgs.ninja
+    pkgs.llvmPackages_17.clang-unwrapped # clangd
+    pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
@@ -137,6 +139,7 @@ in
       }
     ];
     extraLuaConfig = ''
+      codelldb_path = '${pkgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
       require "nvim-init"
     '';
   };
