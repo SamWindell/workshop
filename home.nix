@@ -1,10 +1,3 @@
-# Notes(sam):
-# - run `home-manager switch` when you change this file to apply the changes
-# - web search for home-manager options: https://mipmip.github.io/home-manager-option-search/
-# - gnome.eog seems like a capable image-viewer
-# - run `command & detach` to run the program detached: the terminal doesn't wait for the program to stop
-# - we can get a specific zig version: https://github.com/mitchellh/zig-overlay
-
 { config, lib, pkgs, specialArgs, ... }:
 
 let
