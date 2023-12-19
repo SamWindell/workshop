@@ -616,13 +616,13 @@ require('lualine').setup(
         sections = { lualine_x = { 'searchcount', 'filetype' } }
     })
 
-require("nvim-treesitter.configs").setup {
-    ensure_installed = { "python", "cpp", "lua", },
-    auto_install = true,
-    highlight = {
-        enable = false, -- it's buggy overall and broken for markdown
-    }
-}
+-- require("nvim-treesitter.configs").setup {
+--     ensure_installed = { "python", "cpp", "lua", },
+--     auto_install = true,
+--     highlight = {
+--         enable = false, -- it's buggy overall and broken for markdown
+--     }
+-- }
 
 local path_api = require "mason-core.path"
 
@@ -743,7 +743,7 @@ dap.listeners.after['event_stopped']['sam'] = function(_, _)
 end
 
 -- IMPORTANT: make sure to setup neodev BEFORE lspconfig
-require("neodev").setup({})
+-- require("neodev").setup({})
 
 require("mason").setup()
 
@@ -867,7 +867,6 @@ cmp.setup({
 
 require('gitsigns').setup()
 require("nvim-tree").setup {
-    open_on_setup = true,
     sync_root_with_cwd = true,
     view = {
         width = get_sidebar_cols(),
@@ -881,22 +880,26 @@ vim.api.nvim_create_autocmd('VimResized', {
     end
 })
 
-require("true-zen").setup {
-    integrations = { lualine = true },
-    modes = {
-        ataraxis = {
-            callbacks = {
-                open_pre = function()
-                    require 'nvim-tree.view'.close()
-                end,
-                close_pos = function()
-                    vim.cmd [[NvimTreeToggle]]
-                end,
-            }
-        }
-    }
-}
+-- require("true-zen").setup {
+--     integrations = { lualine = true },
+--     modes = {
+--         ataraxis = {
+--             callbacks = {
+--                 open_pre = function()
+--                     require 'nvim-tree.view'.close()
+--                 end,
+--                 close_pos = function()
+--                     vim.cmd [[NvimTreeToggle]]
+--                 end,
+--             }
+--         }
+--     }
+-- }
 
 require('illuminate').configure({ delay = 50 })
 
 require('leap').add_default_mappings()
+
+require("nvim-surround").setup({
+    -- Configuration here, or leave empty to use defaults
+})

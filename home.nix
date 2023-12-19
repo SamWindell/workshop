@@ -32,13 +32,18 @@ in
     pkgs.cmake
     pkgs.ninja
     pkgs.llvmPackages_17.clang-unwrapped # clangd
-    pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
     pkgs.manix # command-line nix doc search
+    pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
 
     pkgs.sqlite # needed by nvim smart-open plugin
+    pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
+    pkgs.lua-language-server
+    pkgs.nodePackages.prettier
+    pkgs.nodejs_21
+    pkgs.cmake-language-server
 
     pkgs.gh
     pkgs.git
@@ -130,14 +135,69 @@ in
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    plugins = [
-      {
-        # smart-open requires a path to sqlite, we have to do that here because the 
-        # path will not stay the same when we use nix
-        plugin = pkgs.vimPlugins.sqlite-lua;
-        config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
-      }
-    ];
+    plugins = with pkgs.vimPlugins;
+      let
+        smart-open = pkgs.vimUtils.buildVimPlugin {
+          name = "smart-open";
+          src = pkgs.fetchFromGitHub {
+            owner = "danielfalk";
+            repo = "smart-open.nvim";
+            rev = "cf8cbaab3b802f4690eda3b1cc6dfc606d313695";
+            hash = "sha256-57UmLohd47/b6ytTMcJTPU/rk5g4sRxznBeHe/1ppEk=";
+          };
+        };
+        vim-svelte-plugin = pkgs.vimUtils.buildVimPlugin {
+          name = "vim-svelte-plugin";
+          src = pkgs.fetchFromGitHub {
+            owner = "leafOfTree";
+            repo = "vim-svelte-plugin";
+            rev = "612b34640919c29b5cf2d85289dbc762b099858a";
+            hash = "sha256-YmIKDicfn9GZiLp3rvYEEFT2D4KQZoKbJ2HPrdqcLLw=";
+          };
+        };
+      in
+      [
+        {
+          # smart-open requires a path to sqlite, we have to do that here because the 
+          # path will not stay the same when we use nix
+          plugin = pkgs.vimPlugins.sqlite-lua;
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
+        }
+
+        telescope-fzf-native-nvim
+        zig-vim
+        bufferline-nvim
+        vim-illuminate
+        telescope-nvim
+        telescope-dap-nvim
+        leap-nvim
+        gitsigns-nvim
+        nvim-surround
+        kanagawa-nvim
+        targets-vim
+        telescope-dap-nvim
+        nvim-dap
+        nvim-treesitter
+        nvim-treesitter.withAllGrammars
+        nvim-treesitter-textobjects
+        nvim-lspconfig
+        nvim-tree-lua
+        nvim-web-devicons
+        lualine-nvim
+        nvim-cmp
+        cmp-nvim-lsp
+        cmp-nvim-lsp-signature-help
+        cmp-cmdline
+        cmp-path
+        cmp_luasnip
+        luasnip
+        comment-nvim
+        which-key-nvim
+        typescript-vim
+
+        vim-svelte-plugin
+        smart-open
+      ];
     extraLuaConfig = ''
       codelldb_path = '${pkgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
       require "nvim-init"
