@@ -138,6 +138,11 @@ in
   # nicer prompt
   programs.starship.enable = true;
 
+  programs.git = {
+    enable = true;
+    delta.enable = true; # use the delta program for diff syntax highlighting
+  };
+
   # better ls
   programs.eza = {
     enable = true;
