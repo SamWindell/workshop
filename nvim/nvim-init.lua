@@ -58,8 +58,6 @@ vim.g.mapleader = ' '
 
 require('snippets')
 
-vim.g.camelcasemotion_key = '<leader>'
-
 --=================================================================
 
 require('kanagawa').setup({
@@ -768,7 +766,6 @@ local supported_lsp_servers = {
     'cmake',
     'jsonls',
     'clangd',
-    'csharp_ls',
     'lua_ls',
     'pylsp',
     'zls',

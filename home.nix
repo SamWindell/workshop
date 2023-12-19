@@ -29,6 +29,7 @@ in
     pkgs.fd # find alternative, run fd -h for consise help
     pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
     pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
+    pkgs.sad # better sed
 
     pkgs.cmake
     pkgs.ninja
@@ -37,7 +38,6 @@ in
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
-    pkgs.manix # command-line nix doc search
     pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
 
     pkgs.sqlite # needed by nvim smart-open plugin
@@ -119,7 +119,7 @@ in
     shellAliases = {
       nvd = "neovide --multigrid";
       froz = "nvd ~/Projects/frozencode";
-      ls = "ls -lh --color=always";
+      hm = "home-manager";
     };
   };
 
@@ -135,7 +135,15 @@ in
   # nicer grep
   programs.ripgrep.enable = true;
 
+  # nicer prompt
   programs.starship.enable = true;
+
+  # better ls
+  programs.eza = {
+    enable = true;
+    enableAliases = true;
+    icons = true;
+  };
 
   programs.neovim = {
     enable = true;
@@ -144,6 +152,7 @@ in
     vimAlias = true;
     plugins = with pkgs.vimPlugins;
       let
+        # use nurl CLI to generate these
         smart-open = pkgs.vimUtils.buildVimPlugin {
           name = "smart-open";
           src = pkgs.fetchFromGitHub {
