@@ -1,4 +1,3 @@
--- REMEMBER: you can use the mason plugin to install things like codelldb and lsp servers: MasonInstall
 -- REMEMBER: if you have a motion like <leader>ww somewhere, as well as <leader>w, the latter will seem like it's delayed because it's waiting to see if you are adding another w
 -- REMEMVER: you can use ctrl+h in insert move instead of backspace
 
@@ -11,9 +10,9 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
 vim.opt.termguicolors = true
-vim.opt.tabstop = 4 -- number of visual spaces per TAB
-vim.opt.softtabstop = 4 -- number of spaces in tab when editing
-vim.opt.shiftwidth = 4 -- number of spaces to use for autoindent
+vim.opt.tabstop = 4      -- number of visual spaces per TAB
+vim.opt.softtabstop = 4  -- number of spaces in tab when editing
+vim.opt.shiftwidth = 4   -- number of spaces to use for autoindent
 vim.opt.expandtab = true --  expand tab to spaces so that tabs are spaces
 vim.opt.shiftround = true
 vim.opt.inccommand = 'nosplit'
@@ -57,7 +56,6 @@ end
 
 vim.g.mapleader = ' '
 
-require('plugins')
 require('snippets')
 
 vim.g.camelcasemotion_key = '<leader>'
@@ -570,7 +568,7 @@ vim.keymap.set('n', '<A-6>', function() bufferline.go_to_buffer(6, true) end, { 
 vim.keymap.set('n', '<A-7>', function() bufferline.go_to_buffer(7, true) end, { desc = 'Go to bufferline ' })
 vim.keymap.set('n', '<A-8>', function() bufferline.go_to_buffer(8, true) end, { desc = 'Go to bufferline ' })
 vim.keymap.set('n', '<A-9>', function() bufferline.go_to_buffer(9, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-$>', function() bufferline.go_to_buffer( -1, true) end, { desc = 'Go to bufferline ' })
+vim.keymap.set('n', '<A-$>', function() bufferline.go_to_buffer(-1, true) end, { desc = 'Go to bufferline ' })
 
 vim.keymap.set({ 'i', 't' }, '<A-h>', '<C-\\><C-N><C-w>h', { desc = 'Goto right window' })
 vim.keymap.set({ 'i', 't' }, '<A-l>', '<C-\\><C-N><C-w>l', { desc = 'Goto left window' })
@@ -623,8 +621,6 @@ require('lualine').setup(
 --         enable = false, -- it's buggy overall and broken for markdown
 --     }
 -- }
-
-local path_api = require "mason-core.path"
 
 dap.adapters.codelldb = {
     type = 'server',
@@ -745,12 +741,6 @@ end
 -- IMPORTANT: make sure to setup neodev BEFORE lspconfig
 -- require("neodev").setup({})
 
-require("mason").setup()
-
-require("mason-lspconfig").setup({
-    ensure_installed = { "lua_ls", "cmake", "svelte", "html", "tsserver" }
-})
-
 local on_attach = function(_, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -838,7 +828,7 @@ cmp.setup({
         end,
     },
     mapping = cmp.mapping.preset.insert({
-        ['<C-d>'] = cmp.mapping.scroll_docs( -4),
+        ['<C-d>'] = cmp.mapping.scroll_docs(-4),
         ['<C-f>'] = cmp.mapping.scroll_docs(4),
         ['<C-Space>'] = cmp.mapping.complete({}),
         ['<Tab>'] = cmp.mapping.confirm({ select = true }),

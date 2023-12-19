@@ -28,10 +28,12 @@ in
     pkgs.ffmpeg # video/audio manipulaiton
     pkgs.fd # find alternative, run fd -h for consise help
     pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
+    pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
 
     pkgs.cmake
     pkgs.ninja
     pkgs.llvmPackages_17.clang-unwrapped # clangd
+    pkgs.python3
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
@@ -41,9 +43,14 @@ in
     pkgs.sqlite # needed by nvim smart-open plugin
     pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
     pkgs.lua-language-server
-    pkgs.nodePackages.prettier
     pkgs.nodejs_21
     pkgs.cmake-language-server
+    pkgs.nodePackages.svelte-language-server
+    pkgs.nodePackages.prettier
+    pkgs.nodePackages.typescript-language-server
+    pkgs.vscode-langservers-extracted
+    pkgs.python3Packages.python-lsp-server
+    pkgs.cmake-format
 
     pkgs.gh
     pkgs.git
