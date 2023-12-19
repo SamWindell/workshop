@@ -104,7 +104,7 @@ in
   #  /etc/profiles/per-user/sam/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    EDITOR = "nvim";
   };
 
   # Let Home Manager install and manage itself.
@@ -130,7 +130,10 @@ in
   };
 
   # fuzzy search. this also enables integration with bash e.g.: `nvim **<TAB>`
-  programs.fzf.enable = true;
+  programs.fzf = {
+    enable = true;
+    tmux.enableShellIntegration = true;
+  };
 
   # nicer grep
   programs.ripgrep.enable = true;
@@ -141,6 +144,12 @@ in
   programs.git = {
     enable = true;
     delta.enable = true; # use the delta program for diff syntax highlighting
+  };
+
+  programs.tmux = {
+    enable = true;
+    keyMode = "vi";
+    customPaneNavigationAndResize = true;
   };
 
   # better ls
