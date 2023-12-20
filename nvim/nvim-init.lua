@@ -535,11 +535,6 @@ vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { des
 vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
 vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 
-vim.keymap.set({ 'n', 'i', 'v' }, '<A-h>', '<C-w>h', { desc = 'Goto right window' })
-vim.keymap.set({ 'n', 'i', 'v' }, '<A-l>', '<C-w>l', { desc = 'Goto left window' })
-vim.keymap.set({ 'n', 'i', 'v' }, '<A-j>', '<C-w>j', { desc = 'Goto down window' })
-vim.keymap.set({ 'n', 'i', 'v' }, '<A-k>', '<C-w>k', { desc = 'Goto up window' })
-
 vim.keymap.set({ 'i', 's' }, '<c-l>', function()
     local luasnip = require('luasnip')
     if luasnip.expand_or_jumpable() then
@@ -890,3 +885,5 @@ require('leap').add_default_mappings()
 require("nvim-surround").setup({
     -- Configuration here, or leave empty to use defaults
 })
+
+require("tmux").setup()
