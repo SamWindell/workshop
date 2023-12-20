@@ -8,7 +8,7 @@ in
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "sam";
-  home.homeDirectory = "/home/sam";
+  home.homeDirectory = "/Users/sam";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -41,7 +41,7 @@ in
     pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
 
     pkgs.sqlite # needed by nvim smart-open plugin
-    pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
+    # pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
     pkgs.lua-language-server
     pkgs.nodejs_21
     pkgs.cmake-language-server
@@ -112,9 +112,10 @@ in
 
   programs.bash = {
     enable = true;
+    # TODO: do we need paths on linux? we don't on mac
     bashrcExtra = ''
-      PATH=/home/sam/.cargo/bin:$PATH
-      PATH=/home/sam/bin:$PATH
+      #PATH=/home/sam/.cargo/bin:$PATH
+      #PATH=/home/sam/bin:$PATH
     '';
     shellAliases = {
       nvd = "neovide --multigrid";
@@ -217,7 +218,9 @@ in
           # smart-open requires a path to sqlite, we have to do that here because the 
           # path will not stay the same when we use nix
           plugin = pkgs.vimPlugins.sqlite-lua;
-          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
+          # TODO: switch between .so vs .dylib depending on linux/mac
+          # config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.dylib'";
         }
 
         telescope-fzf-native-nvim
@@ -255,8 +258,10 @@ in
         vim-svelte-plugin
         smart-open
       ];
+    # TODO: enable codellbd on linux, and on mac get it to compile
     extraLuaConfig = ''
-      codelldb_path = '${pkgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
+      -- codelldb_path = '${pkgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
+      codelldb_path = 'foo'
       require "nvim-init"
     '';
   };

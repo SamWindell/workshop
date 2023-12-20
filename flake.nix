@@ -29,8 +29,10 @@
       });
     in
     {
+      # TODO: we need to set a different username + home-path for each config, not have the same from home.nix
+      # then we can use this syntax on each system: home-manager switch --flake .#<configuration>
       homeConfigurations.sam = mkHomeConfiguration {
-        system = "x86_64-linux";
+        system = "aarch64-darwin";
         extraSpecialArgs = {
           withGUI = true;
         };
