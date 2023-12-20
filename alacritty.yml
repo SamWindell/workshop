@@ -5,7 +5,6 @@ window:
   dimensions:
     columns: 140 
     lines: 40
-  opacity: 0.8
 font:
   normal:
     family: JetBrainsMono Nerd Font
