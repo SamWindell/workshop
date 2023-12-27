@@ -41,7 +41,6 @@ in
     pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
 
     pkgs.sqlite # needed by nvim smart-open plugin
-    specialArgs.pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
     pkgs.lua-language-server
     pkgs.nodejs_21
     pkgs.cmake-language-server
@@ -255,7 +254,7 @@ in
         smart-open
       ];
     extraLuaConfig = ''
-      codelldb_path = '${specialArgs.pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
+      codelldb_path = '${specialArgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
       require "nvim-init"
     '';
   };
