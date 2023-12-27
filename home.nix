@@ -254,10 +254,8 @@ in
         vim-svelte-plugin
         smart-open
       ];
-    # TODO: enable codellbd on linux, and on mac get it to compile
     extraLuaConfig = ''
       codelldb_path = '${specialArgs.pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
-      -- codelldb_path = 'foo'
       require "nvim-init"
     '';
   };
