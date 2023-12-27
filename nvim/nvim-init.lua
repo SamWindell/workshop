@@ -453,7 +453,6 @@ which_key.register({
         G = { ':Telescope grep_string<cr>', 'Find String Under Cursor' },
         k = { ':Telescope keymaps<cr>', 'Find Keymap' },
     },
-    ['<leader>za'] = { '<cmd>TZAtaraxis<cr>', 'Zen Mode' }, -- TODO: remove this? I dont use this
     ['<leader>rc'] = { '<cmd>source $MYVIMRC<cr>', 'Reload Config' },
     ['<leader>n'] = { '<cmd>enew<cr>', 'New File' },
     ['<leader>s'] = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
