@@ -41,7 +41,7 @@ in
     pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
 
     pkgs.sqlite # needed by nvim smart-open plugin
-    # pkgs.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
+    specialArgs.pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb # CodeLLDB nvim extension
     pkgs.lua-language-server
     pkgs.nodejs_21
     pkgs.cmake-language-server
@@ -216,10 +216,7 @@ in
           # smart-open requires a path to sqlite, we have to do that here because the 
           # path will not stay the same when we use nix
           plugin = pkgs.vimPlugins.sqlite-lua;
-          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3."
-            + (lib.strings.optionalString isLinux "so")
-            + (lib.strings.optionalString isDarwin "dylib")
-            + "'";
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${if isLinux then "so" else "dylib"}'";
         }
 
         telescope-fzf-native-nvim
@@ -259,8 +256,8 @@ in
       ];
     # TODO: enable codellbd on linux, and on mac get it to compile
     extraLuaConfig = ''
-      -- codelldb_path = '${pkgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
-      codelldb_path = 'foo'
+      codelldb_path = '${specialArgs.pkgs-unstable.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
+      -- codelldb_path = 'foo'
       require "nvim-init"
     '';
   };
