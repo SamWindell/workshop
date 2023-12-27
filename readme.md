@@ -4,11 +4,11 @@ Prerequists:
 
 
 ```bash
-cd ~/
+cd ~
 mkdir -p .config
+cd .config
 git clone https://github.com/samwindell/home-config home-manager
-nix run home-manager/master switch
-# or home-manager switch
+home-manager switch --flake .#<configuration>
 ```
 
 Handy notes-to-self:

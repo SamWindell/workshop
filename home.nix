@@ -7,8 +7,8 @@ in
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = "sam";
-  home.homeDirectory = "/Users/sam";
+  home.username = specialArgs.username;
+  home.homeDirectory = specialArgs.homeDirectory;
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -112,8 +112,7 @@ in
 
   programs.bash = {
     enable = true;
-    # TODO: do we need paths on linux? we don't on mac
-    bashrcExtra = ''
+    bashrcExtra = mkIf isLinux ''
       #PATH=/home/sam/.cargo/bin:$PATH
       #PATH=/home/sam/bin:$PATH
     '';
@@ -150,7 +149,6 @@ in
   programs.tmux = {
     enable = true;
     keyMode = "vi";
-    # customPaneNavigationAndResize = true;
     plugins = [
       pkgs.tmuxPlugins.tmux-fzf
     ];
@@ -218,9 +216,10 @@ in
           # smart-open requires a path to sqlite, we have to do that here because the 
           # path will not stay the same when we use nix
           plugin = pkgs.vimPlugins.sqlite-lua;
-          # TODO: switch between .so vs .dylib depending on linux/mac
-          # config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
-          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.dylib'";
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3."
+            + (lib.strings.optionalString isLinux "so")
+            + (lib.strings.optionalString isDarwin "dylib")
+            + "'";
         }
 
         telescope-fzf-native-nvim
