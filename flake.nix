@@ -34,7 +34,7 @@
       homeConfigurations.pcLinux = mkHomeConfiguration {
         system = "x86_64-linux";
         extraSpecialArgs = {
-          withGUI = true;
+          withGui = true;
           username = "sam";
           homeDirectory = "/home/sam";
         };
@@ -43,7 +43,7 @@
       homeConfigurations.macbook = mkHomeConfiguration {
         system = "aarch64-darwin";
         extraSpecialArgs = {
-          withGUI = true;
+          withGui = true;
           username = "sam";
           homeDirectory = "/Users/sam";
         };

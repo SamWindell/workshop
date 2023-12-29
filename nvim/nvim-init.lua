@@ -550,22 +550,12 @@ end, { desc = "Append semicolon on line" })
 vim.keymap.set('n', "<space><space>s",
     "<cmd>source ~/.config/nvim/lua/snippets.lua<CR>")
 
-local bufferline = require("bufferline")
-vim.keymap.set('n', '<A-1>', function() bufferline.go_to_buffer(1, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-2>', function() bufferline.go_to_buffer(2, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-3>', function() bufferline.go_to_buffer(3, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-4>', function() bufferline.go_to_buffer(4, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-5>', function() bufferline.go_to_buffer(5, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-6>', function() bufferline.go_to_buffer(6, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-7>', function() bufferline.go_to_buffer(7, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-8>', function() bufferline.go_to_buffer(8, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-9>', function() bufferline.go_to_buffer(9, true) end, { desc = 'Go to bufferline ' })
-vim.keymap.set('n', '<A-$>', function() bufferline.go_to_buffer(-1, true) end, { desc = 'Go to bufferline ' })
+require("bufferline")
 
-vim.keymap.set({ 'i', 't' }, '<A-h>', '<C-\\><C-N><C-w>h', { desc = 'Goto right window' })
-vim.keymap.set({ 'i', 't' }, '<A-l>', '<C-\\><C-N><C-w>l', { desc = 'Goto left window' })
-vim.keymap.set({ 'i', 't' }, '<A-j>', '<C-\\><C-N><C-w>j', { desc = 'Goto down window' })
-vim.keymap.set({ 'i', 't' }, '<A-k>', '<C-\\><C-N><C-w>k', { desc = 'Goto up window' })
+-- vim.keymap.set({ 'i', 't' }, '<A-h>', '<C-\\><C-N><C-w>h', { desc = 'Goto right window' })
+-- vim.keymap.set({ 'i', 't' }, '<A-l>', '<C-\\><C-N><C-w>l', { desc = 'Goto left window' })
+-- vim.keymap.set({ 'i', 't' }, '<A-j>', '<C-\\><C-N><C-w>j', { desc = 'Goto down window' })
+-- vim.keymap.set({ 'i', 't' }, '<A-k>', '<C-\\><C-N><C-w>k', { desc = 'Goto up window' })
 
 vim.keymap.set({ 'i', 'v', 's' }, 'kj', '<esc>', { desc = 'Normal mode' })
 
@@ -884,5 +874,3 @@ require('leap').add_default_mappings()
 require("nvim-surround").setup({
     -- Configuration here, or leave empty to use defaults
 })
-
-require("tmux").setup()
