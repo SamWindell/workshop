@@ -19,6 +19,9 @@
       pkgsForSystem = system: import nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        config.permittedInsecurePackages = [
+          "electron-25.9.0" # for discord
+        ];
       };
 
       mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration (rec {

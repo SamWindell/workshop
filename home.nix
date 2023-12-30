@@ -73,32 +73,39 @@ in
     pkgs.thunderbird
     pkgs.loupe
     pkgs.gnome.nautilus
-    pkgs.vlc
+    pkgs.wl-clipboard # needed to get neovim clipboard working
+    pkgs.discord
+    pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
   ] ++ pkgs.lib.optionals withGui [
     pkgs.bitwarden
+    pkgs.obsidian
+    pkgs.vlc
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
-  home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
+  home.file =
+    let
+      wallpaper_path = ./wallpapers/night-dune.jpg;
+    in
+    {
+      # # Building this configuration will create a copy of 'dotfiles/screenrc' in
+      # # the Nix store. Activating the configuration will then make '~/.screenrc' a
+      # # symlink to the Nix store copy.
+      # ".screenrc".source = dotfiles/screenrc;
 
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
+      # # You can also set the file content immediately.
+      ".config/hypr/hyprpaper.conf".text = ''
+        preload = ${wallpaper_path}
+        wallpaper = ,${wallpaper_path}
+      '';
 
-    ".config/nvim/lua/".source = ./nvim;
-    ".config/starship.toml".source = ./starship.toml;
-    ".config/alacritty/alacritty.yml".source = ./alacritty.yml;
-
-    ".icons/default".source = mkIf (isLinux && withGui) "${pkgs.vanilla-dmz}/share/icons/Vanilla-DMZ";
-  };
+      ".config/nvim/lua/".source = ./nvim;
+      ".config/starship.toml".source = ./starship.toml;
+      # ".config/alacritty/alacritty.yml".source = ./alacritty.yml; # TODO: remove
+      # ".config/waybar/".source = ./waybar; # TODO: there's something wrong with home-manager?
+    };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. If you don't want to manage your shell through Home
@@ -155,6 +162,9 @@ in
           kb_rules =
 
           follow_mouse = 1
+
+          repeat_rate = 35 # repeats per second
+          repeat_delay = 300 # milliseconds before repeatings
 
           touchpad {
               natural_scroll = no
@@ -221,27 +231,13 @@ in
           new_is_master = true
       }
 
-      gestures {
-          # See https://wiki.hyprland.org/Configuring/Variables/ for more
-          workspace_swipe = off
-      }
-
       misc {
-          # See https://wiki.hyprland.org/Configuring/Variables/ for more
           force_default_wallpaper = 0 # Set to 0 to disable the anime mascot wallpapers
       }
 
-      # Example per-device config
-      # See https://wiki.hyprland.org/Configuring/Keywords/#executing for more
-      device:epic-mouse-v1 {
-          sensitivity = -0.5
-      }
-
-      # Example windowrule v1
-      # windowrule = float, ^(kitty)$
-      # Example windowrule v2
-      # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
-      # See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
+      windowrulev2 = workspace 1,class:(kitty)
+      windowrulev2 = workspace 2,class:(discord)
+      windowrulev2 = workspace 3,class:(firefox)
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
       $mainMod = SUPER
@@ -250,7 +246,6 @@ in
       bind = $mainMod, return, exec, kitty
       bind = $mainMod, Q, killactive, 
       bind = $mainMod, M, exit, 
-      bind = $mainMod, E, exec, dolphin
       bind = $mainMod, V, togglefloating, 
       bind = $mainMod, D, exec, rofi -show drun -show-icons
       bind = $mainMod, P, pseudo, # dwindle
@@ -298,9 +293,9 @@ in
       bindm = $mainMod, mouse:272, movewindow
       bindm = $mainMod, mouse:273, resizewindow
 
-
       binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
       binde=, XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+      # IMPROVE: add controls for mute
     '';
   };
 
@@ -339,7 +334,7 @@ in
   # run zellij setup --dump-config to see the default config
   programs.zellij = {
     enable = true;
-    enableBashIntegration = true;
+    enableBashIntegration = false; # Let's avoid auto-start for now. For one thing, it behaves strangly when booting into TTY
     settings = {
       theme = "kanagawa";
     };
