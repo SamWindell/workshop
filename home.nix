@@ -114,6 +114,10 @@ in
   programs.kitty = mkIf withGui {
     enable = true;
     theme = "kanagawabones";
+    shellIntegration.enableBashIntegration = true;
+    settings = {
+      shell = mkIf isDarwin "bash --login";
+    };
     font = {
       name = "JetBrainsMono Nerd Font";
       size = 11;
