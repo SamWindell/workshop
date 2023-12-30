@@ -300,6 +300,7 @@ in
       #PATH=/home/sam/bin:$PATH
     '';
     shellAliases = {
+      # TODO: remove these. and add things like '.. = cd ..' ?
       nvd = "neovide --multigrid";
       froz = "nvd ~/Projects/frozencode";
       hm = "home-manager";
