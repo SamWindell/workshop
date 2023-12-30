@@ -11,7 +11,7 @@
     zig.url = "github:mitchellh/zig-overlay";
   };
 
-  # TODO: learn overlays, should that replace my current method for zig?
+  # IMPROVE: learn overlays, should that replace my current method for zig?
   # https://nixos.wiki/wiki/Overlays
 
   outputs = { nixpkgs, nix-vscode-extensions, home-manager, zig, ... }:

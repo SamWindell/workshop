@@ -1,6 +1,3 @@
--- REMEMBER: if you have a motion like <leader>ww somewhere, as well as <leader>w, the latter will seem like it's delayed because it's waiting to see if you are adding another w
--- REMEMVER: you can use ctrl+h in insert move instead of backspace
-
 local os_name = vim.loop.os_uname().sysname
 local is_windows = os_name == "Windows_NT"
 local is_linux = os_name == "Linux"
@@ -415,7 +412,6 @@ local jump_backward_in_quickfix = function()
 end
 
 local dap = require("dap")
--- require("nvim-dap-virtual-text").setup({})
 
 local which_key = require('which-key')
 which_key.setup()
@@ -437,14 +433,6 @@ which_key.register({
     ["<leader>f"] = {
         name = "+find",
         j = { "<cmd>Telescope smart_open<cr>", "Find File" },
-        -- f = { function()
-        --     local project = read_project_file()
-        --     if project and project.find_files then
-        --         require('telescope.builtin').find_files({ find_command = split_string_by_words(project.find_files) })
-        --     else
-        --         require('telescope.builtin').find_files()
-        --     end
-        -- end, "Find File" },
         f = { "<cmd>Telescope git_files<cr>", "Find Git File" },
         o = { "<cmd>Telescope oldfiles<cr>", "Find Recent File" },
         b = { "<cmd>Telescope buffers<cr>", "Find Buffer" },
@@ -596,14 +584,6 @@ require('lualine').setup(
         sections = { lualine_x = { 'searchcount', 'filetype' } }
     })
 
--- require("nvim-treesitter.configs").setup {
---     ensure_installed = { "python", "cpp", "lua", },
---     auto_install = true,
---     highlight = {
---         enable = false, -- it's buggy overall and broken for markdown
---     }
--- }
-
 dap.adapters.codelldb = {
     type = 'server',
     port = "${port}",
@@ -719,9 +699,6 @@ dap.listeners.after['event_stopped']['sam'] = function(_, _)
         end
     end
 end
-
--- IMPORTANT: make sure to setup neodev BEFORE lspconfig
--- require("neodev").setup({})
 
 local on_attach = function(_, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -851,26 +828,8 @@ vim.api.nvim_create_autocmd('VimResized', {
     end
 })
 
--- require("true-zen").setup {
---     integrations = { lualine = true },
---     modes = {
---         ataraxis = {
---             callbacks = {
---                 open_pre = function()
---                     require 'nvim-tree.view'.close()
---                 end,
---                 close_pos = function()
---                     vim.cmd [[NvimTreeToggle]]
---                 end,
---             }
---         }
---     }
--- }
-
 require('illuminate').configure({ delay = 50 })
 
 require('leap').add_default_mappings()
 
-require("nvim-surround").setup({
-    -- Configuration here, or leave empty to use defaults
-})
+require("nvim-surround").setup({})

@@ -6,8 +6,6 @@ let
   inherit (specialArgs) withGui;
 in
 {
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
   home.username = specialArgs.username;
   home.homeDirectory = specialArgs.homeDirectory;
 
@@ -20,8 +18,6 @@ in
   # release notes.
   home.stateVersion = "23.11"; # Please read the comment before changing.
 
-  # The home.packages option allows you to install Nix packages into your
-  # environment.
   home.packages = [
     pkgs.rename # rename files: rename "s/foo/bar/" *.png
     pkgs.sox # audio file manipulation
@@ -57,10 +53,6 @@ in
 
     specialArgs.overlays.zig.master-2023-12-01
 
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
     # # You can also create simple shell scripts directly inside your
@@ -75,54 +67,33 @@ in
     pkgs.gnome.nautilus
     pkgs.wl-clipboard # needed to get neovim clipboard working
     pkgs.discord
+    pkgs.waybar
+    pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
-  ] ++ pkgs.lib.optionals withGui [
     pkgs.bitwarden
     pkgs.obsidian
     pkgs.vlc
+  ] ++ pkgs.lib.optionals withGui [
   ];
 
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-  home.file =
-    let
-      wallpaper_path = ./wallpapers/night-dune.jpg;
-    in
-    {
-      # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-      # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-      # # symlink to the Nix store copy.
-      # ".screenrc".source = dotfiles/screenrc;
+  home.file = {
+    # # You can also set the file content immediately.
+    # ".config/hypr/hyprpaper.conf".text = ''
+    #   preload = ${wallpaper_path}
+    #   wallpaper = ,${wallpaper_path}
+    # '';
 
-      # # You can also set the file content immediately.
-      ".config/hypr/hyprpaper.conf".text = ''
-        preload = ${wallpaper_path}
-        wallpaper = ,${wallpaper_path}
-      '';
+    ".config/nvim/lua/".source = ./nvim;
+    ".config/starship.toml".source = ./starship.toml;
+    ".config/alacritty/alacritty.yml".source = ./alacritty.yml; # TODO: remove
+    ".config/waybar/".source = ./waybar;
+  };
 
-      ".config/nvim/lua/".source = ./nvim;
-      ".config/starship.toml".source = ./starship.toml;
-      # ".config/alacritty/alacritty.yml".source = ./alacritty.yml; # TODO: remove
-      # ".config/waybar/".source = ./waybar; # TODO: there's something wrong with home-manager?
-    };
-
-  # Home Manager can also manage your environment variables through
-  # 'home.sessionVariables'. If you don't want to manage your shell through Home
-  # Manager then you have to manually source 'hm-session-vars.sh' located at
-  # either
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/sam/etc/profile.d/hm-session-vars.sh
-  #
   home.sessionVariables = {
     EDITOR = "nvim";
   };
 
-  # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
   programs.kitty = mkIf withGui {
@@ -134,6 +105,7 @@ in
     };
   };
 
+  # NOTE: NixOS only. You must also set programs.hyprland.enable = true in /etc/nixos/configuration.nix.
   wayland.windowManager.hyprland = mkIf (isLinux && withGui) {
     enable = true;
     xwayland.enable = true;
@@ -145,7 +117,7 @@ in
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
 
       # Execute your favorite apps at launch
-      exec-once = waybar & hyprpaper
+      exec-once = waybar
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
@@ -233,6 +205,9 @@ in
 
       misc {
           force_default_wallpaper = 0 # Set to 0 to disable the anime mascot wallpapers
+          disable_hyprland_logo = true
+          disable_splash_rendering = true
+          background_color = 0x090909
       }
 
       windowrulev2 = workspace 1,class:(kitty)
@@ -297,6 +272,17 @@ in
       binde=, XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
       # IMPROVE: add controls for mute
     '';
+  };
+
+  # is pkgs.libnotify needed?
+  services.dunst = mkIf (isLinux && withGui) {
+    enable = true;
+  };
+
+  programs.rofi = mkIf (isLinux && withGui) {
+    enable = true;
+    package = pkgs.rofi-wayland;
+    theme = "purple";
   };
 
   gtk = mkIf (isLinux && withGui) {
