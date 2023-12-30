@@ -414,6 +414,7 @@ in
         vim-svelte-plugin
         smart-open
       ];
+    # As of now (December 2023) the vscode-llbd package in NixPkgs fails to compile on arm64 macOS so instead we're using the package from vscode-extensions.
     extraLuaConfig = ''
       codelldb_path = '${specialArgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
       require "nvim-init"
