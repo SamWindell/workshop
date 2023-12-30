@@ -29,7 +29,7 @@ home-manager switch --flake .#<configuration>
 - Run `command & detach` to run a program detached: the terminal doesn't wait for it to stop.
 - Handy web search for home-manager options: [mipmip search](https://mipmip.github.io/home-manager-option-search/)
 - `manix` is a CLI tool for searching Nix documentation. Couldn't get it work though.
-- With `home.files`, you must commit files into git before home-manager can start tracking them. Otherwise you get a 'file not found' error.
+- Note: "for flakes in git repos, only files in the working tree will be copied to the store. Therefore, if you use git for your flake, ensure to git add any project files after you first create them".
 - [NixOS wiki](https://nixos.wiki/wiki/Main_Page) is good.
 - [Nix search](https://search.nixos.org/packages) is good for both packages and NixOS configuration.nix options.
 
