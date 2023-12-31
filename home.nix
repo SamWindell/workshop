@@ -55,12 +55,10 @@ in
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
+    # TODO: add more proper layouts
+    (pkgs.writeShellScriptBin "obsi" ''
+      zellij action new-tab --layout ${./zellij/obsi.kdl}
+    '')
   ] ++ pkgs.lib.optionals (isLinux && withGui) [
     pkgs.thunderbird
     pkgs.loupe
@@ -321,7 +319,8 @@ in
   # run zellij setup --dump-config to see the default config
   programs.zellij = {
     enable = true;
-    enableBashIntegration = false; # Let's avoid auto-start for now. For one thing, it behaves strangly when booting into TTY
+    # Let's avoid auto-start for now. For one thing, it behaves strangly when starting Hyprland from TTY
+    enableBashIntegration = false;
     settings = {
       theme = "kanagawa";
     };
