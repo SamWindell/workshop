@@ -9,12 +9,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zig.url = "github:mitchellh/zig-overlay";
+    hyprland-contrib = {
+      url = "github:hyprwm/contrib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # IMPROVE: learn overlays, should that replace my current method for zig?
   # https://nixos.wiki/wiki/Overlays
 
-  outputs = { nixpkgs, nix-vscode-extensions, home-manager, zig, ... }:
+  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
@@ -29,6 +33,7 @@
         pkgs = pkgsForSystem args.system;
         extraSpecialArgs = args.extraSpecialArgs // {
           vscode-extensions = nix-vscode-extensions.extensions.${args.system}.vscode-marketplace;
+          hyprland-contrib = hyprland-contrib.packages.${args.system};
           overlays.zig = zig.packages.${args.system};
         };
       });

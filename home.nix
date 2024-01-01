@@ -52,6 +52,7 @@ in
     pkgs.git
 
     specialArgs.overlays.zig.master-2023-12-01
+    specialArgs.hyprland-contrib.grimblast
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
@@ -70,7 +71,7 @@ in
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
     pkgs.bitwarden
-    pkgs.obsidian
+    pkgs.gimp
     pkgs.vlc
   ] ++ pkgs.lib.optionals withGui [
   ];
@@ -269,6 +270,9 @@ in
       binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
       binde=, XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
       # IMPROVE: add controls for mute
+
+      # IMPROVE: add more screenshot options for example grimblast edit to screenshot and then edit in gimp
+      bind = , PRINT, exec, ${specialArgs.hyprland-contrib.grimblast}/bin/grimblast --notify --freeze copysave area
     '';
   };
 
