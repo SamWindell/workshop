@@ -52,6 +52,8 @@ in
     pkgs.git
 
     pkgs.transcrypt
+    # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
+    # should manage these dependencies itself
     pkgs.openssl # transcrypt
     pkgs.coreutils # transcrypt
     pkgs.util-linux # transcrypt
@@ -61,7 +63,6 @@ in
     pkgs.xxd # transcrypt
 
     specialArgs.overlays.zig.master-2023-12-01
-    specialArgs.hyprland-contrib.grimblast
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
@@ -83,6 +84,7 @@ in
     pkgs.gimp
     pkgs.vlc
     pkgs.sublime-merge
+    specialArgs.hyprland-contrib.grimblast
   ] ++ pkgs.lib.optionals withGui [
   ];
 
