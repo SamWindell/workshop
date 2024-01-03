@@ -50,8 +50,15 @@ in
 
     pkgs.gh
     pkgs.git
+
     pkgs.transcrypt
-    pkgs.xxd # needed by transcrypt
+    pkgs.openssl # transcrypt
+    pkgs.coreutils # transcrypt
+    pkgs.util-linux # transcrypt
+    pkgs.gnugrep # transcrypt
+    pkgs.gnused # transcrypt
+    pkgs.gawk # transcrypt
+    pkgs.xxd # transcrypt
 
     specialArgs.overlays.zig.master-2023-12-01
     specialArgs.hyprland-contrib.grimblast
