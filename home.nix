@@ -50,6 +50,8 @@ in
 
     pkgs.gh
     pkgs.git
+    pkgs.transcrypt
+    pkgs.xxd # needed by transcrypt
 
     specialArgs.overlays.zig.master-2023-12-01
     specialArgs.hyprland-contrib.grimblast
@@ -73,6 +75,7 @@ in
     pkgs.bitwarden
     pkgs.gimp
     pkgs.vlc
+    pkgs.sublime-merge
   ] ++ pkgs.lib.optionals withGui [
   ];
 
