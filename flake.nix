@@ -24,7 +24,6 @@
         inherit system;
         config.allowUnfree = true;
         config.permittedInsecurePackages = [
-          "electron-25.9.0" # for discord
         ];
       };
 

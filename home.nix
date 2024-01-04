@@ -75,7 +75,7 @@ in
     pkgs.loupe
     pkgs.gnome.nautilus
     pkgs.wl-clipboard # needed to get neovim clipboard working
-    pkgs.discord
+    pkgs.webcord
     pkgs.waybar
     pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
@@ -84,6 +84,7 @@ in
     pkgs.gimp
     pkgs.vlc
     pkgs.sublime-merge
+    pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast
   ] ++ pkgs.lib.optionals withGui [
   ];
@@ -129,6 +130,9 @@ in
 
       # Execute your favorite apps at launch
       exec-once = waybar
+
+      # attempt to get discord screen-share working
+      # exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
@@ -222,7 +226,7 @@ in
       }
 
       windowrulev2 = workspace 1,class:(kitty)
-      windowrulev2 = workspace 2,class:(discord)
+      windowrulev2 = workspace 2,class:(Webcord)
       windowrulev2 = workspace 3,class:(firefox)
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
