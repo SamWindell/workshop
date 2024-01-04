@@ -63,6 +63,7 @@ in
     pkgs.xxd # transcrypt
 
     specialArgs.overlays.zig.master-2023-12-01
+    specialArgs.overlays.zls.zls
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
@@ -86,6 +87,7 @@ in
     pkgs.sublime-merge
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast
+    pkgs.xdg-utils # xdg-open
   ] ++ pkgs.lib.optionals withGui [
   ];
 
@@ -314,15 +316,23 @@ in
   programs.bash = {
     enable = true;
     bashrcExtra = mkIf isLinux ''
-      #PATH=/home/sam/.cargo/bin:$PATH
-      #PATH=/home/sam/bin:$PATH
     '';
     shellAliases = {
-      # TODO: remove these. and add things like '.. = cd ..' ?
-      nvd = "neovide --multigrid";
-      froz = "nvd ~/Projects/frozencode";
-      hm = "home-manager";
+      ".." = "cd ..";
+      "..." = "cd ../..";
+      "...." = "cd ../../..";
+      ".2" = "cd ../..";
+      ".3" = "cd ../../..";
+      ".4" = "cd ../../../..";
+      ".5" = "cd ../../../../..";
+      ".6" = "cd ../../../../../..";
+      "hms" = "home-manager switch --flake ~/.config/home-manager/flake.nix#pcLinux";
     };
+    initExtra = ''
+      p() {
+        cd ~/Projects
+      }
+    '';
   };
 
   # fancy command history in bash
