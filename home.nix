@@ -73,10 +73,10 @@ in
     '')
   ] ++ pkgs.lib.optionals (isLinux && withGui) [
     pkgs.thunderbird
-    pkgs.loupe
-    pkgs.gnome.nautilus
+    pkgs.loupe # gnome image viewer
+    pkgs.gnome.nautilus # gnome files
     pkgs.wl-clipboard # needed to get neovim clipboard working
-    pkgs.webcord
+    pkgs.webcord # webcord works better than discord for me (screen-share, opening hyperlinks)
     pkgs.waybar
     pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
@@ -86,7 +86,7 @@ in
     pkgs.vlc
     pkgs.sublime-merge
     pkgs.libreoffice
-    specialArgs.hyprland-contrib.grimblast
+    specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
   ] ++ pkgs.lib.optionals withGui [
   ];
@@ -102,6 +102,7 @@ in
     ".config/starship.toml".source = ./starship.toml;
     ".config/alacritty/alacritty.yml".source = ./alacritty.yml; # TODO: remove
     ".config/waybar/".source = ./waybar;
+    ".config/zellij/config.kdl".source = ./zellij/config.kdl;
   };
 
   home.sessionVariables = {
@@ -183,12 +184,12 @@ in
           rounding = 4 
     
           blur {
-              enabled = true
+              enabled = false
               size = 3
               passes = 1
           }
 
-          drop_shadow = yes
+          drop_shadow = no
           shadow_range = 4
           shadow_render_power = 3
           col.shadow = rgba(1a1a1aee)
@@ -225,6 +226,8 @@ in
           disable_hyprland_logo = true
           disable_splash_rendering = true
           background_color = 0x090909
+          mouse_move_enables_dpms = true
+          key_press_enables_dpms = true
       }
 
       windowrulev2 = workspace 1,class:(kitty)
@@ -293,6 +296,16 @@ in
       bind = , PRINT, exec, ${specialArgs.hyprland-contrib.grimblast}/bin/grimblast --notify --freeze copysave area
     '';
   };
+  services.swayidle = mkIf (isLinux && withGui) {
+    enable = true;
+    timeouts = [
+      {
+        timeout = 60;
+        command = "hyprctl dispatch dpms off";
+        resumeCommand = "hyprctl dispatch dpms on";
+      }
+    ];
+  };
 
   # is pkgs.libnotify needed?
   services.dunst = mkIf (isLinux && withGui) {
@@ -351,9 +364,6 @@ in
     enable = true;
     # Let's avoid auto-start for now. For one thing, it behaves strangly when starting Hyprland from TTY
     enableBashIntegration = false;
-    settings = {
-      theme = "kanagawa";
-    };
   };
 
   # nicer grep

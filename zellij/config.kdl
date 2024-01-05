@@ -1,0 +1,11 @@
+theme "kanagawa"
+keybinds {
+    unbind "Ctrl o"
+    unbind "Ctrl b"
+    session {
+        bind "Ctrl b" { SwitchToMode "Normal"; }
+    }
+    shared_except "session" "locked" {
+        bind "Ctrl b" { SwitchToMode "Session"; }
+    }
+}
