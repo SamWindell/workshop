@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs-lldb.url = "github:nixos/nixpkgs/b67fc24e4acf7189590d229c2f286896527f849e";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
@@ -19,7 +20,7 @@
   # IMPROVE: learn overlays, should that replace my current method for zig?
   # https://nixos.wiki/wiki/Overlays
 
-  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
+  outputs = { nixpkgs, nixpkgs-lldb, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
@@ -34,8 +35,9 @@
         extraSpecialArgs = args.extraSpecialArgs // {
           vscode-extensions = nix-vscode-extensions.extensions.${args.system}.vscode-marketplace;
           hyprland-contrib = hyprland-contrib.packages.${args.system};
-          overlays.zig = zig.packages.${args.system};
-          overlays.zls = zls.packages.${args.system};
+          zig = zig.packages.${args.system};
+          zls = zls.packages.${args.system};
+          pkgs-lldb = import nixpkgs-lldb { system = args.system; };
         };
       });
     in

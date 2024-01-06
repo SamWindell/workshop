@@ -222,6 +222,25 @@ local get_big_window = function(mode, create_if_doesnt_exist)
     end
 end
 
+local toggle_secondary_window = function()
+    local win = get_big_window("secondary", false)
+    if win then
+        vim.api.nvim_win_close(win, false)
+    else
+        get_big_window("secondary", true)
+    end
+end
+
+local open_buffer_in_secondary_window_if_possible = function(buffer_name)
+    local bufs = vim.api.nvim_list_bufs()
+    for _, buf in pairs(bufs) do
+        local name = vim.api.nvim_buf_get_name(buf)
+        if name:match(buffer_name) then
+            vim.api.nvim_win_set_buf(get_big_window("secondary", true), buf)
+        end
+    end
+end
+
 local quickfix_pos = 0
 
 -- IMPROVE: add ability to kill a command (jobstop())
@@ -257,6 +276,11 @@ local run_command = function(command, on_exit)
                 local lines = {}
                 for _, line in pairs(d) do
                     line = rtrim(line)
+                    line = line:gsub('\x1b%[%d+;%d+;%d+;%d+;%d+m', '')
+                        :gsub('\x1b%[%d+;%d+;%d+;%d+m', '')
+                        :gsub('\x1b%[%d+;%d+;%d+m', '')
+                        :gsub('\x1b%[%d+;%d+m', '')
+                        :gsub('\x1b%[%d+m', '')
                     local i1, i2 = line:find("clang failed with stderr: ")
                     if i1 ~= nil then
                         table.insert(lines, line:sub(0, i2))
@@ -412,25 +436,50 @@ local jump_backward_in_quickfix = function()
 end
 
 local dap = require("dap")
+local dap_ui_widgets = require("dap.ui.widgets")
 
 local which_key = require('which-key')
 which_key.setup()
 which_key.register({
-    ["<c-a>"] = { "<Cmd>%y+<CR>", "Copy all text" },
-    ["<F4>"] = { "<Cmd>lua require'dap'.pause()<CR>", "Pause | dap" },
-    ["<F5>"] = { "<Cmd>lua require'dap'.continue()<CR>", "Start/continue | dap" },
-    ["<F6>"] = { "<Cmd>lua require'dap'.run_last()<CR>", "Run last | dap" },
-    ["<S-F5>"] = { "<Cmd>lua require'dap'.close()<CR>", "Stop | dap" },
-    ["<F10>"] = { "<Cmd>lua require'dap'.step_over()<CR>", "Step over | dap" },
-    ["<F11>"] = { "<Cmd>lua require'dap'.step_into()<CR>", "Step into | dap" },
-    ["<F12>"] = { "<Cmd>lua require'dap'.step_out()<CR>", "Step out | dap" },
-    ["<Leader>b"] = { "<Cmd>lua require'dap'.toggle_breakpoint()<CR>", "Toggle breakpoint | dap" },
-    ["<Leader>B"] = { "<Cmd>lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
+    ["<c-a>"]      = { "<Cmd>%y+<CR>", "Copy all text" },
+    ["<F4>"]       = { function() dap.pause() end, "Pause | dap" },
+    ["<F5>"]       = { function() dap.continue() end, "Start/continue | dap" },
+    ["<F6>"]       = { function() dap.run_last() end, "Run last | dap" },
+    ["<S-F5>"]     = { function() dap.terminate() end, "Stop | dap" },
+    ["<F10>"]      = { function() dap.step_over() end, "Step over | dap" },
+    ["<F11>"]      = { function() dap.step_into() end, "Step into | dap" },
+    ["<F12>"]      = { function() dap.step_out() end, "Step out | dap" },
+    ["<leader>b"]  = { function() dap.toggle_breakpoint() end, "Toggle breakpoint | dap" },
+    ["<leader>B"]  = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
         "Set condition breakpoint | dap" },
-    ["<Leader>lp"] = { "<Cmd>lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>",
+
+    -- TODO: play with this, what does this do?
+    ["<leader>lp"] = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
         "Log point message | dap" },
-    ["<Leader>dr"] = { "<Cmd>lua require'dap'.repl.open()<CR>", "REPL | dap" },
-    ["<leader>f"] = {
+
+    ["<leader>d"]  = {
+        r = {
+            function()
+                dap.repl.toggle()
+                open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
+            end, "Toggle REPL | dap" },
+        k = { function() dap_ui_widgets.hover() end, "Dap hover" },
+        p = { function() dap_ui_widgets.preview() end, "Dap preview" },
+        f = {
+            function()
+                dap_ui_widgets.centered_float(dap_ui_widgets.frames)
+            end,
+            "Dap frames window"
+        },
+        s = {
+            function()
+                dap_ui_widgets.centered_float(dap_ui_widgets.scopes)
+            end,
+            "Dap scopes window"
+        },
+    },
+
+    ["<leader>f"]  = {
         name = "+find",
         j = { "<cmd>Telescope smart_open<cr>", "Find File" },
         f = { "<cmd>Telescope git_files<cr>", "Find Git File" },
@@ -442,18 +491,18 @@ which_key.register({
         k = { ':Telescope keymaps<cr>', 'Find Keymap' },
     },
     ['<leader>rc'] = { '<cmd>source $MYVIMRC<cr>', 'Reload Config' },
-    ['<leader>n'] = { '<cmd>enew<cr>', 'New File' },
-    ['<leader>s'] = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
-    ['<leader>S'] = { '<cmd>write<cr>', 'Save File' },
-    ['<leader>d'] = {
+    ['<leader>n']  = { '<cmd>enew<cr>', 'New File' },
+    ['<leader>s']  = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
+    ['<leader>S']  = { '<cmd>write<cr>', 'Save File' },
+    ['<leader>e']  = {
         name = "+diagnostic",
         K = { vim.diagnostic.open_float, 'Open diagnostic float' },
-        j = { vim.diagnostic.goto_next, 'Goto next diagnostic', opts = { noremap = true, silent = true } },
-        k = { vim.diagnostic.goto_prev, 'Goto prev diagnostic', opts = { noremap = true, silent = true } },
+        j = { vim.diagnostic.goto_next, 'Goto next diagnostic' },
+        k = { vim.diagnostic.goto_prev, 'Goto prev diagnostic' },
         h = { jump_forward_in_quickfix, "Goto next quickfix" },
         l = { jump_backward_in_quickfix, "Goto prev quickfix" },
     },
-    ['<leader>g'] = {
+    ['<leader>g']  = {
         name = '+task',
         j = { function()
             local project = read_project_file()
@@ -473,9 +522,10 @@ which_key.register({
                         local command = split_string_by_words(project.debug_target)
                         local config = {
                             program = command[1],
-                            type = "codelldb",
+                            type = "lldb",
                             request = "launch",
                             name = "Debug",
+                            runInTerminal = true,
                         }
                         if #command ~= 1 then
                             table.remove(command, 1)
@@ -497,24 +547,17 @@ which_key.register({
             end
         end, "Configure" },
     },
-    ['<A-tab>'] = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
-    ['<A-s-tab>'] = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
-    ['<tab>'] = { '<cmd>BufferLineCycleNext<cr>', 'Next buffer', opts = { noremap = true, silent = true } },
-    ['<s-tab>'] = { '<cmd>BufferLineCyclePrev<cr>', 'Previous buffer' },
-    ['<leader>q'] = { function()
+    ['<A-tab>']    = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
+    ['<A-s-tab>']  = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
+    ['<tab>']      = { '<cmd>BufferLineCycleNext<cr>', 'Next buffer' },
+    ['<s-tab>']    = { '<cmd>BufferLineCyclePrev<cr>', 'Previous buffer' },
+    ['<leader>q']  = { function()
         local buf = vim.api.nvim_get_current_buf()
         vim.cmd("bnext")
         vim.cmd("bd " .. buf)
     end, 'Close buffer' },
-    ['<leader>t'] = { '<cmd>NvimTreeToggle<cr>', 'Toggle files sidebar' },
-    ['<leader>e'] = { function()
-        local win = get_big_window("secondary", false)
-        if win then
-            vim.api.nvim_win_close(win, false)
-        else
-            get_big_window("secondary", true)
-        end
-    end, "Toggle secondary window" },
+    ['<leader>t']  = { '<cmd>NvimTreeToggle<cr>', 'Toggle files sidebar' },
+    ['<leader>u']  = { toggle_secondary_window, "Toggle secondary window" },
 })
 
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
@@ -584,21 +627,16 @@ require('lualine').setup(
         sections = { lualine_x = { 'searchcount', 'filetype' } }
     })
 
-dap.adapters.codelldb = {
-    type = 'server',
-    port = "${port}",
-    executable = {
-        command = codelldb_path,
-        args = { "--port", "${port}" },
-
-        -- On windows you may have to uncomment this:
-        -- detached = false,
-    }
+dap.adapters.lldb = {
+    type = 'executable',
+    command = lldb_vscode_path,
+    name = 'lldb',
 }
+
 dap.configurations.cpp = {
     {
         name = "Debug C++",
-        type = "codelldb",
+        type = "lldb",
         request = "launch",
         program = function()
             return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
@@ -608,35 +646,39 @@ dap.configurations.cpp = {
         end,
         cwd = '${workspaceFolder}',
         stopOnEntry = false,
+        runInTerminal = true,
+        stopCommands = { 'bt' },
     },
 }
 
 vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
 
-local handle_telescope_open_split = function(prompt_bufnr)
+local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_type)
     local action_state = require('telescope.actions.state')
     local entry = action_state.get_selected_entry()
     local filename = entry[1]
 
     require("telescope.actions").close(prompt_bufnr)
-    local win = get_big_window("other", true)
+    local win = get_big_window(big_window_type, true)
     vim.api.nvim_set_current_win(win)
     vim.cmd("edit " .. filename)
 end
 
+local telescope_mappings = {
+    ["<C-y>"] = function(prompt_bufnr)
+        handle_telescope_open_split_helper(prompt_bufnr, "primary")
+    end,
+    ["<C-u>"] = function(prompt_bufnr)
+        handle_telescope_open_split_helper(prompt_bufnr, "secondary")
+    end,
+}
+
 telescope.setup({
     defaults = {
         mappings = {
-            n = {
-                ["<C-v>"] = handle_telescope_open_split
-            },
-            i = {
-                ["<C-v>"] = handle_telescope_open_split
-            }
+            n = telescope_mappings,
+            i = telescope_mappings,
         },
-        -- path_display = {
-        --     "smart"
-        -- }
     }
 })
 
@@ -681,23 +723,13 @@ dap.defaults.fallback.terminal_win_cmd = function()
 end
 
 dap.listeners.before['event_initialized']['sam'] = function(_, _)
-    local bufs = vim.api.nvim_list_bufs()
-    for _, buf in pairs(bufs) do
-        local name = vim.api.nvim_buf_get_name(buf)
-        if name:match("%[dap%-terminal%]") then
-            vim.api.nvim_win_set_buf(get_big_window("secondary", true), buf)
-        end
-    end
+    open_buffer_in_secondary_window_if_possible("%[dap%-terminal%]")
 end
 
 dap.listeners.after['event_stopped']['sam'] = function(_, _)
-    local bufs = vim.api.nvim_list_bufs()
-    for _, buf in pairs(bufs) do
-        local name = vim.api.nvim_buf_get_name(buf)
-        if name:match("%[dap%-repl%]") then
-            vim.api.nvim_win_set_buf(get_big_window("secondary", true), buf)
-        end
-    end
+    dap.repl.open()
+    open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
+    -- Sadly doesn't seem to work: dap.repl.execute(".frames<CR>")
 end
 
 local on_attach = function(_, bufnr)

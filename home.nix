@@ -31,6 +31,8 @@ in
     pkgs.cmake
     pkgs.ninja
     pkgs.llvmPackages_17.clang-unwrapped # clangd
+    pkgs.llvmPackages_17.libllvm # llvm-symbolizer
+    specialArgs.pkgs-lldb.lldb_17
     pkgs.python3
 
     pkgs.nixd # nix LSP
@@ -62,8 +64,8 @@ in
     pkgs.gawk # transcrypt
     pkgs.xxd # transcrypt
 
-    specialArgs.overlays.zig.master-2023-12-01
-    specialArgs.overlays.zls.zls
+    specialArgs.zig.master-2023-12-01
+    specialArgs.zls.zls
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
@@ -302,11 +304,12 @@ in
   };
   services.swayidle = mkIf (isLinux && withGui) {
     enable = true;
+    systemdTarget = "hyprland-session.target";
     timeouts = [
       {
         timeout = 60;
-        command = "hyprctl dispatch dpms off";
-        resumeCommand = "hyprctl dispatch dpms on";
+        command = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
+        resumeCommand = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
       }
     ];
   };
@@ -349,6 +352,7 @@ in
       p() {
         cd ~/Projects
       }
+      eval "$(zellij setup --generate-completion bash)"
     '';
   };
 
@@ -414,6 +418,16 @@ in
             hash = "sha256-YmIKDicfn9GZiLp3rvYEEFT2D4KQZoKbJ2HPrdqcLLw=";
           };
         };
+        kdl-vim = pkgs.vimUtils.buildVimPlugin {
+          name = "kdl.vim";
+          src = pkgs.fetchFromGitHub
+            {
+              owner = "imsnif";
+              repo = "kdl.vim";
+              rev = "b84d7d3a15d8d30da016cf9e98e2cfbe35cddee5";
+              hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
+            };
+        };
       in
       [
         {
@@ -434,7 +448,6 @@ in
         nvim-surround
         kanagawa-nvim
         targets-vim
-        telescope-dap-nvim
         nvim-dap
         nvim-treesitter
         nvim-treesitter.withAllGrammars
@@ -456,10 +469,11 @@ in
 
         vim-svelte-plugin
         smart-open
+        kdl-vim
       ];
     # As of now (December 2023) the vscode-llbd package in NixPkgs fails to compile on arm64 macOS so instead we're using the package from vscode-extensions.
     extraLuaConfig = ''
-      codelldb_path = '${specialArgs.vscode-extensions.vadimcn.vscode-lldb.out}/share/vscode/extensions/vadimcn.vscode-lldb/adapter/codelldb'
+      lldb_vscode_path = '${specialArgs.pkgs-lldb.lldb_17}/bin/lldb-vscode'
       require "nvim-init"
     '';
   };
