@@ -1,6 +1,4 @@
 local os_name = vim.loop.os_uname().sysname
-local is_windows = os_name == "Windows_NT"
-local is_linux = os_name == "Linux"
 local is_mac = os_name == "Darwin"
 
 vim.opt.number = true
@@ -10,16 +8,12 @@ vim.opt.termguicolors = true
 vim.opt.tabstop = 4      -- number of visual spaces per TAB
 vim.opt.softtabstop = 4  -- number of spaces in tab when editing
 vim.opt.shiftwidth = 4   -- number of spaces to use for autoindent
-vim.opt.expandtab = true --  expand tab to spaces so that tabs are spaces
+vim.opt.expandtab = true -- expand tab to spaces so that tabs are spaces
 vim.opt.shiftround = true
 vim.opt.inccommand = 'nosplit'
 vim.opt.incsearch = true
 vim.opt.equalalways = true
-if not is_windows then
-    vim.opt.guifont = { "JetBrainsMono Nerd Font Mono:h11" }
-else
-    vim.opt.guifont = { "JetBrainsMono NFM", ":h11" }
-end
+vim.opt.guifont = { "JetBrainsMono Nerd Font Mono:h11" }
 vim.opt.signcolumn = "yes"
 vim.opt.title = true
 vim.opt.timeoutlen = 500
@@ -28,34 +22,20 @@ vim.opt.wrap = true
 vim.opt.linebreak = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
-vim.cmd [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]]
-vim.cmd [[set grepformat+=%f:%l:%c:%m]]
-
-if vim.g.neovide then
-    vim.g.neovide_scroll_animation_length = 0.2
-    vim.opt.mousemodel = 'extend'
-    vim.g.neovide_refresh_rate = 120
-
-    if is_linux then
-        vim.g.neovide_transparency = 0.95
-    elseif is_mac then
-        vim.g.neovide_refresh_rate = 60
-        vim.g.neovide_input_macos_alt_is_meta = true
-        vim.g.neovide_scale_factor = 1.32
-    end
-end
-
-vim.g.vim_svelte_plugin_use_typescript = true
-
+vim.g.mapleader = ' '
 if is_mac then
     vim.keymap.set('i', "<a-3>", "#")
 end
 
-vim.g.mapleader = ' '
+-- flash text when it's yanked
+vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim.fn['hlexists']('HighlightedyankRegion') > 0 and 'HighlightedyankRegion' or 'IncSearch'), timeout=500}]]
 
-require('snippets')
+-- use ripgrep as vimgrep
+vim.cmd [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]]
+vim.cmd [[set grepformat+=%f:%l:%c:%m]]
 
---=================================================================
+vim.g.vim_svelte_plugin_use_typescript = true
+-- vim.g.zig_fmt_autosave = 0
 
 require('kanagawa').setup({
     dimInactive = true, -- dim inactive window `:h hl-NormalNC`
@@ -103,20 +83,10 @@ require('kanagawa').setup({
     end,
     theme = "wave",
 })
-
 vim.cmd [[colorscheme kanagawa]]
-vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim.fn['hlexists']('HighlightedyankRegion') > 0 and 'HighlightedyankRegion' or 'IncSearch'), timeout=500}]]
 
---=================================================================
-
-vim.g.zig_fmt_autosave = 0
-
---=================================================================
---
 require 'nvim-web-devicons'.setup {}
 
---=================================================================
---
 require("bufferline").setup {
     options = {
         numbers = "ordinal",
@@ -131,7 +101,6 @@ require("bufferline").setup {
         separator_style = "slant"
     }
 }
-
 
 local split_string_by_words = function(text)
     local e      = 0
@@ -158,14 +127,22 @@ end
 local signcolumn_width = 7 -- AKA gutter width
 local min_buffer_width = 110 + signcolumn_width
 local total_dual_panel_cols = min_buffer_width * 2 + 1
+local min_sidebar_width = 10
 
 local get_sidebar_cols = function()
     local neovim_cols = vim.o.columns
     local sidebar_cols = neovim_cols - min_buffer_width - 1
-    if total_dual_panel_cols < (neovim_cols - 10) then
+    if total_dual_panel_cols < (neovim_cols - min_sidebar_width) then
         sidebar_cols = neovim_cols - total_dual_panel_cols - 1
     end
+    if sidebar_cols < min_sidebar_width then
+        sidebar_cols = min_sidebar_width
+    end
     return sidebar_cols
+end
+
+local sidebar_fits = function()
+    return (vim.o.columns - total_dual_panel_cols) >= min_sidebar_width
 end
 
 local get_big_window = function(mode, create_if_doesnt_exist)
@@ -276,6 +253,7 @@ local run_command = function(command, on_exit)
                 local lines = {}
                 for _, line in pairs(d) do
                     line = rtrim(line)
+                    -- remove ANSI colours
                     line = line:gsub('\x1b%[%d+;%d+;%d+;%d+;%d+m', '')
                         :gsub('\x1b%[%d+;%d+;%d+;%d+m', '')
                         :gsub('\x1b%[%d+;%d+;%d+m', '')
@@ -583,11 +561,6 @@ vim.keymap.set('n', "<space><space>s",
 
 require("bufferline")
 
--- vim.keymap.set({ 'i', 't' }, '<A-h>', '<C-\\><C-N><C-w>h', { desc = 'Goto right window' })
--- vim.keymap.set({ 'i', 't' }, '<A-l>', '<C-\\><C-N><C-w>l', { desc = 'Goto left window' })
--- vim.keymap.set({ 'i', 't' }, '<A-j>', '<C-\\><C-N><C-w>j', { desc = 'Goto down window' })
--- vim.keymap.set({ 'i', 't' }, '<A-k>', '<C-\\><C-N><C-w>k', { desc = 'Goto up window' })
-
 vim.keymap.set({ 'i', 'v', 's' }, 'kj', '<esc>', { desc = 'Normal mode' })
 
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = 'Paste from OS clipboard after cursor' })
@@ -609,23 +582,10 @@ vim.keymap.set("n", "/", [[/\v]])
 
 --=================================================================
 
-if is_windows then
-    -- path for telescope smart_open
-    vim.g.sqlite_clib_path = 'C:\\ProgramData\\chocolatey\\lib\\SQLite\\tools\\sqlite3.dll'
-end
-
 local builtin = require('telescope.builtin')
 local telescope = require('telescope')
 telescope.load_extension('dap')
 telescope.load_extension("smart_open")
-
-require('Comment').setup()
-
-require('lualine').setup(
-    {
-        extensions = { 'nvim-tree' },
-        sections = { lualine_x = { 'searchcount', 'filetype' } }
-    })
 
 dap.adapters.lldb = {
     type = 'executable',
@@ -838,24 +798,35 @@ cmp.setup({
     },
 })
 
-
-require('gitsigns').setup()
-require("nvim-tree").setup {
+local nvim_tree = require("nvim-tree")
+local nvim_tree_api = require("nvim-tree.api")
+nvim_tree.setup {
     sync_root_with_cwd = true,
     view = {
         width = get_sidebar_cols(),
         signcolumn = "auto"
     }
 }
+if sidebar_fits() then
+    nvim_tree_api.tree.toggle({ focus = false })
+end
 
 vim.api.nvim_create_autocmd('VimResized', {
     callback = function()
-        require("nvim-tree").setup({ view = { width = get_sidebar_cols() } })
+        if (nvim_tree_api.is_visible()) then
+            vim.cmd("NvimTreeResize " .. get_sidebar_cols())
+        end
     end
 })
 
+require('gitsigns').setup()
 require('illuminate').configure({ delay = 50 })
-
 require('leap').add_default_mappings()
-
-require("nvim-surround").setup({})
+require("nvim-surround").setup()
+require('snippets')
+require('Comment').setup()
+require('lualine').setup(
+    {
+        extensions = { 'nvim-tree' },
+        sections = { lualine_x = { 'searchcount', 'filetype' } }
+    })
