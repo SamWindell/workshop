@@ -616,7 +616,16 @@ vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', n
 local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_type)
     local action_state = require('telescope.actions.state')
     local entry = action_state.get_selected_entry()
-    local filename = entry[1]
+    if not entry then
+        return
+    end
+
+    local filename
+    if entry.path or entry.filename then
+        filename = entry.path or entry.filename
+    else
+        return
+    end
 
     require("telescope.actions").close(prompt_bufnr)
     local win = get_big_window(big_window_type, true)
@@ -652,15 +661,11 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
             -- When a help buffer is first created, it's opened in a new window and it is not 'listed'.
             -- 'listed' is a var of a buffer that dictates if it should be listed in certain situations.
             -- For example, bufferline will only show listed buffers.
-            -- The API is a little strange for buflisted; note the use of numbers rather than bool.
-            --
             local buf = vim.api.nvim_get_current_buf()
-            if vim.fn.buflisted(buf) == 0 then
-                -- If the buffer is unlisted, it must be the first time it's opened. Let's close the window
+            if not vim.api.nvim_buf_get_option(buf, "buflisted") then
+                -- If the buffer is unlisted it must be the first time it's opened. Let's close the window
                 -- that vim made for us, and put the buffer in our 'secondary' window instead.
-                -- Another strange API to set the buflisted property; note the ampersand and use of 1 rather
-                -- than a boolean.
-                vim.fn.setbufvar(buf, "&buflisted", 1)
+                vim.api.nvim_buf_set_option(buf, "buflisted", true)
                 vim.api.nvim_win_close(0, false)
                 local win = get_big_window("secondary", true)
                 vim.api.nvim_win_set_buf(win, buf)
