@@ -682,39 +682,33 @@ telescope.setup({
     }
 })
 
-function _G.open_help_split()
-    if vim.bo.filetype == 'man' or vim.bo.buftype == 'help' then
-        ---The ID of the origin window from which help window was opened:
-        ---i.e. last accessed window.
-        local origin_win = vim.fn.win_getid(vim.fn.winnr('#'))
-        local origin_buf = vim.api.nvim_win_get_buf(origin_win)
-
-        local origin_textwidth = vim.bo[origin_buf].textwidth
-        if origin_textwidth == 0 then origin_textwidth = 80 end
-
-        local help_buf = vim.fn.bufnr()
-
-        ---Origin 'bufhidden' property or the help buffer.
-        local bufhidden = vim.bo.bufhidden
-        vim.bo.bufhidden = 'hide'
-
-        local old_help_win = vim.api.nvim_get_current_win()
-        vim.api.nvim_set_current_win(origin_win)
-
-        vim.api.nvim_win_close(old_help_win, false)
-
-        local new_win = get_big_window("secondary", true)
-        vim.api.nvim_win_set_buf(new_win, help_buf)
-        vim.bo.bufhidden = bufhidden
+-- Open help files in the secondary window.
+vim.api.nvim_create_autocmd("BufWinEnter", {
+    group = vim.api.nvim_create_augroup("help_secondary_window", {}),
+    pattern = { "*.txt" },
+    callback = function()
+        -- Run every time a help buffer is opened
+        if vim.o.filetype == 'help' then
+            -- When a help buffer is first created, it's opened in a new window and it is not 'listed'.
+            -- 'listed' is a var of a buffer that dictates if it should be listed in certain situations.
+            -- For example, bufferline will only show listed buffers.
+            -- The API is a little strange for buflisted; note the use of numbers rather than bool.
+            --
+            local buf = vim.api.nvim_get_current_buf()
+            if vim.fn.buflisted(buf) == 0 then
+                -- If the buffer is unlisted, it must be the first time it's opened. Let's close the window
+                -- that vim made for us, and put the buffer in our 'secondary' window instead.
+                -- Another strange API to set the buflisted property; note the ampersand and use of 1 rather
+                -- than a boolean.
+                vim.fn.setbufvar(buf, "&buflisted", 1)
+                vim.api.nvim_win_close(0, false)
+                local win = get_big_window("secondary", true)
+                vim.api.nvim_win_set_buf(win, buf)
+                vim.api.nvim_set_current_win(win)
+            end
+        end
     end
-end
-
-vim.cmd([[
-      augroup HelpSplit
-         autocmd!
-         autocmd WinNew * autocmd BufEnter * ++once lua _G.open_help_split()
-      augroup end
-   ]])
+})
 
 dap.defaults.fallback.terminal_win_cmd = function()
     local buffer = vim.api.nvim_create_buf(true, true)
