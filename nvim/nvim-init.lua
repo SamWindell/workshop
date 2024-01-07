@@ -1,6 +1,3 @@
-local os_name = vim.loop.os_uname().sysname
-local is_mac = os_name == "Darwin"
-
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
@@ -23,7 +20,8 @@ vim.opt.linebreak = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.mapleader = ' '
-if is_mac then
+
+if vim.loop.os_uname().sysname == "Darwin" then
     vim.keymap.set('i', "<a-3>", "#")
 end
 
@@ -34,8 +32,10 @@ vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim
 vim.cmd [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]]
 vim.cmd [[set grepformat+=%f:%l:%c:%m]]
 
+local primary_window_key = 'y'
+local secondary_window_key = 'u'
+
 vim.g.vim_svelte_plugin_use_typescript = true
--- vim.g.zig_fmt_autosave = 0
 
 require('kanagawa').setup({
     dimInactive = true, -- dim inactive window `:h hl-NormalNC`
@@ -128,6 +128,7 @@ local signcolumn_width = 7 -- AKA gutter width
 local min_buffer_width = 110 + signcolumn_width
 local total_dual_panel_cols = min_buffer_width * 2 + 1
 local min_sidebar_width = 10
+local max_sidebar_width = 32
 
 local get_sidebar_cols = function()
     local neovim_cols = vim.o.columns
@@ -138,10 +139,13 @@ local get_sidebar_cols = function()
     if sidebar_cols < min_sidebar_width then
         sidebar_cols = min_sidebar_width
     end
+    if sidebar_cols > max_sidebar_width then
+        sidebar_cols = max_sidebar_width
+    end
     return sidebar_cols
 end
 
-local sidebar_fits = function()
+local room_for_sidebar_and_dual_windows = function()
     return (vim.o.columns - total_dual_panel_cols) >= min_sidebar_width
 end
 
@@ -419,23 +423,23 @@ local dap_ui_widgets = require("dap.ui.widgets")
 local which_key = require('which-key')
 which_key.setup()
 which_key.register({
-    ["<c-a>"]      = { "<Cmd>%y+<CR>", "Copy all text" },
-    ["<F4>"]       = { function() dap.pause() end, "Pause | dap" },
-    ["<F5>"]       = { function() dap.continue() end, "Start/continue | dap" },
-    ["<F6>"]       = { function() dap.run_last() end, "Run last | dap" },
-    ["<S-F5>"]     = { function() dap.terminate() end, "Stop | dap" },
-    ["<F10>"]      = { function() dap.step_over() end, "Step over | dap" },
-    ["<F11>"]      = { function() dap.step_into() end, "Step into | dap" },
-    ["<F12>"]      = { function() dap.step_out() end, "Step out | dap" },
-    ["<leader>b"]  = { function() dap.toggle_breakpoint() end, "Toggle breakpoint | dap" },
-    ["<leader>B"]  = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
+    ["<c-a>"]                            = { "<Cmd>%y+<CR>", "Copy all text" },
+    ["<F4>"]                             = { function() dap.pause() end, "Pause | dap" },
+    ["<F5>"]                             = { function() dap.continue() end, "Start/continue | dap" },
+    ["<F6>"]                             = { function() dap.run_last() end, "Run last | dap" },
+    ["<S-F5>"]                           = { function() dap.terminate() end, "Stop | dap" },
+    ["<F10>"]                            = { function() dap.step_over() end, "Step over | dap" },
+    ["<F11>"]                            = { function() dap.step_into() end, "Step into | dap" },
+    ["<F12>"]                            = { function() dap.step_out() end, "Step out | dap" },
+    ["<leader>b"]                        = { function() dap.toggle_breakpoint() end, "Toggle breakpoint | dap" },
+    ["<leader>B"]                        = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
         "Set condition breakpoint | dap" },
 
     -- TODO: play with this, what does this do?
-    ["<leader>lp"] = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+    ["<leader>lp"]                       = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
         "Log point message | dap" },
 
-    ["<leader>d"]  = {
+    ["<leader>d"]                        = {
         r = {
             function()
                 dap.repl.toggle()
@@ -457,7 +461,7 @@ which_key.register({
         },
     },
 
-    ["<leader>f"]  = {
+    ["<leader>f"]                        = {
         name = "+find",
         j = { "<cmd>Telescope smart_open<cr>", "Find File" },
         f = { "<cmd>Telescope git_files<cr>", "Find Git File" },
@@ -468,11 +472,11 @@ which_key.register({
         G = { ':Telescope grep_string<cr>', 'Find String Under Cursor' },
         k = { ':Telescope keymaps<cr>', 'Find Keymap' },
     },
-    ['<leader>rc'] = { '<cmd>source $MYVIMRC<cr>', 'Reload Config' },
-    ['<leader>n']  = { '<cmd>enew<cr>', 'New File' },
-    ['<leader>s']  = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
-    ['<leader>S']  = { '<cmd>write<cr>', 'Save File' },
-    ['<leader>e']  = {
+    ['<leader>rc']                       = { '<cmd>source $MYVIMRC<cr>', 'Reload Config' },
+    ['<leader>n']                        = { '<cmd>enew<cr>', 'New File' },
+    ['<leader>s']                        = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
+    ['<leader>S']                        = { '<cmd>write<cr>', 'Save File' },
+    ['<leader>e']                        = {
         name = "+diagnostic",
         K = { vim.diagnostic.open_float, 'Open diagnostic float' },
         j = { vim.diagnostic.goto_next, 'Goto next diagnostic' },
@@ -480,7 +484,7 @@ which_key.register({
         h = { jump_forward_in_quickfix, "Goto next quickfix" },
         l = { jump_backward_in_quickfix, "Goto prev quickfix" },
     },
-    ['<leader>g']  = {
+    ['<leader>g']                        = {
         name = '+task',
         j = { function()
             local project = read_project_file()
@@ -525,17 +529,17 @@ which_key.register({
             end
         end, "Configure" },
     },
-    ['<A-tab>']    = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
-    ['<A-s-tab>']  = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
-    ['<tab>']      = { '<cmd>BufferLineCycleNext<cr>', 'Next buffer' },
-    ['<s-tab>']    = { '<cmd>BufferLineCyclePrev<cr>', 'Previous buffer' },
-    ['<leader>q']  = { function()
+    ['<A-tab>']                          = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
+    ['<A-s-tab>']                        = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
+    ['<tab>']                            = { '<cmd>BufferLineCycleNext<cr>', 'Next buffer' },
+    ['<s-tab>']                          = { '<cmd>BufferLineCyclePrev<cr>', 'Previous buffer' },
+    ['<leader>q']                        = { function()
         local buf = vim.api.nvim_get_current_buf()
         vim.cmd("bnext")
         vim.cmd("bd " .. buf)
     end, 'Close buffer' },
-    ['<leader>t']  = { '<cmd>NvimTreeToggle<cr>', 'Toggle files sidebar' },
-    ['<leader>u']  = { toggle_secondary_window, "Toggle secondary window" },
+    ['<leader>t']                        = { '<cmd>NvimTreeToggle<cr>', 'Toggle files sidebar' },
+    ['<leader>' .. secondary_window_key] = { toggle_secondary_window, "Toggle secondary window" },
 })
 
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
@@ -582,7 +586,7 @@ vim.keymap.set("n", "/", [[/\v]])
 
 --=================================================================
 
-local builtin = require('telescope.builtin')
+local telescope_builtin = require('telescope.builtin')
 local telescope = require('telescope')
 telescope.load_extension('dap')
 telescope.load_extension("smart_open")
@@ -634,10 +638,10 @@ local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_typ
 end
 
 local telescope_mappings = {
-    ["<C-y>"] = function(prompt_bufnr)
+    [("<C-%s>"):format(primary_window_key)] = function(prompt_bufnr)
         handle_telescope_open_split_helper(prompt_bufnr, "primary")
     end,
-    ["<C-u>"] = function(prompt_bufnr)
+    [("<C-%s>"):format(secondary_window_key)] = function(prompt_bufnr)
         handle_telescope_open_split_helper(prompt_bufnr, "secondary")
     end,
 }
@@ -696,14 +700,14 @@ local on_attach = function(_, bufnr)
 
     which_key.register({
         ['gt'] = { vim.lsp.buf.type_definition, 'Goto definition of the type of symbol under cursor' },
-        ['gd'] = { builtin.lsp_definitions, 'Goto definition of symbol under cursor' },
+        ['gd'] = { telescope_builtin.lsp_definitions, 'Goto definition of symbol under cursor' },
         ['gD'] = { vim.lsp.buf.declaration, 'Goto declaration of symbol under cursor' },
-        ['gi'] = { builtin.lsp_implementations, 'Goto implementation of symbol under cursor' },
-        ['gr'] = { builtin.lsp_references, 'List references of symbol under cursor' },
+        ['gi'] = { telescope_builtin.lsp_implementations, 'Goto implementation of symbol under cursor' },
+        ['gr'] = { telescope_builtin.lsp_references, 'List references of symbol under cursor' },
         ['K'] = { vim.lsp.buf.hover, 'Show info float for symbol under cursor' },
         ['<C-k>'] = { vim.lsp.buf.signature_help, 'Show help float for symbol under cursor' },
-        ['<leader>fr'] = { builtin.lsp_document_symbols, "Find symbol in file" },
-        ['<leader>fe'] = { builtin.lsp_workspace_symbols, "Find symbol in workspace" },
+        ['<leader>fr'] = { telescope_builtin.lsp_document_symbols, "Find symbol in file" },
+        ['<leader>fe'] = { telescope_builtin.lsp_workspace_symbols, "Find symbol in workspace" },
         ['<leader>f'] = { function() vim.lsp.buf.format { async = true } end, 'Format document' },
         ['<leader>s'] = { function()
             vim.lsp.buf.format()
@@ -812,12 +816,24 @@ nvim_tree.setup {
         signcolumn = "auto"
     }
 }
-if sidebar_fits() then
+
+if room_for_sidebar_and_dual_windows() then
     nvim_tree_api.tree.toggle({ focus = false })
+    vim.api.nvim_set_current_win(get_big_window("primary", true))
 end
 
 vim.api.nvim_create_autocmd('VimResized', {
     callback = function()
+        -- TODO: change the split of windows to fit nicer when things shrink/grow
+        --  To change two vertically split windows to horizonally split
+        --  Ctrl-w t Ctrl-w K
+        --  Horizontally to vertically:
+        --  Ctrl-w t Ctrl-w H
+        --  Explanations:
+        --  Ctrl-w t makes the first (topleft) window current
+        --  Ctrl-w K moves the current window to full-width at the very top
+        --  Ctrl-w H moves the current window to full-height at far left
+
         if (nvim_tree_api.is_visible()) then
             vim.cmd("NvimTreeResize " .. get_sidebar_cols())
         end
