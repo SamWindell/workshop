@@ -817,28 +817,43 @@ nvim_tree.setup {
     }
 }
 
-if room_for_sidebar_and_dual_windows() then
-    nvim_tree_api.tree.toggle({ focus = false })
-    vim.api.nvim_set_current_win(get_big_window("primary", true))
-end
+local handle_resize = function()
+    local secondary_win = get_big_window("secondary", false)
+    if secondary_win then
+        local sidebar_width = 0
+        if nvim_tree_api.tree.is_visible() then
+            local wins = vim.api.nvim_list_wins()
+            for _, win in pairs(wins) do
+                local buf = vim.api.nvim_win_get_buf(win)
+                if nvim_tree_api.tree.is_tree_buf(buf) then
+                    sidebar_width = vim.api.nvim_win_get_width(win)
+                    break
+                end
+            end
+        end
 
-vim.api.nvim_create_autocmd('VimResized', {
-    callback = function()
-        -- TODO: change the split of windows to fit nicer when things shrink/grow
-        --  To change two vertically split windows to horizonally split
-        --  Ctrl-w t Ctrl-w K
-        --  Horizontally to vertically:
-        --  Ctrl-w t Ctrl-w H
-        --  Explanations:
-        --  Ctrl-w t makes the first (topleft) window current
-        --  Ctrl-w K moves the current window to full-width at the very top
-        --  Ctrl-w H moves the current window to full-height at far left
-
-        if (nvim_tree_api.is_visible()) then
-            vim.cmd("NvimTreeResize " .. get_sidebar_cols())
+        local remaining_width = vim.o.columns - sidebar_width
+        local secondary_col = vim.api.nvim_win_get_position(secondary_win)[2]
+        if remaining_width >= total_dual_panel_cols then
+            if secondary_col == sidebar_width then
+                vim.api.nvim_set_current_win(secondary_win)
+                vim.cmd("wincmd L")
+            end
+        else
+            if secondary_col ~= sidebar_width and secondary_col ~= (sidebar_width + 1) then
+                local buf = vim.api.nvim_win_get_buf(secondary_win)
+                vim.api.nvim_win_close(secondary_win, false)
+                vim.api.nvim_set_current_win(get_big_window("primary", false))
+                vim.cmd("split")
+                vim.api.nvim_win_set_buf(0, buf)
+            end
         end
     end
-})
+end
+
+nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeOpen, handle_resize)
+nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeClose, handle_resize)
+vim.api.nvim_create_autocmd('VimResized', { callback = handle_resize })
 
 require('gitsigns').setup()
 require('illuminate').configure({ delay = 50 })
