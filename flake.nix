@@ -51,6 +51,15 @@
         };
       };
 
+      homeConfigurations.pcWsl = mkHomeConfiguration {
+        system = "x86_64-linux";
+        extraSpecialArgs = {
+          withGui = false;
+          username = "sam";
+          homeDirectory = "/home/sam";
+        };
+      };
+
       homeConfigurations.macbook = mkHomeConfiguration {
         system = "aarch64-darwin";
         extraSpecialArgs = {
