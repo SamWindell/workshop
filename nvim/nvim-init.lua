@@ -32,8 +32,8 @@ vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim
 vim.cmd [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]]
 vim.cmd [[set grepformat+=%f:%l:%c:%m]]
 
-local primary_window_key = 'y'
-local secondary_window_key = 'u'
+local primary_window_key = '2'
+local secondary_window_key = '3'
 
 vim.g.vim_svelte_plugin_use_typescript = true
 
@@ -444,10 +444,6 @@ which_key.register({
     ["<leader>B"]                        = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
         "Set condition breakpoint | dap" },
 
-    -- TODO: play with this, what does this do?
-    ["<leader>lp"]                       = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
-        "Log point message | dap" },
-
     ["<leader>d"]                        = {
         r = {
             function()
@@ -468,6 +464,9 @@ which_key.register({
             end,
             "Dap scopes window"
         },
+        -- TODO: play with this, what does this do?
+        y = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+            "Log point message | dap" },
     },
 
     ["<leader>f"]                        = {
@@ -481,7 +480,7 @@ which_key.register({
         G = { ':Telescope grep_string<cr>', 'Find String Under Cursor' },
         k = { ':Telescope keymaps<cr>', 'Find Keymap' },
     },
-    ['<leader>rc']                       = { '<cmd>source $MYVIMRC<cr>', 'Reload Config' },
+    ['<leader>rc']                       = { '<cmd>source ~/.config/nvim/lua/nvim-init.lua<cr>', 'Reload Config' },
     ['<leader>n']                        = { '<cmd>enew<cr>', 'New File' },
     ['<leader>s']                        = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
     ['<leader>S']                        = { '<cmd>write<cr>', 'Save File' },
@@ -547,7 +546,8 @@ which_key.register({
         vim.cmd("bnext")
         vim.cmd("bd " .. buf)
     end, 'Close buffer' },
-    ['<leader>t']                        = { function() nvim_tree_api.tree.toggle({ focus = false }) end, 'Toggle files sidebar' },
+
+    ['<leader>1']                        = { function() nvim_tree_api.tree.toggle({ focus = false }) end, 'Toggle files sidebar' },
     ['<leader>' .. secondary_window_key] = { toggle_secondary_window, "Toggle secondary window" },
     ['<leader>' .. primary_window_key]   = { function()
         local secondary = get_big_window("secondary", false)
@@ -555,7 +555,7 @@ which_key.register({
             vim.api.nvim_win_close(get_big_window("primary", false), false)
         end
     end, "Solo secondary window" },
-    ['<leader>i']                        = { function()
+    ['<leader>4']                        = { function()
         local secondary = get_big_window("secondary", false)
         if secondary then
             local primary = get_big_window("primary", false)
