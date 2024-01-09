@@ -383,6 +383,16 @@ in
   programs.git = {
     enable = true;
     delta.enable = true; # use the delta program for diff syntax highlighting
+    userName = "Sam Windell";
+    userEmail = "info@frozenplain.com";
+    extraConfig = {
+      "credential \"https://github.com\"" = {
+        helper = "!${pkgs.gh}/bin/gh auth git-credential";
+      };
+      "credential \"https://gist.github.com\"" = {
+        helper = "!${pkgs.gh}/bin/gh auth git-credential";
+      };
+    };
   };
 
   # better ls
