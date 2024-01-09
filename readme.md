@@ -1,6 +1,8 @@
 # My development environment, managed using Nix & home-manager
 The goal is to be able to have a consistent fully-featured, powerful work setup for all of my computers: Linux, macOS and WSL (sadly not native Windows). Most of this configuration focuses on a terminal-based workflow but there's a `withGui` flag too. I've made this public in case it's useful for others to take ideas from; take any parts you like for your own setup.
 
+The nixos folder also contains configuration for a NixOS system; which is designed to work alongside this standalone home-manager setup.
+
 ### Key tools:
 - Neovim with packages & dependencies managed by nix rather than things like lazy.nvim and mason.
 - Zellij
