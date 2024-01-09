@@ -2,6 +2,7 @@
 -- TODO: maybe add https://github.com/ThePrimeagen/harpoon/tree/harpoon2
 -- TODO: maybe add https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 -- TODO: use tree-sitter navigation https://github.com/nvim-lua/kickstart.nvim/blob/60b93c95d31d1b6723ba1c85db42352b343ebe10/init.lua#L449
+-- TODO: maybe add https://github.com/uga-rosa/ccc.nvim
 
 vim.opt.number = true
 vim.opt.relativenumber = true
