@@ -477,6 +477,8 @@ in
         which-key-nvim
         typescript-vim
         neodev-nvim
+        refactoring-nvim
+        plenary-nvim
 
         vim-svelte-plugin
         smart-open

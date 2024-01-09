@@ -1,3 +1,6 @@
+-- TODO: add https://github.com/ThePrimeagen/refactoring.nvim
+-- TODO: maybe add https://github.com/ThePrimeagen/harpoon/tree/harpoon2
+
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
@@ -34,6 +37,9 @@ vim.cmd [[set grepformat+=%f:%l:%c:%m]]
 
 local primary_window_key = '2'
 local secondary_window_key = '3'
+local dap_repl_buffer_name = "[dap-repl]"
+local dap_terminal_buffer_name = "[dap-terminal]"
+local command_output_buffer_name = "[command-output]"
 
 vim.g.vim_svelte_plugin_use_typescript = true
 
@@ -149,6 +155,15 @@ local room_for_sidebar_and_dual_windows = function()
     return (vim.o.columns - total_dual_panel_cols) >= min_sidebar_width
 end
 
+local find_buffer = function(buffer_name)
+    for _, buf in pairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_get_name(buf):find(buffer_name, 1, true) then
+            return buf
+        end
+    end
+    return nil
+end
+
 local get_big_window = function(mode, create_if_doesnt_exist)
     local num_proper_windows = 0
     local last_window = nil
@@ -166,13 +181,13 @@ local get_big_window = function(mode, create_if_doesnt_exist)
 
     if create_if_doesnt_exist then
         if num_proper_windows == 0 then
-            vim.cmd(string.format("vertical rightb %dnew", vim.o.columns - get_sidebar_cols()))
+            vim.cmd("vertical rightb new")
             return vim.api.nvim_get_current_win()
         end
 
-        if num_proper_windows == 1 then
+        if num_proper_windows == 1 and mode == "secondary" then
             if vim.o.columns >= total_dual_panel_cols then
-                vim.cmd(string.format('rightb %dvsplit', min_buffer_width))
+                vim.cmd('rightb vsplit')
             else
                 vim.cmd('rightb split')
             end
@@ -211,15 +226,15 @@ local toggle_secondary_window = function()
     end
 end
 
-local open_buffer_in_secondary_window_if_possible = function(buffer_name)
-    local bufs = vim.api.nvim_list_bufs()
-    for _, buf in pairs(bufs) do
-        local name = vim.api.nvim_buf_get_name(buf)
-        if name:match(buffer_name) then
-            local win = get_big_window("secondary", true)
-            vim.api.nvim_win_set_buf(win, buf)
-            return buf, win
+local open_buffer_in_secondary_window_if_possible = function(buffer_name, focus)
+    local buf = find_buffer(buffer_name)
+    if buf then
+        local win = get_big_window("secondary", true)
+        vim.api.nvim_win_set_buf(win, buf)
+        if focus then
+            vim.api.nvim_set_current_win(win)
         end
+        return buf, win
     end
     return nil, nil
 end
@@ -235,11 +250,9 @@ local rtrim = function(s)
 end
 
 local run_command = function(command, on_exit)
-    for _, buf in pairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_get_name(buf):find("%[command%-output%]") then
-            vim.api.nvim_buf_delete(buf, { force = true })
-            break
-        end
+    local buf = find_buffer(command_output_buffer_name)
+    if buf then
+        vim.api.nvim_buf_delete(buf, { force = true })
     end
 
     local win = get_big_window("secondary", true)
@@ -265,7 +278,7 @@ local run_command = function(command, on_exit)
                         :gsub('\x1b%[%d+;%d+;%d+m', '')
                         :gsub('\x1b%[%d+;%d+m', '')
                         :gsub('\x1b%[%d+m', '')
-                    local i1, i2 = line:find("clang failed with stderr: ")
+                    local i1, i2 = line:find("clang failed with stderr: ", 1, true)
                     if i1 ~= nil then
                         table.insert(lines, line:sub(0, i2))
                         table.insert(lines, line:sub(i2 + 1, line:len()))
@@ -295,7 +308,7 @@ local run_command = function(command, on_exit)
         end
     })
 
-    vim.api.nvim_buf_set_name(command_buf, "[command-output]")
+    vim.api.nvim_buf_set_name(command_buf, command_output_buffer_name)
 
     vim.api.nvim_set_current_win(get_big_window("primary", true))
 end
@@ -422,6 +435,36 @@ end
 local dap = require("dap")
 local dap_ui_widgets = require("dap.ui.widgets")
 
+local function prepare_for_recreating_secondary_split()
+    local sec = get_big_window("secondary", false)
+    if sec then
+        vim.api.nvim_win_close(sec, false)
+    end
+
+    local prim = get_big_window("primary", true)
+    vim.api.nvim_set_current_win(prim)
+    local width = vim.api.nvim_win_get_width(prim)
+    local wincmd = nil
+    if width < total_dual_panel_cols then
+        wincmd = "split"
+    else
+        wincmd = "rightb vsplit"
+    end
+    return wincmd
+end
+
+local open_dap_repl = function()
+    if open_buffer_in_secondary_window_if_possible(dap_repl_buffer_name, true) then
+        return
+    end
+
+    local wincmd = prepare_for_recreating_secondary_split()
+    dap.repl.open({}, wincmd)
+
+    sec = get_big_window("secondary", false)
+    vim.api.nvim_set_current_win(sec)
+end
+
 local nvim_tree = require("nvim-tree")
 local nvim_tree_api = require("nvim-tree.api")
 nvim_tree.setup {
@@ -448,23 +491,7 @@ which_key.register({
         "Set condition breakpoint | dap" },
 
     ["<leader>d"]                        = {
-        r = {
-            function()
-                local sec = get_big_window("secondary", false)
-                if sec then
-                    vim.api.nvim_win_close(sec, false)
-                end
-                local prim = get_big_window("primary", true)
-                local width = vim.api.nvim_win_get_width(prim)
-                local wincmd = nil
-                if width < total_dual_panel_cols then
-                    wincmd = "split"
-                else
-                    wincmd = "vsplit"
-                end
-                dap.repl.open({}, wincmd)
-                -- open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
-            end, "Toggle REPL | dap" },
+        r = { open_dap_repl, "Toggle REPL | dap" },
         k = { function() dap_ui_widgets.hover() end, "Dap hover" },
         p = { function() dap_ui_widgets.preview() end, "Dap preview" },
         f = {
@@ -582,6 +609,11 @@ which_key.register({
     end, "Swap primary and secondary windows" },
 })
 
+vim.keymap.set({ 'n' }, '<leader>wh', '<C-w>h', { desc = 'Goto right window' })
+vim.keymap.set({ 'n' }, '<leader>wl', '<C-w>l', { desc = 'Goto left window' })
+vim.keymap.set({ 'n' }, '<leader>wj', '<C-w>j', { desc = 'Goto down window' })
+vim.keymap.set({ 'n' }, '<leader>wk', '<C-w>k', { desc = 'Goto up window' })
+
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
 
 vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
@@ -624,12 +656,21 @@ vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
 -- Magic mode for search; AKA use proper regex syntax
 vim.keymap.set("n", "/", [[/\v]])
 
+vim.keymap.set(
+    { "n", "x" },
+    "<leader>fl",
+    function() require('telescope').extensions.refactoring.refactors() end
+)
+
 --=================================================================
+--
+require('refactoring').setup({})
 
 local telescope_builtin = require('telescope.builtin')
 local telescope = require('telescope')
 telescope.load_extension('dap')
 telescope.load_extension("smart_open")
+telescope.load_extension("refactoring")
 
 dap.adapters.lldb = {
     type = 'executable',
@@ -720,24 +761,20 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 dap.defaults.fallback.terminal_win_cmd = function()
-    local buf, win = open_buffer_in_secondary_window_if_possible()
-    if buf == nil then
-        buf = vim.api.nvim_create_buf(true, true)
-        buf = vim.api.nvim_buf_set_name(buf, "%[dap%-terminal%]")
-        win = get_big_window("secondary", true)
-        vim.api.nvim_win_set_buf(win, buf)
-    end
-    return buf, win
+    local prim = get_big_window("primary", true)
+    vim.api.nvim_command(prepare_for_recreating_secondary_split())
+    local bufnr = vim.api.nvim_get_current_buf()
+    local win = vim.api.nvim_get_current_win()
+    vim.api.nvim_set_current_win(prim)
+    return bufnr, win
 end
 
 dap.listeners.before['event_initialized']['sam'] = function(_, _)
-    open_buffer_in_secondary_window_if_possible("%[dap%-terminal%]")
+    open_buffer_in_secondary_window_if_possible(dap_terminal_buffer_name)
 end
 
 dap.listeners.after['event_stopped']['sam'] = function(_, _)
-    dap.repl.open()
-    open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
-    -- Sadly doesn't seem to work: dap.repl.execute(".frames<CR>")
+    open_dap_repl()
 end
 
 local on_attach = function(_, bufnr)
@@ -758,11 +795,12 @@ local on_attach = function(_, bufnr)
             vim.lsp.buf.format()
             vim.cmd [[ write ]]
         end, 'Format and save' },
-        ['<space>rn'] = { vim.lsp.buf.rename, "Rename symbol" },
-        ['<space>ca'] = { vim.lsp.buf.code_action, "LSP code action" },
+        ['<leader>rn'] = { vim.lsp.buf.rename, "Rename symbol" },
+        ['<leader>ca'] = { vim.lsp.buf.code_action, "LSP code action" },
     })
 end
 
+-- NOTE(Sam): might want to remove this, it makes the LSP _really_ sluggish
 -- IMPORTANT: make sure to setup neodev BEFORE lspconfig
 require("neodev").setup({
     -- add any options here, or leave empty to use the default settings
