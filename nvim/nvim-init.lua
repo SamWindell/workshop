@@ -216,9 +216,12 @@ local open_buffer_in_secondary_window_if_possible = function(buffer_name)
     for _, buf in pairs(bufs) do
         local name = vim.api.nvim_buf_get_name(buf)
         if name:match(buffer_name) then
-            vim.api.nvim_win_set_buf(get_big_window("secondary", true), buf)
+            local win = get_big_window("secondary", true)
+            vim.api.nvim_win_set_buf(win, buf)
+            return buf, win
         end
     end
+    return nil, nil
 end
 
 local quickfix_pos = 0
@@ -447,8 +450,20 @@ which_key.register({
     ["<leader>d"]                        = {
         r = {
             function()
-                dap.repl.toggle()
-                open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
+                local sec = get_big_window("secondary", false)
+                if sec then
+                    vim.api.nvim_win_close(sec, false)
+                end
+                local prim = get_big_window("primary", true)
+                local width = vim.api.nvim_win_get_width(prim)
+                local wincmd = nil
+                if width < total_dual_panel_cols then
+                    wincmd = "split"
+                else
+                    wincmd = "vsplit"
+                end
+                dap.repl.open({}, wincmd)
+                -- open_buffer_in_secondary_window_if_possible("%[dap%-repl%]")
             end, "Toggle REPL | dap" },
         k = { function() dap_ui_widgets.hover() end, "Dap hover" },
         p = { function() dap_ui_widgets.preview() end, "Dap preview" },
@@ -705,9 +720,14 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 dap.defaults.fallback.terminal_win_cmd = function()
-    local buffer = vim.api.nvim_create_buf(true, true)
-    vim.api.nvim_win_set_buf(get_big_window("secondary", true), buffer)
-    return buffer
+    local buf, win = open_buffer_in_secondary_window_if_possible()
+    if buf == nil then
+        buf = vim.api.nvim_create_buf(true, true)
+        buf = vim.api.nvim_buf_set_name(buf, "%[dap%-terminal%]")
+        win = get_big_window("secondary", true)
+        vim.api.nvim_win_set_buf(win, buf)
+    end
+    return buf, win
 end
 
 dap.listeners.before['event_initialized']['sam'] = function(_, _)
@@ -742,6 +762,11 @@ local on_attach = function(_, bufnr)
         ['<space>ca'] = { vim.lsp.buf.code_action, "LSP code action" },
     })
 end
+
+-- IMPORTANT: make sure to setup neodev BEFORE lspconfig
+require("neodev").setup({
+    -- add any options here, or leave empty to use the default settings
+})
 
 local supported_lsp_servers = {
     'cmake',

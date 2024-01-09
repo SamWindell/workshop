@@ -476,6 +476,7 @@ in
         comment-nvim
         which-key-nvim
         typescript-vim
+        neodev-nvim
 
         vim-svelte-plugin
         smart-open
