@@ -35,7 +35,7 @@
             "class<org.gnome.Nautilus>": "",
             "class<thunderbird>": "󰇮",
             "class<Bitwarden>": "󰌋",
-            "class<Webcord>": "󰙯"
+            "class<WebCord>": "󰙯"
         },
         "persistent-workspaces": {
             "1": [],

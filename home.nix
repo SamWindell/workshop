@@ -237,7 +237,7 @@ in
       }
 
       windowrulev2 = workspace 1,class:(kitty)
-      windowrulev2 = workspace 2,class:(Webcord)
+      windowrulev2 = workspace 2,class:(WebCord)
       windowrulev2 = workspace 3,class:(firefox)
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
