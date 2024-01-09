@@ -156,9 +156,8 @@ local get_big_window = function(mode, create_if_doesnt_exist)
 
     local wins = vim.api.nvim_list_wins()
     for _, win in pairs(wins) do
-        local buf_name = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(win))
         local window_is_really_small_vertically = vim.api.nvim_win_get_height(win) <= (vim.o.lines / 2 - 3)
-        if not buf_name:find("NvimTree") and not window_is_really_small_vertically then
+        if not require('nvim-tree.api').tree.is_tree_buf(vim.api.nvim_win_get_buf(win)) and not window_is_really_small_vertically then
             num_proper_windows = num_proper_windows + 1
             if not first_window then first_window = win end
             last_window = win
@@ -420,6 +419,16 @@ end
 local dap = require("dap")
 local dap_ui_widgets = require("dap.ui.widgets")
 
+local nvim_tree = require("nvim-tree")
+local nvim_tree_api = require("nvim-tree.api")
+nvim_tree.setup {
+    sync_root_with_cwd = true,
+    view = {
+        width = get_sidebar_cols(),
+        signcolumn = "auto"
+    }
+}
+
 local which_key = require('which-key')
 which_key.setup()
 which_key.register({
@@ -538,8 +547,24 @@ which_key.register({
         vim.cmd("bnext")
         vim.cmd("bd " .. buf)
     end, 'Close buffer' },
-    ['<leader>t']                        = { '<cmd>NvimTreeToggle<cr>', 'Toggle files sidebar' },
+    ['<leader>t']                        = { function() nvim_tree_api.tree.toggle({ focus = false }) end, 'Toggle files sidebar' },
     ['<leader>' .. secondary_window_key] = { toggle_secondary_window, "Toggle secondary window" },
+    ['<leader>' .. primary_window_key]   = { function()
+        local secondary = get_big_window("secondary", false)
+        if secondary then
+            vim.api.nvim_win_close(get_big_window("primary", false), false)
+        end
+    end, "Solo secondary window" },
+    ['<leader>i']                        = { function()
+        local secondary = get_big_window("secondary", false)
+        if secondary then
+            local primary = get_big_window("primary", false)
+            local b1 = vim.api.nvim_win_get_buf(primary)
+            local b2 = vim.api.nvim_win_get_buf(secondary)
+            vim.api.nvim_win_set_buf(primary, b2)
+            vim.api.nvim_win_set_buf(secondary, b1)
+        end
+    end, "Swap primary and secondary windows" },
 })
 
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
@@ -806,16 +831,6 @@ cmp.setup({
         { name = 'nvim_lsp_signature_help' },
     },
 })
-
-local nvim_tree = require("nvim-tree")
-local nvim_tree_api = require("nvim-tree.api")
-nvim_tree.setup {
-    sync_root_with_cwd = true,
-    view = {
-        width = get_sidebar_cols(),
-        signcolumn = "auto"
-    }
-}
 
 local handle_resize = function()
     local secondary_win = get_big_window("secondary", false)

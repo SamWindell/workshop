@@ -26,7 +26,10 @@ home-manager switch --flake .#<configuration>
 ```
 
 ## Notes-to-self
+### Shell
 - Run `command & detach` to run a program detached: the terminal doesn't wait for it to stop.
+- Use `CTRL+U` to clear the current prompt to the beginning of the line.
+### Nix
 - Handy web search for home-manager options: [mipmip search](https://mipmip.github.io/home-manager-option-search/)
 - `manix` is a CLI tool for searching Nix documentation. Couldn't get it work though.
 - Note: "for flakes in git repos, only files in the working tree will be copied to the store. Therefore, if you use git for your flake, ensure to git add any project files after you first create them".
