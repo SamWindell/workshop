@@ -1,5 +1,6 @@
 -- TODO: add https://github.com/ThePrimeagen/refactoring.nvim
 -- TODO: maybe add https://github.com/ThePrimeagen/harpoon/tree/harpoon2
+-- TODO: maybe add https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 
 vim.opt.number = true
 vim.opt.relativenumber = true
