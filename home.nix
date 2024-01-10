@@ -119,6 +119,7 @@ in
     shellIntegration.enableBashIntegration = true;
     settings = {
       shell = mkIf isDarwin "bash --login";
+      macos_option_as_alt = "left";
     };
     font = {
       name = "JetBrainsMono Nerd Font";
