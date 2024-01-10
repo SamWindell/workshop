@@ -480,6 +480,7 @@ in
         neodev-nvim
         refactoring-nvim
         plenary-nvim
+        nvim-treesitter-textobjects
 
         vim-svelte-plugin
         smart-open
