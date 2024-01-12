@@ -27,6 +27,8 @@ in
     pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
     pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
     pkgs.sad # better sed
+    pkgs.bat # better cat
+    pkgs.jq # json manipulation
 
     pkgs.cmake
     pkgs.ninja
@@ -120,6 +122,7 @@ in
     settings = {
       shell = mkIf isDarwin "bash --login";
       macos_option_as_alt = "left";
+      term = "xterm-256color";
     };
     font = {
       name = "JetBrainsMono Nerd Font";
@@ -350,12 +353,43 @@ in
       "hms" = "home-manager switch --flake ~/.config/home-manager/flake.nix#pcLinux";
     };
     initExtra = ''
-      p() {
-        cd ~/Projects
+      cd() { builtin cd "$@" && ls . ; }
+
+      # Change dir with Fuzzy finding
+      cf() {
+        dir=$(fd . ''${1:-/home/sam/} --type d 2>/dev/null | fzf)
+        cd "$dir"
       }
+
+      # search Files and Edit
+      fe() {
+        rg --files ''${1:-.} | fzf --preview 'bat -f {}' | xargs $EDITOR
+      }
+
+      # Search content and Edit
+      se() {
+        fileline=$(rg -n ''${1:-.} | fzf | awk '{print $1}' | sed 's/.$//')
+        $EDITOR ''${fileline%%:*} +''${fileline##*:}
+      }
+
+      # Search git log, preview shows subject, body, and diff
+      fl() {
+        git log --oneline --color=always | fzf --ansi --preview="echo {} | cut -d ' ' -f 1 | xargs -I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1
+      }
+
       eval "$(zellij setup --generate-completion bash)"
     '';
   };
+
+  programs.ssh.enable = true;
+
+  # bitwarden 
+  # NOTE: can't get this working; says my password is incorrect
+  # programs.rbw = {
+  #   enable = true;
+  #   settings.pinentry = "tty";
+  #   settings.email = "";
+  # };
 
   # fancy command history in bash
   programs.atuin = {
@@ -481,16 +515,18 @@ in
         refactoring-nvim
         plenary-nvim
         nvim-treesitter-textobjects
+        context-vim
 
         vim-svelte-plugin
         smart-open
         kdl-vim
+
+        # ccc-nvim # color highlighter and picker
+        # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
       ];
-    # As of now (December 2023) the vscode-llbd package in NixPkgs fails to compile on arm64 macOS so instead we're using the package from vscode-extensions.
     extraLuaConfig = ''
       lldb_vscode_path = '${specialArgs.pkgs-lldb.lldb_17}/bin/lldb-vscode'
       require "nvim-init"
     '';
   };
-
 }
