@@ -88,6 +88,7 @@ in
     pkgs.bitwarden
     pkgs.gimp
     pkgs.vlc
+    pkgs.obsidian-wayland
     pkgs.sublime-merge
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast # screenshot helper
@@ -249,6 +250,7 @@ in
 
       # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
       bind = $mainMod, return, exec, kitty
+      bind = $mainMod, X, exec, kitty -d ~/MEGA/Obsidian nvim "Personal Organisation/Thought Capture.md"
       bind = $mainMod, Q, killactive, 
       bind = $mainMod, M, exit, 
       bind = $mainMod, V, togglefloating, 
@@ -311,12 +313,15 @@ in
     systemdTarget = "hyprland-session.target";
     timeouts = [
       {
-        timeout = 90;
+        timeout = 100; # seconds
+        # absolute path is needed
         command = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
         resumeCommand = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
       }
     ];
   };
+
+  services.megasync.enable = isLinux && withGui; # cloud sync program
 
   # is pkgs.libnotify needed?
   services.dunst = mkIf (isLinux && withGui) {

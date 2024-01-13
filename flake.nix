@@ -17,15 +17,21 @@
     };
   };
 
-  # IMPROVE: learn overlays, should that replace my current method for zig?
-  # https://nixos.wiki/wiki/Overlays
-
   outputs = { nixpkgs, nixpkgs-lldb, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
-        config.allowUnfree = true;
-        config.permittedInsecurePackages = [
+        config = {
+          allowUnfree = true;
+          permittedInsecurePackages = [
+            "electron-24.8.6" # obsidian-wayland
+          ];
+        };
+        overlays = [
+          (final: prev: {
+            # workaround a bug where obsidian doesn't work on wayland
+            obsidian-wayland = prev.obsidian.override { electron = final.electron_24; };
+          })
         ];
       };
 
