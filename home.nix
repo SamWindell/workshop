@@ -308,6 +308,7 @@ in
       bind = , PRINT, exec, ${specialArgs.hyprland-contrib.grimblast}/bin/grimblast --notify --freeze copysave area
     '';
   };
+
   services.swayidle = mkIf (isLinux && withGui) {
     enable = true;
     systemdTarget = "hyprland-session.target";

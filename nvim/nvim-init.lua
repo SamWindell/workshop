@@ -508,7 +508,7 @@ which_key.register({
 
     ["<leader>f"]                        = {
         name = "+find",
-        j = { "<cmd>Telescope smart_open<cr>", "Find File" },
+        j = { function() require("telescope").extensions.smart_open.smart_open({}) end, "Find File" },
         f = { "<cmd>Telescope git_files<cr>", "Find Git File" },
         o = { "<cmd>Telescope oldfiles<cr>", "Find Recent File" },
         b = { "<cmd>Telescope buffers<cr>", "Find Buffer" },
@@ -676,37 +676,6 @@ require('refactoring').setup({
     },
 })
 
-local telescope_builtin = require('telescope.builtin')
-local telescope = require('telescope')
-telescope.load_extension('dap')
-telescope.load_extension("smart_open")
-telescope.load_extension("refactoring")
-
-dap.adapters.lldb = {
-    type = 'executable',
-    command = lldb_vscode_path,
-    name = 'lldb',
-}
-
-dap.configurations.cpp = {
-    {
-        name = "Debug C++",
-        type = "lldb",
-        request = "launch",
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-        args = function()
-            return split_string_by_words(vim.fn.input('Args: '))
-        end,
-        cwd = '${workspaceFolder}',
-        stopOnEntry = false,
-        runInTerminal = true,
-        stopCommands = { 'bt' },
-    },
-}
-
-vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
 
 local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_type)
     local action_state = require('telescope.actions.state')
@@ -737,14 +706,59 @@ local telescope_mappings = {
     end,
 }
 
+local telescope_builtin = require('telescope.builtin')
+local telescope = require('telescope')
 telescope.setup({
     defaults = {
         mappings = {
             n = telescope_mappings,
             i = telescope_mappings,
         },
+    },
+    extensions = {
+        fzf = {
+            fuzzy = true,                   -- false will only do exact matching
+            override_generic_sorter = true, -- override the generic sorter
+            override_file_sorter = true,    -- override the file sorter
+            case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
+            -- the default case_mode is "smart_case"
+        },
+        smart_open = {
+            match_algorithm = "fzf",
+        },
     }
 })
+telescope.load_extension('fzf')
+telescope.load_extension('dap')
+telescope.load_extension("smart_open")
+telescope.load_extension("refactoring")
+
+dap.adapters.lldb = {
+    type = 'executable',
+    command = lldb_vscode_path,
+    name = 'lldb',
+}
+
+dap.configurations.cpp = {
+    {
+        name = "Debug C++",
+        type = "lldb",
+        request = "launch",
+        program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        args = function()
+            return split_string_by_words(vim.fn.input('Args: '))
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        runInTerminal = true,
+        stopCommands = { 'bt' },
+    },
+}
+
+vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
+
 
 -- Open help files in the secondary window.
 vim.api.nvim_create_autocmd("BufWinEnter", {
