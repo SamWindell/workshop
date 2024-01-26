@@ -29,6 +29,7 @@ in
     pkgs.sad # better sed
     pkgs.bat # better cat
     pkgs.jq # json manipulation
+    pkgs.unzip
 
     pkgs.cmake
     pkgs.ninja
@@ -88,6 +89,7 @@ in
     pkgs.bitwarden
     pkgs.gimp
     pkgs.vlc
+    pkgs.obs-studio
     pkgs.obsidian-wayland
     pkgs.sublime-merge
     pkgs.libreoffice
@@ -357,6 +359,12 @@ in
       ".5" = "cd ../../../../..";
       ".6" = "cd ../../../../../..";
       "hms" = "home-manager switch --flake ~/.config/home-manager/flake.nix#pcLinux";
+      "gs" = "git status";
+      "ga" = "git add";
+      "gap" = "git add -p";
+      "gc" = "git commit --verbose";
+      "gd" = "git diff";
+      "gds" = "git diff --staged";
     };
     initExtra = ''
       cd() { builtin cd "$@" && ls . ; }
