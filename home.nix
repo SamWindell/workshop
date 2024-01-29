@@ -365,6 +365,7 @@ in
       "gc" = "git commit --verbose";
       "gd" = "git diff";
       "gds" = "git diff --staged";
+      "gp" = "git push";
     };
     initExtra = ''
       cd() { builtin cd "$@" && ls . ; }
