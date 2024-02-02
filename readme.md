@@ -25,6 +25,10 @@ git clone https://github.com/samwindell/home-config home-manager
 nix run home-manager/release-23.11 -- init --switch
 # any subsequent
 home-manager switch --flake .#<configuration>
+
+# rebuilding nixos:
+cd /etc/nixos
+sudo nixos-rebuild switch --flake .#<configuration>
 ```
 
 ## Notes-to-self
