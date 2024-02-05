@@ -36,7 +36,7 @@ in
     pkgs.ninja
     pkgs.llvmPackages_17.clang-unwrapped # clangd
     pkgs.llvmPackages_17.libllvm # llvm-symbolizer
-    specialArgs.pkgs-lldb.lldb_17
+    pkgs.lldb_17
     pkgs.python3
 
     pkgs.nixd # nix LSP
@@ -96,7 +96,7 @@ in
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
-  ] ++ pkgs.lib.optionals withGui [
+  ] ++ pkgs.lib.optionals isDarwin [
   ];
 
   home.file = {
@@ -115,6 +115,7 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    SHELL = "bash";
   };
 
   programs.home-manager.enable = true;
@@ -348,8 +349,6 @@ in
 
   programs.bash = {
     enable = true;
-    bashrcExtra = mkIf isLinux ''
-    '';
     shellAliases = {
       ".." = "cd ..";
       "..." = "cd ../..";
@@ -368,12 +367,16 @@ in
       "gds" = "git diff --staged";
       "gp" = "git push";
     };
-    initExtra = ''
+    initExtra = pkgs.lib.optionalString isDarwin ''
+      # export LLDB_DEBUGSERVER_PATH=${pkgs.lldb_17.out}/bin/lldb-server
+      export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
+    '' +
+    ''
       cd() { builtin cd "$@" && ls . ; }
 
       # Change dir with Fuzzy finding
       cf() {
-        dir=$(fd . ''${1:-/home/sam/} --type d 2>/dev/null | fzf)
+        dir=$(fd . ''${1:-$HOME} --type d 2>/dev/null | fzf)
         cd "$dir"
       }
 
@@ -541,7 +544,7 @@ in
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
       ];
     extraLuaConfig = ''
-      lldb_vscode_path = '${specialArgs.pkgs-lldb.lldb_17}/bin/lldb-vscode'
+      lldb_vscode_path = '${pkgs.lldb_17}/bin/lldb-vscode'
       require "nvim-init"
     '';
   };

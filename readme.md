@@ -42,6 +42,7 @@ sudo nixos-rebuild switch --flake .#<configuration>
 - [NixOS wiki](https://nixos.wiki/wiki/Main_Page) is good.
 - [Nix search](https://search.nixos.org/packages) is good for both packages and NixOS configuration.nix options.
 - [NixOS & Flakes Book](https://nixos-and-flakes.thiscute.world/) is good.
+- ALT+c is a fzf bash-integration feature to search all subdirs and `cd` into it.
 
 ### Notes regarding git + GitHub CLI config (December 2023)
 I tried getting home-manager to manage git's config file `~/.config/git/config`. But there was a problem when using this in conjunction with `gh` (GitHub CLI) to authenticate myself to access private git repos. This was done by enabling `programs.gh.enable = true;` and `programs.git.enable = true; programs.git.extraConfig {...}`. The problem is that `gh` requires write-access to it's own config file as well as git's config file. But that's not possible because nix manages them though symlinks. It's mainly a problem because `gh` seems like the easiest way to login to GitHub. `git-credential-manager` didn't work on my system due to GUI issues. To workaround this I'm not using these options and so have to manually configure git username+email per machine.
