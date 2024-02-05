@@ -30,6 +30,7 @@ in
     pkgs.bat # better cat
     pkgs.jq # json manipulation
     pkgs.unzip
+    pkgs.bashInteractive
 
     pkgs.cmake
     pkgs.ninja
