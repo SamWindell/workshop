@@ -267,12 +267,7 @@ local run_command = function(command, on_exit)
                 local lines = {}
                 for _, line in pairs(d) do
                     line = rtrim(line)
-                    -- remove ANSI colours
-                    line = line:gsub('\x1b%[%d+;%d+;%d+;%d+;%d+m', '')
-                        :gsub('\x1b%[%d+;%d+;%d+;%d+m', '')
-                        :gsub('\x1b%[%d+;%d+;%d+m', '')
-                        :gsub('\x1b%[%d+;%d+m', '')
-                        :gsub('\x1b%[%d+m', '')
+                    line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
                     local i1, i2 = line:find("clang failed with stderr: ", 1, true)
                     if i1 ~= nil then
                         table.insert(lines, line:sub(0, i2))
