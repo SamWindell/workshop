@@ -36,7 +36,7 @@ in
     pkgs.ninja
     pkgs.llvmPackages_17.clang-unwrapped # clangd
     pkgs.llvmPackages_17.libllvm # llvm-symbolizer
-    pkgs.lldb_17
+    specialArgs.pkgs-lldb.lldb_17
     pkgs.python3
 
     pkgs.nixd # nix LSP
@@ -550,7 +550,7 @@ in
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
       ];
     extraLuaConfig = ''
-      lldb_vscode_path = '${pkgs.lldb_17}/bin/lldb-vscode'
+      lldb_vscode_path = '${specialArgs.pkgs-lldb.lldb_17}/bin/lldb-vscode'
       require "nvim-init"
     '';
   };

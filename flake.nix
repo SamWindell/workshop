@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs-lldb.url = "github:nixos/nixpkgs/b67fc24e4acf7189590d229c2f286896527f849e";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
     home-manager = {
       url = "github:nix-community/home-manager/release-23.11";
@@ -16,7 +17,7 @@
     };
   };
 
-  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
+  outputs = { nixpkgs, nixpkgs-lldb, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
@@ -42,6 +43,7 @@
           hyprland-contrib = hyprland-contrib.packages.${args.system};
           zig = zig.packages.${args.system};
           zls = zls.packages.${args.system};
+          pkgs-lldb = import nixpkgs-lldb { system = args.system; };
         };
       });
     in
