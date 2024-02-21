@@ -253,7 +253,7 @@ in
       $mainMod = SUPER
 
       # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
-      bind = $mainMod, return, exec, kitty
+      bind = $mainMod, return, exec, kitty zellij
       bind = $mainMod, X, exec, kitty -d ~/MEGA/Obsidian nvim "Personal Organisation/Thought Capture.md"
       bind = $mainMod, Q, killactive, 
       bind = $mainMod, M, exit, 
@@ -358,21 +358,33 @@ in
       ".4" = "cd ../../../..";
       ".5" = "cd ../../../../..";
       ".6" = "cd ../../../../../..";
-      "hms" = "home-manager switch --flake ~/.config/home-manager/flake.nix#pcLinux";
       "gs" = "git status";
       "ga" = "git add";
       "gap" = "git add -p";
       "gc" = "git commit --verbose";
       "gd" = "git diff";
       "gds" = "git diff --staged";
-      "gp" = "git push";
+      "gpsh" = "git push";
+      "gpll" = "git pull";
     };
     initExtra = pkgs.lib.optionalString isDarwin ''
       # export LLDB_DEBUGSERVER_PATH=${pkgs.lldb_17.out}/bin/lldb-server
       export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
     '' +
     ''
+      export FZF_DEFAULT_OPTS='--bind ctrl-a:toggle-all'
+
       cd() { builtin cd "$@" && ls . ; }
+
+      hms() {
+        home-manager switch --flake ~/.config/home-manager/flake.nix#''${1:-pcLinux};
+      }
+
+      froz() {
+        cd ~/Projects/frozencode
+        nix develop
+        nvim
+      }
 
       # Change dir with Fuzzy finding
       cf() {
@@ -380,15 +392,9 @@ in
         cd "$dir"
       }
 
-      # search Files and Edit
-      fe() {
-        rg --files ''${1:-.} | fzf --preview 'bat -f {}' | xargs $EDITOR
-      }
-
       # Search content and Edit
       se() {
-        fileline=$(rg -n ''${1:-.} | fzf | awk '{print $1}' | sed 's/.$//')
-        $EDITOR ''${fileline%%:*} +''${fileline##*:}
+        rg --files-with-matches '$1' | sad '$1' '$2'
       }
 
       # Search git log, preview shows subject, body, and diff
