@@ -394,7 +394,7 @@ in
 
       # Search content and Edit
       se() {
-        rg --files-with-matches '$1' | sad '$1' '$2'
+        rg --files-with-matches $1 | sad $1 $2
       }
 
       # Search git log, preview shows subject, body, and diff
