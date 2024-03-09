@@ -35,6 +35,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  services.gvfs.enable = true;
 
   environment.systemPackages = with pkgs; [
     cifs-utils

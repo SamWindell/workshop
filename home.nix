@@ -96,7 +96,8 @@ in
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
-  ] ++ pkgs.lib.optionals isDarwin [
+  ] ++ pkgs.lib.optionals withGui [
+    pkgs.tracy
   ];
 
   home.file = {
@@ -378,6 +379,12 @@ in
 
       hms() {
         home-manager switch --flake ~/.config/home-manager/flake.nix#''${1:-pcLinux};
+      }
+
+      clnvim() {
+        rm -f ~/.local/share/nvim/telescope_history
+        rm -f ~/.local/share/nvim/smart_open.sqlite3
+        rm -f ~/.local/state/nvim/shada/main.shada
       }
 
       froz() {
