@@ -31,6 +31,7 @@ in
     pkgs.jq # json manipulation
     pkgs.unzip
     pkgs.bashInteractive
+    pkgs.wget
 
     pkgs.cmake
     pkgs.ninja
@@ -42,6 +43,7 @@ in
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
     pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
+    pkgs.nix-init
 
     pkgs.sqlite # needed by nvim smart-open plugin
     pkgs.lua-language-server
@@ -250,6 +252,9 @@ in
       windowrulev2 = workspace 1,class:(kitty)
       windowrulev2 = workspace 2,class:(WebCord)
       windowrulev2 = workspace 3,class:(firefox)
+      windowrulev2 = workspace 4,class:(thunderbird)
+      windowrulev2 = workspace 5,class:(sublime_merge)
+      windowrulev2 = workspace 2,tile,class:(Tracy Profiler.*)
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
       $mainMod = SUPER
