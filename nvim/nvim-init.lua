@@ -644,6 +644,12 @@ vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
     desc = "Create new line above",
 })
 
+vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
+    expr = true,
+    replace_keycodes = false
+})
+vim.g.copilot_no_tab_map = true
+
 -- Magic mode for search; AKA use proper regex syntax
 vim.keymap.set("n", "/", [[/\v]])
 

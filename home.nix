@@ -511,6 +511,15 @@ in
               hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
             };
         };
+        copilot = pkgs.vimUtils.buildVimPlugin {
+          name = "copilot";
+          src = pkgs.fetchFromGitHub {
+            owner = "github";
+            repo = "copilot.vim";
+            rev = "9484e35cf222e9360e05450622a884f95c662c4c";
+            hash = "sha256-tcLrto1Y66MtPnfIcU2PBOxqE0xilVl4JyKU6ddS7bA=";
+          };
+        };
       in
       [
         {
@@ -553,11 +562,11 @@ in
         refactoring-nvim
         plenary-nvim
         nvim-treesitter-textobjects
-        context-vim
 
         vim-svelte-plugin
         smart-open
         kdl-vim
+        copilot
 
         # ccc-nvim # color highlighter and picker
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
