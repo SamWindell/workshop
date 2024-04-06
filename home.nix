@@ -32,6 +32,7 @@ in
     pkgs.unzip
     pkgs.bashInteractive
     pkgs.wget
+    pkgs.colordiff
 
     pkgs.cmake
     pkgs.ninja
@@ -99,6 +100,7 @@ in
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
+    pkgs.gnome.gnome-system-monitor
   ] ++ pkgs.lib.optionals withGui [
     pkgs.tracy
   ];
@@ -393,10 +395,13 @@ in
         rm -f ~/.local/state/nvim/shada/main.shada
       }
 
+      bindiff() {
+        colordiff -y <(xxd "$1") <(xxd "$2")
+      }
+
       froz() {
         cd ~/Projects/frozencode
         nix develop
-        nvim
       }
 
       # Change dir with Fuzzy finding
