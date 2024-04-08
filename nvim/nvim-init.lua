@@ -882,6 +882,11 @@ local server_config =
 }
 
 for _, v in pairs(supported_lsp_servers) do
+    if (v == 'clangd') then
+        server_config.cmd = { "clangd", "--offset-encoding=utf-16", }
+    else
+        server_config.cmd = nil
+    end
     lspconfig[v].setup(server_config);
 end
 
