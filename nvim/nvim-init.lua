@@ -269,6 +269,9 @@ local run_command = function(command, on_exit)
                 for _, line in pairs(d) do
                     line = rtrim(line)
                     line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
+
+                    line = line:gsub('C:\\', '/mnt/c/')                              -- WSL hack
+
                     local i1, i2 = line:find("clang failed with stderr: ", 1, true)
                     if i1 ~= nil then
                         table.insert(lines, line:sub(0, i2))
