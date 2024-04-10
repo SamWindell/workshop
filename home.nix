@@ -460,6 +460,7 @@ in
 
   programs.git = {
     enable = true;
+    lfs.enable = true;
     delta.enable = true; # use the delta program for diff syntax highlighting
     userName = "Sam Windell";
     userEmail = "info@frozenplain.com";
