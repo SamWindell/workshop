@@ -465,6 +465,9 @@ in
     userName = "Sam Windell";
     userEmail = "info@frozenplain.com";
     extraConfig = {
+      "init" = {
+        "defaultBranch" = "main";
+      };
       "credential \"https://github.com\"" = {
         helper = "!${pkgs.gh}/bin/gh auth git-credential";
       };
