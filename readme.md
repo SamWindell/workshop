@@ -34,7 +34,14 @@ sudo nixos-rebuild switch --flake .#<configuration>
 ## Notes-to-self
 ### Shell
 - Run `command & detach` to run a program detached: the terminal doesn't wait for it to stop.
-- Use `CTRL+U` to clear the current prompt to the beginning of the line.
+- Ctrl+A: Go to start of line
+- Ctrl+E: Go to end of line
+- Ctrl+W: Erase 1 word backwards
+- Alt+D: Erase 1 word forwards
+- Ctrl+U: Erase to start of line
+- Ctrl+K: Erase to end of line
+- Ctrl+Y: Paste what you just erased
+- `git clone --filter=blob:none <url>` creates a blobless clone. It only downloads old versions of files on-demand rather than immediately. Useful when the git history contains lots of large binary files that you don't currently need.
 ### Nix
 - Handy web search for home-manager options: [mipmip search](https://mipmip.github.io/home-manager-option-search/)
 - `manix` is a CLI tool for searching Nix documentation. Couldn't get it work though.
