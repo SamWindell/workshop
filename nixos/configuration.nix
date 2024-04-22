@@ -6,7 +6,7 @@
 
 {
   fileSystems."/mnt/FrozenVault" = {
-    device = "//192.168.68.103/FrozenVault";
+    device = "//192.168.68.103/frozenvault1";
     fsType = "cifs";
     options =
       let
