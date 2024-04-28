@@ -36,7 +36,8 @@
             "class<thunderbird>": "󰇮",
             "class<Bitwarden>": "󰌋",
             "class<WebCord>": "󰙯",
-            "class<obsidian>": ""
+            "class<obsidian>": "",
+            "class<sublime_merge>": ""
         },
         "persistent-workspaces": {
             "1": [],
