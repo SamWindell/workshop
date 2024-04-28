@@ -33,7 +33,8 @@ in
     pkgs.bashInteractive
     pkgs.wget
     pkgs.colordiff
-    pkgs.reuse
+    pkgs.reuse # https://reuse.software/
+    pkgs.cloc # count lines of code
 
     pkgs.cmake
     pkgs.ninja
