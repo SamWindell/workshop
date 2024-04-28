@@ -33,6 +33,7 @@ in
     pkgs.bashInteractive
     pkgs.wget
     pkgs.colordiff
+    pkgs.reuse
 
     pkgs.cmake
     pkgs.ninja
@@ -76,7 +77,7 @@ in
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
-    # TODO: add more proper layouts
+    # IMPROVE: add more proper layouts
     (pkgs.writeShellScriptBin "obsi" ''
       zellij action new-tab --layout ${./zellij/obsi.kdl}
     '')
@@ -103,6 +104,8 @@ in
     pkgs.gnome.gnome-system-monitor
   ] ++ pkgs.lib.optionals withGui [
     pkgs.tracy
+  ] ++ pkgs.lib.optionals isLinux [
+    pkgs.wineWow64Packages.waylandFull
   ];
 
   home.file = {
@@ -114,7 +117,6 @@ in
 
     ".config/nvim/lua/".source = ./nvim;
     ".config/starship.toml".source = ./starship.toml;
-    ".config/alacritty/alacritty.yml".source = ./alacritty.yml; # TODO: remove
     ".config/waybar/".source = ./waybar;
     ".config/zellij/config.kdl".source = ./zellij/config.kdl;
   };
@@ -251,11 +253,13 @@ in
           key_press_enables_dpms = true
       }
 
+      # run hyprctl clients to see class names of current clients
       windowrulev2 = workspace 1,class:(kitty)
       windowrulev2 = workspace 2,class:(WebCord)
       windowrulev2 = workspace 3,class:(firefox)
       windowrulev2 = workspace 4,class:(thunderbird)
       windowrulev2 = workspace 5,class:(sublime_merge)
+      windowrulev2 = workspace 6,class:(obsidian)
       windowrulev2 = workspace 2,tile,class:(Tracy Profiler.*)
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
