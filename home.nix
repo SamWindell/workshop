@@ -137,6 +137,8 @@ in
       shell = mkIf isDarwin "bash --login";
       macos_option_as_alt = "left";
       term = "xterm-256color";
+      tab_bar_style = "separator";
+      tab_bar_edge = "top";
     };
     font = {
       name = "JetBrainsMono Nerd Font";
@@ -382,7 +384,6 @@ in
       "gpll" = "git pull";
     };
     initExtra = pkgs.lib.optionalString isDarwin ''
-      # export LLDB_DEBUGSERVER_PATH=${pkgs.lldb_17.out}/bin/lldb-server
       export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
     '' +
     ''
@@ -393,13 +394,15 @@ in
       hms() {
         home-manager switch --flake ~/.config/home-manager/flake.nix#''${1:-pcLinux};
       }
-
+        
+      # fixes a neovim issue with smart_open plugin taking a long time to open
       clnvim() {
         rm -f ~/.local/share/nvim/telescope_history
         rm -f ~/.local/share/nvim/smart_open.sqlite3
         rm -f ~/.local/state/nvim/shada/main.shada
       }
 
+      # diff 2 binary files
       bindiff() {
         colordiff -y <(xxd "$1") <(xxd "$2")
       }

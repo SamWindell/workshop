@@ -604,6 +604,10 @@ vim.keymap.set({ 'n' }, '<leader>wh', '<C-w>h', { desc = 'Goto right window' })
 vim.keymap.set({ 'n' }, '<leader>wl', '<C-w>l', { desc = 'Goto left window' })
 vim.keymap.set({ 'n' }, '<leader>wj', '<C-w>j', { desc = 'Goto down window' })
 vim.keymap.set({ 'n' }, '<leader>wk', '<C-w>k', { desc = 'Goto up window' })
+vim.keymap.set({ 'n' }, '<leader>wy', '<cmd>vertical resize -12<CR>', { desc = 'Decrease window width' })
+vim.keymap.set({ 'n' }, '<leader>wo', '<cmd>vertical resize +12<CR>', { desc = 'Increase window width' })
+vim.keymap.set({ 'n' }, '<leader>wi', '<cmd>resize +8<CR>', { desc = 'Increase window height' })
+vim.keymap.set({ 'n' }, '<leader>wu', '<cmd>resize -8<CR>', { desc = 'Decrease window height' })
 
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
 
