@@ -50,6 +50,10 @@ sudo nixos-rebuild switch --flake .#<configuration>
 - [Nix search](https://search.nixos.org/packages) is good for both packages and NixOS configuration.nix options.
 - [NixOS & Flakes Book](https://nixos-and-flakes.thiscute.world/) is good.
 - ALT+c is a fzf bash-integration feature to search all subdirs and `cd` into it.
+- To add custom packages, you can use nix-init to generate a default.nix. Let's say we put the default.nix in a folder `my-program-nightly`; in the flake.nix you can than call this package using something like: `my-program = pkgs.callPackage ./my-program-nightly { inherit (pkgs.darwin.apple_sdk.frameworks) Carbon Cocoa ScriptingBridge; };`. This seems to be roughly the same technique used in the nixpkgs repo: we can use that as a reference.
+
+### Notes regarding wezterm (May 2024)
+Wezterm would not work on my NixOS wayland system on the nixpkgs 23.11 channel. However, on the unstable channel it would at least run, but there were issues where the GUI would not update promptly. It wasn't usable. After trying various things, I gave up on it. It seems too unstable on a Hyprland wayland system.
 
 ### Notes regarding git + GitHub CLI config (December 2023)
 I tried getting home-manager to manage git's config file `~/.config/git/config`. But there was a problem when using this in conjunction with `gh` (GitHub CLI) to authenticate myself to access private git repos. This was done by enabling `programs.gh.enable = true;` and `programs.git.enable = true; programs.git.extraConfig {...}`. The problem is that `gh` requires write-access to it's own config file as well as git's config file. But that's not possible because nix manages them though symlinks. It's mainly a problem because `gh` seems like the easiest way to login to GitHub. `git-credential-manager` didn't work on my system due to GUI issues. To workaround this I'm not using these options and so have to manually configure git username+email per machine.
