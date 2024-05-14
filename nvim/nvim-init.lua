@@ -167,7 +167,7 @@ local get_big_window = function(mode, create_if_doesnt_exist)
 
     local wins = vim.api.nvim_list_wins()
     for _, win in pairs(wins) do
-        local window_is_really_small_vertically = vim.api.nvim_win_get_height(win) <= (vim.o.lines / 2 - 3)
+        local window_is_really_small_vertically = vim.api.nvim_win_get_height(win) <= 4
         if not require('nvim-tree.api').tree.is_tree_buf(vim.api.nvim_win_get_buf(win)) and not window_is_really_small_vertically then
             num_proper_windows = num_proper_windows + 1
             if not first_window then first_window = win end
@@ -470,36 +470,28 @@ local which_key = require('which-key')
 which_key.setup()
 which_key.register({
     ["<c-a>"]                            = { "<Cmd>%y+<CR>", "Copy all text" },
-    ["<F4>"]                             = { function() dap.pause() end, "Pause | dap" },
-    ["<F5>"]                             = { function() dap.continue() end, "Start/continue | dap" },
-    ["<F6>"]                             = { function() dap.run_last() end, "Run last | dap" },
-    ["<S-F5>"]                           = { function() dap.terminate() end, "Stop | dap" },
-    ["<F10>"]                            = { function() dap.step_over() end, "Step over | dap" },
-    ["<F11>"]                            = { function() dap.step_into() end, "Step into | dap" },
-    ["<F12>"]                            = { function() dap.step_out() end, "Step out | dap" },
-    ["<leader>b"]                        = { function() dap.toggle_breakpoint() end, "Toggle breakpoint | dap" },
-    ["<leader>B"]                        = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
-        "Set condition breakpoint | dap" },
 
+    ["<F4>"]                             = { function() dap.pause() end, "[DAP] pause" },
+    ["<F5>"]                             = { function() dap.continue() end, "[DAP] continue" },
+    ["<F6>"]                             = { function() dap.terminate() end, "[DAP] terminate" },
+    ["<F10>"]                            = { function() dap.step_over() end, "[DAP] step over" },
+    ["<F11>"]                            = { function() dap.step_into() end, "[DAP] step into" },
+    ["<F12>"]                            = { function() dap.step_out() end, "[DAP] step out" },
     ["<leader>d"]                        = {
-        r = { open_dap_repl, "Toggle REPL | dap" },
-        k = { function() dap_ui_widgets.hover() end, "Dap hover" },
-        p = { function() dap_ui_widgets.preview() end, "Dap preview" },
-        f = {
-            function()
-                dap_ui_widgets.centered_float(dap_ui_widgets.frames)
-            end,
-            "Dap frames window"
-        },
-        s = {
-            function()
-                dap_ui_widgets.centered_float(dap_ui_widgets.scopes)
-            end,
-            "Dap scopes window"
-        },
+        b = { function() dap.toggle_breakpoint() end, "[DAP] toggle breakpoint" },
+        B = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, "[DAP] set condition breakpoint" },
+        l = { function() dap.list_breakpoints(true) end, "[DAP] list breakpoints" },
+        d = { function() dap.clear_breakpoints() end, "[DAP] clear breakpoints" },
+        q = { function() dap.terminate() end, "[DAP] terminate" },
+        c = { function() dap.run_to_cursor() end, "[DAP] run to cursor" },
+        r = { open_dap_repl, "[DAP] toggle REPL" },
+        k = { function() dap_ui_widgets.hover() end, "[DAP] hover" },
+        p = { function() dap_ui_widgets.preview() end, "[DAP] preview" },
+        f = { function() dap_ui_widgets.centered_float(dap_ui_widgets.frames) end, "[DAP] frames window" },
+        s = { function() dap_ui_widgets.centered_float(dap_ui_widgets.scopes) end, "[DAP] scopes window" },
         -- TODO: play with this, what does this do?
         y = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
-            "Log point message | dap" },
+            "[DAP] log point message" },
     },
 
     ["<leader>f"]                        = {
@@ -549,6 +541,7 @@ which_key.register({
                             request = "launch",
                             name = "Debug",
                             runInTerminal = true,
+                            -- stopOnEntry = true,
                         }
                         if #command ~= 1 then
                             table.remove(command, 1)
@@ -1073,3 +1066,9 @@ require 'nvim-treesitter.configs'.setup {
         },
     },
 }
+
+local function start_up_func()
+    nvim_tree_api.tree.toggle({ focus = false })
+end
+-- scheduling it avoids a problem where it's always focused
+vim.schedule(start_up_func)
