@@ -329,6 +329,12 @@ in
     '';
   };
 
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = "prefer-dark";
+    };
+  };
+
   services.swayidle = mkIf (isLinux && withGui) {
     enable = true;
     systemdTarget = "hyprland-session.target";
@@ -360,6 +366,10 @@ in
     iconTheme = {
       package = pkgs.gnome.adwaita-icon-theme;
       name = "Adwaita";
+    };
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome.gnome-themes-extra;
     };
   };
 
