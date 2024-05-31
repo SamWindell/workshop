@@ -880,7 +880,7 @@ local server_config =
 
 for _, v in pairs(supported_lsp_servers) do
     if (v == 'clangd') then
-        server_config.cmd = { "clangd", "--offset-encoding=utf-16", }
+        server_config.cmd = { "clangd", "--offset-encoding=utf-16", "--clang-tidy", }
     else
         server_config.cmd = nil
     end
