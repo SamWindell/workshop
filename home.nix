@@ -589,6 +589,7 @@ in
         refactoring-nvim
         plenary-nvim
         nvim-treesitter-textobjects
+        text-case-nvim
 
         vim-svelte-plugin
         smart-open

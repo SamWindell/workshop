@@ -961,6 +961,8 @@ nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeOpen, handle_resiz
 nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeClose, handle_resize)
 vim.api.nvim_create_autocmd('VimResized', { callback = handle_resize })
 
+require('textcase').setup {}
+
 require('gitsigns').setup()
 require('illuminate').configure({ delay = 50 })
 require('leap').add_default_mappings()
