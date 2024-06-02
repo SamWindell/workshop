@@ -502,6 +502,7 @@ which_key.register({
         b = { "<cmd>Telescope buffers<cr>", "Find Buffer" },
         d = { "<cmd>Telescope diagnostics<cr>", "Find Diagnostic" },
         g = { ':Telescope live_grep<cr>', 'Find Text' },
+        i = { ':Telescope live_grep search_dirs={\'src/\'}<cr>', 'Find Text in src/' },
         G = { ':Telescope grep_string<cr>', 'Find String Under Cursor' },
         k = { ':Telescope keymaps<cr>', 'Find Keymap' },
     },
