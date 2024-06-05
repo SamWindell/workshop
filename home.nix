@@ -50,7 +50,7 @@ in
 
     pkgs.sqlite # needed by nvim smart-open plugin
     pkgs.lua-language-server
-    pkgs.nodejs_21
+    pkgs.nodejs_22
     pkgs.cmake-language-server
     pkgs.nodePackages.svelte-language-server
     pkgs.nodePackages.prettier
@@ -156,7 +156,6 @@ in
   wayland.windowManager.hyprland = mkIf (isLinux && withGui) {
     enable = true;
     xwayland.enable = true;
-    enableNvidiaPatches = true;
     extraConfig = ''
       # See https://wiki.hyprland.org/Configuring/Monitors/
       monitor=,2560x1440@120,auto,auto
@@ -504,7 +503,6 @@ in
   # better ls
   programs.eza = {
     enable = true;
-    enableAliases = true;
     icons = true;
   };
 
