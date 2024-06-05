@@ -103,6 +103,12 @@ in
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
     pkgs.gnome.gnome-system-monitor
+
+    pkgs.geonkick
+    pkgs.reaper
+    pkgs.lsp-plugins
+    pkgs.distrho
+
   ] ++ pkgs.lib.optionals withGui [
     pkgs.tracy
   ] ++ pkgs.lib.optionals isLinux [

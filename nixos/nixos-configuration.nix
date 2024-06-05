@@ -17,6 +17,8 @@
     default = 2;
   };
 
+  musnix.enable = true;
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -68,7 +70,7 @@
   users.users.sam = {
     isNormalUser = true;
     description = "Sam Windell";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "audio" ];
     packages = with pkgs; [ ];
   };
 

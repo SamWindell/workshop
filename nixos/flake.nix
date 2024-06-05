@@ -9,6 +9,7 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    musnix = { url = "github:musnix/musnix"; };
   };
 
   # The `@` syntax here is used to alias the attribute set of the
@@ -24,6 +25,7 @@
           inherit system;
           specialArgs = { inherit inputs; };
           modules = [
+            inputs.musnix.nixosModules.musnix
             ./configuration.nix
 
             # home-manager.nixosModules.home-manager
