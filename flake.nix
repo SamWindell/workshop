@@ -9,8 +9,15 @@
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    zig.url = "github:mitchellh/zig-overlay";
-    zls.url = "github:zigtools/zls/2259c0db3ae8439c3b140e37fde0f71747821598";
+    zig = {
+      url = "github:mitchellh/zig-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    zls = {
+      url = "github:zigtools/zls/68cd4ff4c7b84e89bd1e1b4ad29f9abd8b020174";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.zig-overlay.follows = "zig";
+    };
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +42,7 @@
         ];
       };
 
-      mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration (rec {
+      mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration {
         modules = [ (import ./home.nix) ];
         pkgs = pkgsForSystem args.system;
         extraSpecialArgs = args.extraSpecialArgs // {
@@ -45,7 +52,7 @@
           zls = zls.packages.${args.system};
           pkgs-lldb = import nixpkgs-lldb { system = args.system; };
         };
-      });
+      };
     in
     {
       homeConfigurations.pcLinux = mkHomeConfiguration {

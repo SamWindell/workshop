@@ -4,6 +4,9 @@ let
   inherit (lib) mkIf;
   inherit (pkgs.stdenv) isLinux isDarwin;
   inherit (specialArgs) withGui;
+
+  zig = specialArgs.zig."0.12.0";
+  zls = specialArgs.zls.zls.overrideAttrs (prev: { nativeBuildInputs = [ zig ]; });
 in
 {
   home.username = specialArgs.username;
@@ -73,8 +76,8 @@ in
     pkgs.gawk # transcrypt
     pkgs.xxd # transcrypt
 
-    specialArgs.zig.master-2023-12-01
-    specialArgs.zls.zls
+    zig
+    zls
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
