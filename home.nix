@@ -5,7 +5,7 @@ let
   inherit (pkgs.stdenv) isLinux isDarwin;
   inherit (specialArgs) withGui;
 
-  zig = specialArgs.zig."0.12.0";
+  zig = specialArgs.zig."0.13.0";
   zls = specialArgs.zls.zls.overrideAttrs (prev: { nativeBuildInputs = [ zig ]; });
 in
 {
@@ -41,9 +41,9 @@ in
 
     pkgs.cmake
     pkgs.ninja
-    pkgs.llvmPackages_17.clang-unwrapped # clangd
-    pkgs.llvmPackages_17.libllvm # llvm-symbolizer
-    specialArgs.pkgs-lldb.lldb_17
+    pkgs.llvmPackages_18.clang-unwrapped # clangd
+    pkgs.llvmPackages_18.libllvm # llvm-symbolizer
+    pkgs.lldb_18
     pkgs.python3
 
     pkgs.nixd # nix LSP
@@ -607,7 +607,7 @@ in
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
       ];
     extraLuaConfig = ''
-      lldb_vscode_path = '${specialArgs.pkgs-lldb.lldb_17}/bin/lldb-vscode'
+      lldb_vscode_path = '${pkgs.lldb_18}/bin/lldb-dap'
       require "nvim-init"
     '';
   };
