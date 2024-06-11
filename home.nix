@@ -359,7 +359,7 @@ in
   services.megasync.enable = isLinux && withGui; # cloud sync program
 
   # is pkgs.libnotify needed?
-  services.dunst = mkIf (isLinux && withGui) {
+  services.swaync = mkIf (isLinux && withGui) {
     enable = true;
   };
 
