@@ -45,6 +45,7 @@ in
     pkgs.llvmPackages_18.libllvm # llvm-symbolizer
     pkgs.lldb_18
     pkgs.python3
+    pkgs.just
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
@@ -161,7 +162,9 @@ in
     xwayland.enable = true;
     extraConfig = ''
       # See https://wiki.hyprland.org/Configuring/Monitors/
-      monitor=,2560x1440@120,auto,auto
+      monitor=DP-4,2560x1440@120,auto,auto,vrr,1
+      monitor=Unknown-1,disable
+      monitor=,preferred,auto,1 # default for everything else
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
 
@@ -425,8 +428,8 @@ in
         colordiff -y <(xxd "$1") <(xxd "$2")
       }
 
-      froz() {
-        cd ~/Projects/frozencode
+      floe() {
+        cd ~/Projects/floe
         nix develop
       }
 
@@ -597,6 +600,7 @@ in
         plenary-nvim
         nvim-treesitter-textobjects
         text-case-nvim
+        vim-just
 
         vim-svelte-plugin
         smart-open
