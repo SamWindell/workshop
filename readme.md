@@ -49,6 +49,7 @@ sudo nixos-rebuild switch --flake .#<configuration>
 - [NixOS wiki](https://nixos.wiki/wiki/Main_Page) is good.
 - [Nix search](https://search.nixos.org/packages) is good for both packages and NixOS configuration.nix options.
 - [NixOS & Flakes Book](https://nixos-and-flakes.thiscute.world/) is good.
+- `nix shell nixpkgs/<branch>#<package>` to enter a shell with a package available. (modern version of `nix-shell -p <package>`)
 - ALT+c is a fzf bash-integration feature to search all subdirs and `cd` into it.
 - To add custom packages, you can use nix-init to generate a default.nix. Let's say we put the default.nix in a folder `my-program-nightly`; in the flake.nix you can than call this package using something like: `my-program = pkgs.callPackage ./my-program-nightly { inherit (pkgs.darwin.apple_sdk.frameworks) Carbon Cocoa ScriptingBridge; };`. This seems to be roughly the same technique used in the nixpkgs repo: we can use that as a reference.
 
