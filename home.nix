@@ -126,7 +126,7 @@ in
     #   wallpaper = ,${wallpaper_path}
     # '';
 
-    ".config/nvim/lua/".source = ./nvim;
+    ".config/nvim/lua/".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
     ".config/starship.toml".source = ./starship.toml;
     ".config/waybar/".source = ./waybar;
     ".config/zellij/config.kdl".source = ./zellij/config.kdl;
@@ -548,13 +548,13 @@ in
               hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
             };
         };
-        copilot = pkgs.vimUtils.buildVimPlugin {
-          name = "copilot";
+        dap = pkgs.vimUtils.buildVimPlugin {
+          name = "nvim-dap";
           src = pkgs.fetchFromGitHub {
-            owner = "github";
-            repo = "copilot.vim";
-            rev = "9484e35cf222e9360e05450622a884f95c662c4c";
-            hash = "sha256-tcLrto1Y66MtPnfIcU2PBOxqE0xilVl4JyKU6ddS7bA=";
+            owner = "mfussenegger";
+            repo = "nvim-dap";
+            rev = "5ba8ceace596360321cf33fa4b56d9d46e057ce9";
+            hash = "sha256-jdNqA2POc2TEspkgbJdxgnczVEJnBBi+nipTXCPQgyM=";
           };
         };
       in
@@ -577,7 +577,6 @@ in
         nvim-surround
         kanagawa-nvim
         targets-vim
-        nvim-dap
         nvim-treesitter
         nvim-treesitter.withAllGrammars
         nvim-treesitter-textobjects
@@ -601,11 +600,12 @@ in
         nvim-treesitter-textobjects
         text-case-nvim
         vim-just
+        copilot-vim
 
         vim-svelte-plugin
         smart-open
         kdl-vim
-        copilot
+        dap
 
         # ccc-nvim # color highlighter and picker
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]

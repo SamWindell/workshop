@@ -742,24 +742,6 @@ dap.adapters.lldb = {
     name = 'lldb',
 }
 
-dap.configurations.cpp = {
-    {
-        name = "Debug C++",
-        type = "lldb",
-        request = "launch",
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-        args = function()
-            return split_string_by_words(vim.fn.input('Args: '))
-        end,
-        cwd = '${workspaceFolder}',
-        stopOnEntry = false,
-        runInTerminal = true,
-        stopCommands = { 'bt' },
-    },
-}
-
 vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
 
 
