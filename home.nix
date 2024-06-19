@@ -403,6 +403,8 @@ in
       "gds" = "git diff --staged";
       "gpsh" = "git push";
       "gpll" = "git pull";
+      "gclone" = "git clone";
+      "gclone-bl" = "git clone --filter=blob:none";
     };
     initExtra = pkgs.lib.optionalString isDarwin ''
       export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
