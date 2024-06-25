@@ -34,6 +34,8 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
+  environment.enableDebugInfo = true;
+
   nixpkgs.config.allowUnfree = true;
   services.gvfs.enable = true;
 

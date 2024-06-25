@@ -466,7 +466,8 @@ nvim_tree.setup {
     view = {
         width = get_sidebar_cols(),
         signcolumn = "auto"
-    }
+    },
+    filters = { custom = { "^.git$" } }
 }
 
 local which_key = require('which-key')
