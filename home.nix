@@ -104,6 +104,8 @@ in
     pkgs.obsidian-wayland
     pkgs.sublime-merge
     pkgs.libreoffice
+    pkgs.hunspell # libreoffice uses hunspell
+    pkgs.hunspellDicts.en_GB-ise
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
     pkgs.gnome.gnome-system-monitor
