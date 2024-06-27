@@ -98,6 +98,7 @@ in
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
     pkgs.bitwarden
     pkgs.gimp
+    pkgs.inkscape
     pkgs.zeal-qt6
     pkgs.vlc
     pkgs.obs-studio
