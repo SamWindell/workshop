@@ -110,6 +110,7 @@ in
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
     pkgs.gnome.gnome-system-monitor
+    pkgs.blueberry
 
     pkgs.geonkick
     pkgs.reaper
