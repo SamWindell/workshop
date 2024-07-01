@@ -373,18 +373,27 @@ in
   programs.rofi = mkIf (isLinux && withGui) {
     enable = true;
     package = pkgs.rofi-wayland;
-    theme = "purple";
+    theme = ./rofi/dracula.rasi;
   };
 
   gtk = mkIf (isLinux && withGui) {
     enable = true;
-    iconTheme = {
-      package = pkgs.gnome.adwaita-icon-theme;
-      name = "Adwaita";
-    };
     theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome.gnome-themes-extra;
+      name = "Dracula";
+      package = pkgs.dracula-theme;
+    };
+    cursorTheme = {
+      name = "Dracula-cursors";
+      package = pkgs.dracula-theme;
+    };
+    iconTheme = {
+      name = "Dracula";
+      package = pkgs.dracula-icon-theme;
+    };
+    gtk4 = {
+      extraConfig = {
+        gtk-application-prefer-dark-theme = true;
+      };
     };
   };
 
