@@ -91,7 +91,7 @@ in
     pkgs.loupe # gnome image viewer
     pkgs.gnome.nautilus # gnome files
     pkgs.wl-clipboard # needed to get neovim clipboard working
-    pkgs.webcord # webcord works better than discord for me (screen-share, opening hyperlinks)
+    pkgs.vesktop # discord
     pkgs.waybar
     pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
@@ -110,7 +110,8 @@ in
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
     pkgs.gnome.gnome-system-monitor
-    pkgs.blueberry
+    pkgs.blueberry # bluetooth manager
+    pkgs.quickemu
 
     pkgs.geonkick
     pkgs.reaper
@@ -174,9 +175,7 @@ in
 
       # Execute your favorite apps at launch
       exec-once = waybar
-
-      # attempt to get discord screen-share working
-      # exec-once=dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+      exec-once = vesktop
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
@@ -273,7 +272,7 @@ in
 
       # run hyprctl clients to see class names of current clients
       windowrulev2 = workspace 1,class:(kitty)
-      windowrulev2 = workspace 2,class:(WebCord)
+      windowrulev2 = workspace 2,class:(vesktop)
       windowrulev2 = workspace 3,class:(firefox)
       windowrulev2 = workspace 4,class:(thunderbird)
       windowrulev2 = workspace 5,class:(sublime_merge)
