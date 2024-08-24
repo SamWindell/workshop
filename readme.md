@@ -59,7 +59,11 @@ Wezterm would not work on my NixOS wayland system on the nixpkgs 23.11 channel. 
 ### Notes regarding git + GitHub CLI config (December 2023)
 I tried getting home-manager to manage git's config file `~/.config/git/config`. But there was a problem when using this in conjunction with `gh` (GitHub CLI) to authenticate myself to access private git repos. This was done by enabling `programs.gh.enable = true;` and `programs.git.enable = true; programs.git.extraConfig {...}`. The problem is that `gh` requires write-access to it's own config file as well as git's config file. But that's not possible because nix manages them though symlinks. It's mainly a problem because `gh` seems like the easiest way to login to GitHub. `git-credential-manager` didn't work on my system due to GUI issues. To workaround this I'm not using these options and so have to manually configure git username+email per machine.
 
+### Notes on yabridge (August 2024)
+yabridgectl cannot add yabridge.toml to ~/.nix-profile/lib/clap because the file system is read-only. Not putting any more time into it for now.
+
 ### Using firefox effectively
 Firefox has some pretty good built-in features for quickly searching bookmarks and history. Go to menu -> bookmarks -> manage bookmarks. You can set tags and keywords for each bookmark. You can just type a keyword in the search bar and hit enter to open it. Additionally the search bar is a fuzzy-finder. Hit CTRL+L to enter the search bar. There are a few prefixes that change the search domain. `*<space>` will filter searches to bookmarks. Some examples:
 - `CTRL+t`: new tab -> `CTRL+l`: open search bar -> `my-keyword<enter>`: opens bookmark with the keyword 'my-keyword'.
 - `CTRL+l`: open search bar -> `* `: change to bookmark search -> `a<tab><enter>`: fuzzy-finds bookmarks with 'a', selects the first result, opens it.
+
