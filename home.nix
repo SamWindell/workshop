@@ -289,6 +289,7 @@ in
       bind = $mainMod, M, exit, 
       bind = $mainMod, V, togglefloating, 
       bind = $mainMod, D, exec, rofi -show drun -show-icons
+      bind = $mainMod, E, exec, rofi -modi emoji -show emoji
       bind = $mainMod, P, pseudo, # dwindle
       bind = $mainMod, I, togglesplit, # dwindle
 
@@ -373,6 +374,9 @@ in
     enable = true;
     package = pkgs.rofi-wayland;
     theme = ./rofi/dracula.rasi;
+    plugins = [
+      (pkgs.rofi-emoji.override { rofi-unwrapped = pkgs.rofi-wayland-unwrapped; })
+    ];
   };
 
   gtk = mkIf (isLinux && withGui) {
