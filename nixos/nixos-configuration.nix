@@ -16,6 +16,7 @@
     useOSProber = true;
     default = 2;
   };
+  boot.supportedFilesystems = [ "ntfs" ];
 
   musnix.enable = true;
 
