@@ -118,6 +118,17 @@ in
     pkgs.reaper
     pkgs.lsp-plugins
     pkgs.distrho
+    pkgs.sfizz
+    pkgs.surge-XT
+    pkgs.decent-sampler
+    pkgs.fluidsynth
+    pkgs.qsynth
+
+    # DAWs
+    pkgs.bitwig-studio
+    pkgs.zrythm
+    # pkgs.carla
+    pkgs.qtractor
 
   ] ++ pkgs.lib.optionals withGui [
     pkgs.tracy
