@@ -10,6 +10,10 @@
     "fs.inotify.max_user_instances" = 4096;
     "fs.inotify.max_user_watches" = 524288;
   };
+
+  programs.appimage.enable = true;
+  programs.appimage.binfmt = true;
+
   fileSystems."/mnt/FrozenVault" = {
     device = "//192.168.68.103/frozenvault1";
     fsType = "cifs";
