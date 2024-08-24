@@ -5,6 +5,11 @@
 { config, pkgs, ... }:
 
 {
+  # inotify settings to help reduce inotify watch limit errors 
+  boot.kernel.sysctl = {
+    "fs.inotify.max_user_instances" = 4096;
+    "fs.inotify.max_user_watches" = 524288;
+  };
   fileSystems."/mnt/FrozenVault" = {
     device = "//192.168.68.103/frozenvault1";
     fsType = "cifs";
