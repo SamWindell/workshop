@@ -38,6 +38,7 @@ in
     pkgs.colordiff
     pkgs.reuse # https://reuse.software/
     pkgs.cloc # count lines of code
+    pkgs.lnav # log file viewer
 
     pkgs.cmake
     pkgs.ninja
