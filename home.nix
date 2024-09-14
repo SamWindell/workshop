@@ -97,7 +97,7 @@ in
     pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
-    pkgs.bitwarden
+    # pkgs.bitwarden # opens but never syncs vault, Sept 2024
     pkgs.gimp
     pkgs.inkscape
     pkgs.zeal-qt6
@@ -113,6 +113,7 @@ in
     pkgs.gnome.gnome-system-monitor
     pkgs.blueberry # bluetooth manager
     pkgs.quickemu
+    pkgs.musescore
 
     pkgs.geonkick
     pkgs.reaper
