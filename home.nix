@@ -93,6 +93,7 @@ in
     pkgs.gnome.nautilus # gnome files
     pkgs.wl-clipboard # needed to get neovim clipboard working
     pkgs.vesktop # discord
+    pkgs.zulip
     pkgs.waybar
     pkgs.firefox
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
@@ -100,7 +101,7 @@ in
     # pkgs.bitwarden # opens but never syncs vault, Sept 2024
     pkgs.gimp
     pkgs.inkscape
-    pkgs.zeal-qt6
+    pkgs.zeal
     pkgs.vlc
     pkgs.obs-studio
     pkgs.obsidian-wayland
@@ -270,8 +271,7 @@ in
       }
 
       master {
-          # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
-          new_is_master = true
+          new_status = master
       }
 
       misc {
@@ -473,6 +473,11 @@ in
       # Search content and Edit
       se() {
         rg --files-with-matches "$1" | sad "$1" "$2"
+      }
+
+      # Search multiline content and Edit
+      sme() {
+        rg --multiline --files-with-matches "$1" | sad --flags m "$1" "$2"
       }
 
       # Search git log, preview shows subject, body, and diff
