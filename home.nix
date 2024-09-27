@@ -97,6 +97,7 @@ in
     pkgs.zulip
     pkgs.waybar
     pkgs.firefox
+    pkgs.google-chrome
     pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
     (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
     # pkgs.bitwarden # opens but never syncs vault, Sept 2024
