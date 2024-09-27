@@ -39,6 +39,7 @@ in
     pkgs.reuse # https://reuse.software/
     pkgs.cloc # count lines of code
     pkgs.lnav # log file viewer
+    pkgs.git-town
 
     pkgs.cmake
     pkgs.ninja
