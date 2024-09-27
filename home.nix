@@ -181,6 +181,12 @@ in
     enable = true;
     xwayland.enable = true;
     extraConfig = ''
+      env = LIBVA_DRIVER_NAME,nvidia
+      env = XDG_SESSION_TYPE,wayland
+      env = GBM_BACKEND,nvidia-drm
+      env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+      env = ELECTRON_OZONE_PLATFORM_HINT,auto
+
       # See https://wiki.hyprland.org/Configuring/Monitors/
       monitor=DP-4,2560x1440@120,auto,auto,vrr,1
       monitor=Unknown-1,disable
