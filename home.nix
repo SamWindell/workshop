@@ -191,6 +191,7 @@ in
       # Execute your favorite apps at launch
       exec-once = waybar
       exec-once = vesktop
+      exec-once = zulip
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
@@ -287,6 +288,7 @@ in
       # run hyprctl clients to see class names of current clients
       windowrulev2 = workspace 1,class:(kitty)
       windowrulev2 = workspace 2,class:(vesktop)
+      windowrulev2 = workspace 2,class:(Zulip)
       windowrulev2 = workspace 3,class:(firefox)
       windowrulev2 = workspace 4,class:(thunderbird)
       windowrulev2 = workspace 5,class:(sublime_merge)
