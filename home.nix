@@ -30,7 +30,6 @@ in
     pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
     pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
     pkgs.sad # better sed
-    pkgs.bat # better cat
     pkgs.jq # json manipulation
     pkgs.unzip
     pkgs.bashInteractive
@@ -399,6 +398,13 @@ in
     theme = ./rofi/dracula.rasi;
     plugins = [
       (pkgs.rofi-emoji.override { rofi-unwrapped = pkgs.rofi-wayland-unwrapped; })
+    ];
+  };
+
+  programs.bat = {
+    enable = true;
+    extraPackages = [
+      pkgs.bat-extras.batman
     ];
   };
 
