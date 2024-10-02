@@ -117,6 +117,8 @@ in
     pkgs.quickemu
     pkgs.musescore
 
+    pkgs.pinentry-gnome3
+
     pkgs.geonkick
     pkgs.reaper
     pkgs.lsp-plugins
@@ -158,6 +160,15 @@ in
   };
 
   programs.home-manager.enable = true;
+
+  programs.password-store.enable = true;
+  programs.gpg = {
+    enable = true;
+  };
+  services.gpg-agent = {
+    enable = true;
+    pinentryPackage = mkIf (isLinux && withGui) pkgs.pinentry-gnome3;
+  };
 
   programs.kitty = mkIf withGui {
     enable = true;
@@ -300,6 +311,8 @@ in
       windowrulev2 = workspace 5,class:(sublime_merge)
       windowrulev2 = workspace 6,class:(obsidian)
       windowrulev2 = workspace 2,tile,class:(Tracy Profiler.*)
+
+      windowrulev2 = stayfocused, class:^(pinentry-) # fix pinentry losing focus
 
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
       $mainMod = SUPER

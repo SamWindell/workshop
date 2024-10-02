@@ -14,6 +14,9 @@
   programs.appimage.enable = true;
   programs.appimage.binfmt = true;
 
+  # fix pinentry-gnome3
+  services.dbus.packages = [ pkgs.gcr ];
+
   fileSystems."/mnt/FrozenVault" = {
     device = "//192.168.68.103/frozenvault1";
     fsType = "cifs";
@@ -54,6 +57,7 @@
   environment.systemPackages = with pkgs; [
     cifs-utils
     neovim
+    pinentry-tty
   ];
 
   # This value determines the NixOS release from which the default
