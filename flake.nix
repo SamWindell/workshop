@@ -29,16 +29,16 @@
         inherit system;
         config = {
           allowUnfree = true;
-          permittedInsecurePackages = [
-            "electron-24.8.6" # obsidian-wayland
-          ];
+          # permittedInsecurePackages = [
+          #   "electron-24.8.6" # obsidian-wayland
+          # ];
         };
-        overlays = [
-          (final: prev: {
-            # workaround a bug where obsidian doesn't work on wayland
-            obsidian-wayland = prev.obsidian.override { electron = final.electron_24; };
-          })
-        ];
+        # overlays = [
+        #   (final: prev: {
+        #     # workaround a bug where obsidian doesn't work on wayland
+        #     obsidian-wayland = prev.obsidian.override { electron = final.electron_24; };
+        #   })
+        # ];
       };
 
       mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration {

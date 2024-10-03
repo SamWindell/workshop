@@ -14,38 +14,23 @@
 
   # The `@` syntax here is used to alias the attribute set of the
   # inputs's parameter, making it convenient to use inside the function.
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { self, ... }@inputs:
     let
-      system = "x86_64-linux"; #current system
-      pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-      lib = nixpkgs.lib;
+      system = "x86_64-linux";
 
-      mkSystem = pkgs: isWsl:
-        pkgs.lib.nixosSystem {
+      mkSystem = isWsl:
+        inputs.nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs; };
+          specialArgs = {
+            inherit inputs;
+          };
           modules = [
             inputs.musnix.nixosModules.musnix
             ./configuration.nix
-
-            # home-manager.nixosModules.home-manager
-            # {
-            #     home-manager = {
-            #         useUserPackages = true;
-            #         useGlobalPkgs = true;
-            #         extraSpecialArgs = { inherit inputs; };
-            #         # users.notus = (./. + "/hosts/${hostname}/user.nix");
-            #     };
-            #     nixpkgs.overlays = [
-            #         # Add nur overlay for Firefox addons
-            #         nur.overlay
-            #         (import ./overlays)
-            #     ];
-            # }
-          ] ++ pkgs.lib.optionals (isWsl) [
+          ] ++ inputs.nixpkgs.lib.optionals isWsl [
             ./wsl-configuration.nix
             inputs.nixos-wsl.nixosModules.wsl
-          ] ++ pkgs.lib.optionals (!isWsl) [
+          ] ++ inputs.nixpkgs.lib.optionals (!isWsl) [
             ./hardware-configuration.nix
             ./nixos-configuration.nix
           ];
@@ -54,8 +39,8 @@
 
     {
       nixosConfigurations = {
-        wsl = mkSystem inputs.nixpkgs true;
-        desktop = mkSystem inputs.nixpkgs false;
+        wsl = mkSystem true;
+        desktop = mkSystem false;
       };
     };
 }

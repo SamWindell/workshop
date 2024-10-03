@@ -1,4 +1,4 @@
-{ config, lib, pkgs, specialArgs, ... }:
+{ config, lib, pkgs, pkgs-unstable, specialArgs, ... }:
 
 let
   inherit (lib) mkIf;
@@ -105,7 +105,7 @@ in
     pkgs.zeal
     pkgs.vlc
     pkgs.obs-studio
-    pkgs.obsidian-wayland
+    pkgs.obsidian
     pkgs.sublime-merge
     pkgs.libreoffice
     pkgs.hunspell # libreoffice uses hunspell
@@ -137,6 +137,7 @@ in
 
   ] ++ pkgs.lib.optionals withGui [
     pkgs.tracy
+    pkgs.keepassxc
   ] ++ pkgs.lib.optionals isLinux [
     pkgs.wineWow64Packages.waylandFull
   ];
@@ -161,7 +162,6 @@ in
 
   programs.home-manager.enable = true;
 
-  programs.password-store.enable = true;
   programs.gpg = {
     enable = true;
   };
