@@ -162,14 +162,6 @@ in
 
   programs.home-manager.enable = true;
 
-  programs.gpg = {
-    enable = true;
-  };
-  services.gpg-agent = {
-    enable = true;
-    pinentryPackage = mkIf (isLinux && withGui) pkgs.pinentry-gnome3;
-  };
-
   programs.kitty = mkIf withGui {
     enable = true;
     theme = "kanagawabones";
