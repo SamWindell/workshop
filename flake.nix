@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpks-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.05";
@@ -23,28 +24,25 @@
     };
   };
 
-  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
+  outputs = { nixpkgs, nixpks-unstable, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
         config = {
           allowUnfree = true;
-          # permittedInsecurePackages = [
-          #   "electron-24.8.6" # obsidian-wayland
-          # ];
         };
-        # overlays = [
-        #   (final: prev: {
-        #     # workaround a bug where obsidian doesn't work on wayland
-        #     obsidian-wayland = prev.obsidian.override { electron = final.electron_24; };
-        #   })
-        # ];
       };
 
       mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration {
         modules = [ (import ./home.nix) ];
         pkgs = pkgsForSystem args.system;
         extraSpecialArgs = args.extraSpecialArgs // {
+          pkgs-unstable = import nixpks-unstable {
+            system = args.system;
+            config = {
+              allowUnfree = true;
+            };
+          };
           vscode-extensions = nix-vscode-extensions.extensions.${args.system}.vscode-marketplace;
           hyprland-contrib = hyprland-contrib.packages.${args.system};
           zig = zig.packages.${args.system};

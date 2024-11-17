@@ -57,7 +57,7 @@ in
     pkgs.lua-language-server
     pkgs.nodejs_22
     pkgs.cmake-language-server
-    pkgs.nodePackages.svelte-language-server
+    pkgs-unstable.nodePackages.svelte-language-server
     pkgs.nodePackages.prettier
     pkgs.nodePackages.typescript-language-server
     pkgs.vscode-langservers-extracted
@@ -599,8 +599,8 @@ in
           src = pkgs.fetchFromGitHub {
             owner = "leafOfTree";
             repo = "vim-svelte-plugin";
-            rev = "612b34640919c29b5cf2d85289dbc762b099858a";
-            hash = "sha256-YmIKDicfn9GZiLp3rvYEEFT2D4KQZoKbJ2HPrdqcLLw=";
+            rev = "fcc81292340c0969e83131021c5a6c9aa0c741dc";
+            hash = "sha256-WGM21vSuqX8SDu3KCuJBjSCd4dZpeJYpEOHuuZK4T30=";
           };
         };
         kdl-vim = pkgs.vimUtils.buildVimPlugin {
@@ -612,15 +612,6 @@ in
               rev = "b84d7d3a15d8d30da016cf9e98e2cfbe35cddee5";
               hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
             };
-        };
-        dap = pkgs.vimUtils.buildVimPlugin {
-          name = "nvim-dap";
-          src = pkgs.fetchFromGitHub {
-            owner = "mfussenegger";
-            repo = "nvim-dap";
-            rev = "5ba8ceace596360321cf33fa4b56d9d46e057ce9";
-            hash = "sha256-jdNqA2POc2TEspkgbJdxgnczVEJnBBi+nipTXCPQgyM=";
-          };
         };
       in
       [
@@ -666,11 +657,11 @@ in
         text-case-nvim
         vim-just
         copilot-vim
+        nvim-dap
 
         vim-svelte-plugin
         smart-open
         kdl-vim
-        dap
 
         # ccc-nvim # color highlighter and picker
         # nvim_context_vt # show function/scope/block in a 'comment' after any } or ]
