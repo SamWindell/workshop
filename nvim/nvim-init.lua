@@ -245,6 +245,16 @@ local rtrim = function(s)
     return s:sub(1, n)
 end
 
+local efm = table.concat({
+    '%f:%l:%c: %t%*[^:]: %m', -- clang format
+
+    -- TypeScript/JavaScript error formats
+    '%A%f:%l:%c',  -- filename:line:col
+    '%ZError: %m', -- Error message
+    '%C%.%#',      -- Continuation lines
+    '%-G%.%#',     -- Ignore other lines
+}, ',')
+
 local run_command = function(command, on_exit)
     local buf = find_buffer(command_output_buffer_name)
     if buf then
@@ -262,39 +272,36 @@ local run_command = function(command, on_exit)
     quickfix_pos = 0
     -- NOTE: using termopen sets the terminal width to the width of the window. This means
     --       that you might have lines cut in half if they are long.
-    vim.fn.termopen(command,
-        {
-            on_stdout = function(job_id, d, _)
-                local lines = {}
-                for _, line in pairs(d) do
-                    line = rtrim(line)
-                    line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
-
-                    line = line:gsub('C:\\', '/mnt/c/')                              -- WSL hack
-
-                    local i1, i2 = line:find("clang failed with stderr: ", 1, true)
-                    if i1 ~= nil then
-                        table.insert(lines, line:sub(0, i2))
-                        table.insert(lines, line:sub(i2 + 1, line:len()))
-                    else
-                        table.insert(lines, line)
-                    end
+    vim.fn.termopen(command, {
+        on_stdout = function(job_id, d, _)
+            local lines = {}
+            for _, line in pairs(d) do
+                line = rtrim(line)
+                line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
+                line = line:gsub('C:\\', '/mnt/c/')                          -- WSL hack
+                local i1, i2 = line:find("clang failed with stderr: ", 1, true)
+                if i1 ~= nil then
+                    table.insert(lines, line:sub(0, i2))
+                    table.insert(lines, line:sub(i2 + 1, line:len()))
+                else
+                    table.insert(lines, line)
                 end
-                local qf = vim.fn.getqflist({ efm = "%f:%l:%c: %t%*[^:]: %m", lines = lines })
-                for _, q in pairs(qf) do
-                    vim.fn.setqflist(q, 'a')
-                end
-            end,
-            on_exit = function(job_id, exit_code, event_type)
-                vim.api.nvim_buf_call(command_buf, function()
-                    vim.cmd("normal! G") -- scroll to bottom
-                    vim.api.nvim_buf_set_option(command_buf, "modified", false)
-                end)
-                if on_exit then on_exit(job_id, exit_code, event_type) end
-            end,
-            stderr_buffered = false,
-            stdout_buffered = false
-        })
+            end
+            local qf = vim.fn.getqflist({ efm = efm, lines = lines })
+            for _, q in pairs(qf) do
+                vim.fn.setqflist(q, 'a')
+            end
+        end,
+        on_exit = function(job_id, exit_code, event_type)
+            vim.api.nvim_buf_call(command_buf, function()
+                vim.cmd("normal! G") -- scroll to bottom
+                vim.api.nvim_buf_set_option(command_buf, "modified", false)
+            end)
+            if on_exit then on_exit(job_id, exit_code, event_type) end
+        end,
+        stderr_buffered = false,
+        stdout_buffered = false
+    })
 
     vim.api.nvim_buf_attach(command_buf, false, {
         on_lines = function(_)
