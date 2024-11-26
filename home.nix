@@ -81,6 +81,9 @@ in
     zig
     zls
 
+    pkgs.hunspell 
+    pkgs.hunspellDicts.en_GB-ise
+
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
     # IMPROVE: add more proper layouts
@@ -108,8 +111,6 @@ in
     pkgs.obsidian
     pkgs.sublime-merge
     pkgs.libreoffice
-    pkgs.hunspell # libreoffice uses hunspell
-    pkgs.hunspellDicts.en_GB-ise
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
     pkgs.gnome.gnome-system-monitor
