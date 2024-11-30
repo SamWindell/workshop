@@ -47,6 +47,7 @@ in
     pkgs.lldb_18
     pkgs.python3
     pkgs.just
+    pkgs.awscli2
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
