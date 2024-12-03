@@ -82,7 +82,7 @@ in
     zig
     zls
 
-    pkgs.hunspell 
+    pkgs.hunspell
     pkgs.hunspellDicts.en_GB-ise
 
     (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
@@ -203,6 +203,7 @@ in
       exec-once = waybar
       exec-once = vesktop
       exec-once = zulip
+      exec-once = keepassxc
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
@@ -305,6 +306,7 @@ in
       windowrulev2 = workspace 5,class:(sublime_merge)
       windowrulev2 = workspace 6,class:(obsidian)
       windowrulev2 = workspace 2,tile,class:(Tracy Profiler.*)
+      windowrulev2 = workspace 0,class:(org.keepassxc.KeePassXC)
 
       windowrulev2 = stayfocused, class:^(pinentry-) # fix pinentry losing focus
 
