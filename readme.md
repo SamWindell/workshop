@@ -22,7 +22,7 @@ cd .config
 git clone https://github.com/samwindell/home-config home-manager
 
 # first run:
-nix run home-manager/release-24.05 -- init --switch
+nix run home-manager/release-24.11 -- init --switch
 # any subsequent
 home-manager switch --flake .#<configuration>
 

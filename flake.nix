@@ -2,11 +2,10 @@
   description = "Home Manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    nixpks-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zig = {
@@ -24,7 +23,7 @@
     };
   };
 
-  outputs = { nixpkgs, nixpks-unstable, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
+  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
     let
       pkgsForSystem = system: import nixpkgs {
         inherit system;
@@ -37,12 +36,6 @@
         modules = [ (import ./home.nix) ];
         pkgs = pkgsForSystem args.system;
         extraSpecialArgs = args.extraSpecialArgs // {
-          pkgs-unstable = import nixpks-unstable {
-            system = args.system;
-            config = {
-              allowUnfree = true;
-            };
-          };
           vscode-extensions = nix-vscode-extensions.extensions.${args.system}.vscode-marketplace;
           hyprland-contrib = hyprland-contrib.packages.${args.system};
           zig = zig.packages.${args.system};

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-unstable, specialArgs, ... }:
+{ config, lib, pkgs, specialArgs, ... }:
 
 let
   inherit (lib) mkIf;
@@ -58,7 +58,7 @@ in
     pkgs.lua-language-server
     pkgs.nodejs_22
     pkgs.cmake-language-server
-    pkgs-unstable.nodePackages.svelte-language-server
+    pkgs.nodePackages.svelte-language-server
     pkgs.nodePackages.prettier
     pkgs.nodePackages.typescript-language-server
     pkgs.vscode-langservers-extracted
@@ -94,7 +94,7 @@ in
   ] ++ pkgs.lib.optionals (isLinux && withGui) [
     pkgs.thunderbird
     pkgs.loupe # gnome image viewer
-    pkgs.gnome.nautilus # gnome files
+    pkgs.nautilus # gnome files
     pkgs.wl-clipboard # needed to get neovim clipboard working
     pkgs.vesktop # discord
     pkgs.zulip
@@ -114,7 +114,7 @@ in
     pkgs.libreoffice
     specialArgs.hyprland-contrib.grimblast # screenshot helper
     pkgs.xdg-utils # xdg-open
-    pkgs.gnome.gnome-system-monitor
+    pkgs.gnome-system-monitor
     pkgs.blueberry # bluetooth manager
     pkgs.quickemu
     pkgs.musescore
@@ -166,7 +166,7 @@ in
 
   programs.kitty = mkIf withGui {
     enable = true;
-    theme = "kanagawabones";
+    themeFile = "kanagawabones";
     shellIntegration.enableBashIntegration = true;
     settings = {
       shell = mkIf isDarwin "bash --login";
@@ -306,7 +306,7 @@ in
       windowrulev2 = workspace 5,class:(sublime_merge)
       windowrulev2 = workspace 6,class:(obsidian)
       windowrulev2 = workspace 2,tile,class:(Tracy Profiler.*)
-      windowrulev2 = workspace 0,class:(org.keepassxc.KeePassXC)
+      windowrulev2 = workspace 10,class:(org.keepassxc.KeePassXC)
 
       windowrulev2 = stayfocused, class:^(pinentry-) # fix pinentry losing focus
 
@@ -535,6 +535,11 @@ in
     enable = true;
   };
 
+  # better cd
+  programs.zoxide = {
+    enable = true;
+  };
+
   # run zellij setup --dump-config to see the default config
   programs.zellij = {
     enable = true;
@@ -570,7 +575,7 @@ in
   # better ls
   programs.eza = {
     enable = true;
-    icons = true;
+    icons = "auto";
   };
 
   programs.neovim = {

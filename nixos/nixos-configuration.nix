@@ -38,7 +38,6 @@
 
   hardware.opengl = {
     enable = true;
-    driSupport = true;
     driSupport32Bit = true;
   };
 
@@ -78,7 +77,6 @@
   # Enable automatic login for the user.
   services.getty.autologinUser = "sam";
 
-  sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
