@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   # Bootloader.
@@ -30,31 +30,34 @@
   networking.networkmanager.enable = true;
 
   environment.sessionVariables = {
-    # fix missing cursor
-    # WLR_NO_HARDWARE_CURSORS = "1";
-    # hint electron apps to use wayland
-    NIXOS_OZONE_WL = "1";
+    NIXOS_OZONE_WL = "1"; # enable wayland on chromium
+    # XCURSOR_SIZE= "24";
+    # LIBVA_DRIVER_NAME= "nvidia";
+    # XDG_SESSION_TYPE= "wayland";
+    # __GLX_VENDOR_LIBRARY_NAME= "nvidia";
+    # ELECTRON_OZONE_PLATFORM_HINT= "auto";
+    HYPRCURSOR_THEME = "rose-pine-hyprcursor";
   };
+  environment.systemPackages = [
+    inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default
+  ];
 
-  hardware.opengl = {
-    enable = true;
-    driSupport32Bit = true;
-  };
+  hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
 
   hardware.nvidia = {
-    modesetting.enable = true;
+    # modesetting.enable = true;
 
     open = true;
 
     # enable nvidia-settings
     nvidiaSettings = true;
-
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    withUWSM  = true;
   };
 
   services.xserver = {
@@ -78,6 +81,9 @@
   services.getty.autologinUser = "sam";
 
   security.rtkit.enable = true;
+
+  security.polkit.enable = true;
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;

@@ -1,4 +1,10 @@
-{ config, lib, pkgs, specialArgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  specialArgs,
+  ...
+}:
 
 let
   inherit (lib) mkIf;
@@ -6,7 +12,9 @@ let
   inherit (specialArgs) withGui;
 
   zig = specialArgs.zig."0.13.0";
-  zls = specialArgs.zls.zls.overrideAttrs (prev: { nativeBuildInputs = [ zig ]; });
+  zls = specialArgs.zls.zls.overrideAttrs (prev: {
+    nativeBuildInputs = [ zig ];
+  });
 in
 {
   home.username = specialArgs.username;
@@ -21,128 +29,137 @@ in
   # release notes.
   home.stateVersion = "23.11"; # Please read the comment before changing.
 
-  home.packages = [
-    pkgs.rename # rename files: rename "s/foo/bar/" *.png
-    pkgs.sox # audio file manipulation
-    pkgs.imagemagick # image file manipulation
-    pkgs.ffmpeg # video/audio manipulaiton
-    pkgs.fd # find alternative, run fd -h for consise help
-    pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
-    pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
-    pkgs.sad # better sed
-    pkgs.jq # json manipulation
-    pkgs.unzip
-    pkgs.bashInteractive
-    pkgs.wget
-    pkgs.colordiff
-    pkgs.reuse # https://reuse.software/
-    pkgs.cloc # count lines of code
-    pkgs.lnav # log file viewer
-    pkgs.git-town
+  home.packages =
+    [
+      pkgs.rename # rename files: rename "s/foo/bar/" *.png
+      pkgs.sox # audio file manipulation
+      pkgs.imagemagick # image file manipulation
+      pkgs.ffmpeg # video/audio manipulaiton
+      pkgs.fd # find alternative, run fd -h for consise help
+      pkgs.gnused # replace e.g.: sed -s "s/foo/bar/g" file.txt
+      pkgs.ast-grep # powerful grep for code https://ast-grep.github.io/
+      pkgs.sad # better sed
+      pkgs.jq # json manipulation
+      pkgs.unzip
+      pkgs.bashInteractive
+      pkgs.wget
+      pkgs.colordiff
+      pkgs.reuse # https://reuse.software/
+      pkgs.cloc # count lines of code
+      pkgs.lnav # log file viewer
+      pkgs.git-town
 
-    pkgs.cmake
-    pkgs.ninja
-    pkgs.llvmPackages_18.clang-unwrapped # clangd
-    pkgs.llvmPackages_18.libllvm # llvm-symbolizer
-    pkgs.lldb_18
-    pkgs.python3
-    pkgs.just
-    pkgs.awscli2
+      pkgs.cmake
+      pkgs.ninja
+      pkgs.llvmPackages_18.clang-unwrapped # clangd
+      pkgs.llvmPackages_18.libllvm # llvm-symbolizer
+      pkgs.lldb_18
+      pkgs.python3
+      pkgs.just
+      pkgs.awscli2
 
-    pkgs.nixd # nix LSP
-    pkgs.nixpkgs-fmt # nix code formatting
-    pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
-    pkgs.nix-init
+      pkgs.nixd # nix LSP
+      pkgs.nixpkgs-fmt # nix code formatting
+      pkgs.nurl # command-line tool to generate Nix fetcher calls from repository URLs
+      pkgs.nix-init
+      pkgs.nixfmt-rfc-style
 
-    pkgs.sqlite # needed by nvim smart-open plugin
-    pkgs.lua-language-server
-    pkgs.nodejs_22
-    pkgs.cmake-language-server
-    pkgs.nodePackages.svelte-language-server
-    pkgs.nodePackages.prettier
-    pkgs.nodePackages.typescript-language-server
-    pkgs.vscode-langservers-extracted
-    pkgs.python3Packages.python-lsp-server
-    pkgs.cmake-format
+      pkgs.sqlite # needed by nvim smart-open plugin
+      pkgs.lua-language-server
+      pkgs.nodejs_22
+      pkgs.cmake-language-server
+      pkgs.nodePackages.svelte-language-server
+      pkgs.nodePackages.prettier
+      pkgs.nodePackages.typescript-language-server
+      pkgs.nodePackages.typescript
+      pkgs.vscode-langservers-extracted
+      pkgs.python3Packages.python-lsp-server
+      pkgs.cmake-format
 
-    pkgs.gh
-    pkgs.git
+      pkgs.gh
+      pkgs.git
 
-    pkgs.transcrypt
-    # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
-    # should manage these dependencies itself
-    pkgs.openssl # transcrypt
-    pkgs.coreutils # transcrypt
-    pkgs.util-linux # transcrypt
-    pkgs.gnugrep # transcrypt
-    pkgs.gnused # transcrypt
-    pkgs.gawk # transcrypt
-    pkgs.xxd # transcrypt
+      pkgs.transcrypt
+      # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
+      # should manage these dependencies itself
+      pkgs.openssl # transcrypt
+      pkgs.coreutils # transcrypt
+      pkgs.util-linux # transcrypt
+      pkgs.gnugrep # transcrypt
+      pkgs.gnused # transcrypt
+      pkgs.gawk # transcrypt
+      pkgs.xxd # transcrypt
 
-    zig
-    zls
+      zig
+      zls
 
-    pkgs.hunspell
-    pkgs.hunspellDicts.en_GB-ise
+      pkgs.hunspell
+      pkgs.hunspellDicts.en_GB-ise
 
-    (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 
-    # IMPROVE: add more proper layouts
-    (pkgs.writeShellScriptBin "obsi" ''
-      zellij action new-tab --layout ${./zellij/obsi.kdl}
-    '')
-  ] ++ pkgs.lib.optionals (isLinux && withGui) [
-    pkgs.thunderbird
-    pkgs.loupe # gnome image viewer
-    pkgs.nautilus # gnome files
-    pkgs.wl-clipboard # needed to get neovim clipboard working
-    pkgs.vesktop # discord
-    pkgs.zulip
-    pkgs.waybar
-    pkgs.firefox
-    pkgs.google-chrome
-    pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
-    (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
-    # pkgs.bitwarden # opens but never syncs vault, Sept 2024
-    pkgs.gimp
-    pkgs.inkscape
-    pkgs.zeal
-    pkgs.vlc
-    pkgs.obs-studio
-    pkgs.obsidian
-    pkgs.sublime-merge
-    pkgs.libreoffice
-    specialArgs.hyprland-contrib.grimblast # screenshot helper
-    pkgs.xdg-utils # xdg-open
-    pkgs.gnome-system-monitor
-    pkgs.blueberry # bluetooth manager
-    pkgs.quickemu
-    pkgs.musescore
+      # IMPROVE: add more proper layouts
+      (pkgs.writeShellScriptBin "obsi" ''
+        zellij action new-tab --layout ${./zellij/obsi.kdl}
+      '')
+    ]
+    ++ pkgs.lib.optionals (isLinux && withGui) [
+      pkgs.thunderbird
+      pkgs.loupe # gnome image viewer
+      pkgs.nautilus # gnome files
+      pkgs.sushi # gnome file previewer
+      pkgs.wl-clipboard # needed to get neovim clipboard working
+      pkgs.vesktop # discord
+      pkgs.zulip
+      pkgs.waybar
+      pkgs.firefox
+      pkgs.brave
+      pkgs.hyprpicker
+      pkgs.google-chrome
+      pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
+      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
+      # pkgs.bitwarden # opens but never syncs vault, Sept 2024
+      pkgs.gimp
+      pkgs.inkscape
+      pkgs.zeal
+      pkgs.vlc
+      pkgs.obs-studio
+      pkgs.obsidian
+      pkgs.sublime-merge
+      pkgs.libreoffice
+      specialArgs.hyprland-contrib.grimblast # screenshot helper
+      pkgs.xdg-utils # xdg-open
+      pkgs.gnome-system-monitor
+      pkgs.blueberry # bluetooth manager
+      pkgs.quickemu
+      pkgs.musescore
 
-    pkgs.pinentry-gnome3
+      pkgs.pinentry-gnome3
 
-    pkgs.geonkick
-    pkgs.reaper
-    pkgs.lsp-plugins
-    pkgs.distrho
-    pkgs.sfizz
-    pkgs.surge-XT
-    pkgs.decent-sampler
-    pkgs.fluidsynth
-    pkgs.qsynth
+      pkgs.geonkick
+      pkgs.reaper
+      pkgs.lsp-plugins
+      pkgs.distrho-ports
+      pkgs.sfizz
+      pkgs.surge-XT
+      pkgs.decent-sampler
+      pkgs.fluidsynth
+      pkgs.qsynth
 
-    # DAWs
-    pkgs.bitwig-studio
-    pkgs.zrythm
-    # pkgs.carla
-    pkgs.qtractor
+      # DAWs
+      pkgs.bitwig-studio
+      pkgs.zrythm
+      # pkgs.carla
+      pkgs.qtractor
 
-  ] ++ pkgs.lib.optionals withGui [
-    pkgs.tracy
-    pkgs.keepassxc
-  ] ++ pkgs.lib.optionals isLinux [
-    pkgs.wineWow64Packages.waylandFull
-  ];
+    ]
+    ++ pkgs.lib.optionals withGui [
+      pkgs.tracy
+      pkgs.keepassxc
+    ]
+    ++ pkgs.lib.optionals isLinux [
+      pkgs.wineWow64Packages.waylandFull
+    ];
 
   home.file = {
     # # You can also set the file content immediately.
@@ -151,7 +168,8 @@ in
     #   wallpaper = ,${wallpaper_path}
     # '';
 
-    ".config/nvim/lua/".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
+    ".config/nvim/lua/".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
     ".config/starship.toml".source = ./starship.toml;
     ".config/waybar/".source = ./waybar;
     ".config/zellij/config.kdl".source = ./zellij/config.kdl;
@@ -185,13 +203,8 @@ in
   wayland.windowManager.hyprland = mkIf (isLinux && withGui) {
     enable = true;
     xwayland.enable = true;
+    systemd.enable = false;
     extraConfig = ''
-      env = LIBVA_DRIVER_NAME,nvidia
-      env = XDG_SESSION_TYPE,wayland
-      env = GBM_BACKEND,nvidia-drm
-      env = __GLX_VENDOR_LIBRARY_NAME,nvidia
-      env = ELECTRON_OZONE_PLATFORM_HINT,auto
-
       # See https://wiki.hyprland.org/Configuring/Monitors/
       monitor=DP-4,2560x1440@120,auto,auto,vrr,1
       monitor=Unknown-1,disable
@@ -200,16 +213,12 @@ in
       # See https://wiki.hyprland.org/Configuring/Keywords/ for more
 
       # Execute your favorite apps at launch
-      exec-once = waybar
-      exec-once = vesktop
-      exec-once = zulip
-      exec-once = keepassxc
+      exec-once = uwsm app -- waybar
+      exec-once = uwsm app -- vesktop
+      exec-once = uwsm app -- keepassxc
 
       # Source a file (multi-file configs)
       # source = ~/.config/hypr/myColors.conf
-
-      # Some default env vars.
-      env = XCURSOR_SIZE,24
 
       # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
       input {
@@ -250,17 +259,12 @@ in
           # See https://wiki.hyprland.org/Configuring/Variables/ for more
 
           rounding = 4 
-    
+
           blur {
               enabled = false
               size = 3
               passes = 1
           }
-
-          drop_shadow = no
-          shadow_range = 4
-          shadow_render_power = 3
-          col.shadow = rgba(1a1a1aee)
       }
 
       animations {
@@ -302,6 +306,7 @@ in
       windowrulev2 = workspace 2,class:(vesktop)
       windowrulev2 = workspace 2,class:(Zulip)
       windowrulev2 = workspace 3,class:(firefox)
+      windowrulev2 = workspace 3,class:(brave)
       windowrulev2 = workspace 4,class:(thunderbird)
       windowrulev2 = workspace 5,class:(sublime_merge)
       windowrulev2 = workspace 6,class:(obsidian)
@@ -314,13 +319,13 @@ in
       $mainMod = SUPER
 
       # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
-      bind = $mainMod, return, exec, kitty zellij
-      bind = $mainMod, X, exec, kitty -d ~/MEGA/Obsidian nvim "Personal Organisation/Thought Capture.md"
+      bind = $mainMod, return, exec, uwsm app -- kitty zellij
+      bind = $mainMod, X, exec, uwsm app -- kitty -d ~/MEGA/Obsidian nvim "Personal Organisation/Thought Capture.md"
       bind = $mainMod, Q, killactive, 
       bind = $mainMod, M, exit, 
       bind = $mainMod, V, togglefloating, 
-      bind = $mainMod, D, exec, rofi -show drun -show-icons
-      bind = $mainMod, E, exec, rofi -modi emoji -show emoji
+      bind = $mainMod, D, exec, uwsm app -- rofi -show drun -show-icons
+      bind = $mainMod, E, exec, uwsm app -- rofi -modi emoji -show emoji
       bind = $mainMod, P, pseudo, # dwindle
       bind = $mainMod, I, togglesplit, # dwindle
 
@@ -366,12 +371,12 @@ in
       bindm = $mainMod, mouse:272, movewindow
       bindm = $mainMod, mouse:273, resizewindow
 
-      binde=, XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
-      binde=, XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+      binde=, XF86AudioRaiseVolume, exec, uwsm app -- wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
+      binde=, XF86AudioLowerVolume, exec, uwsm app -- wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
       # IMPROVE: add controls for mute
 
       # IMPROVE: add more screenshot options for example grimblast edit to screenshot and then edit in gimp
-      bind = , PRINT, exec, ${specialArgs.hyprland-contrib.grimblast}/bin/grimblast --notify --freeze copysave area
+      bind = , PRINT, exec, uwsm app -- ${specialArgs.hyprland-contrib.grimblast}/bin/grimblast --notify --freeze copysave area
     '';
   };
 
@@ -406,7 +411,7 @@ in
     package = pkgs.rofi-wayland;
     theme = ./rofi/dracula.rasi;
     plugins = [
-      (pkgs.rofi-emoji.override { rofi-unwrapped = pkgs.rofi-wayland-unwrapped; })
+      pkgs.rofi-emoji-wayland
     ];
   };
 
@@ -460,69 +465,66 @@ in
       "gclone" = "git clone";
       "gclone-bl" = "git clone --filter=blob:none";
     };
-    initExtra = pkgs.lib.optionalString isDarwin ''
-      export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
-    '' +
-    ''
-      export FZF_DEFAULT_OPTS='--bind ctrl-a:toggle-all'
+    initExtra =
+      pkgs.lib.optionalString isDarwin ''
+        export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
+      ''
+      + ''
+        export FZF_DEFAULT_OPTS='--bind ctrl-a:toggle-all'
 
-      cd() { builtin cd "$@" && ls . ; }
+        hyp() {
+          exec systemd-cat -t uwsm_start uwsm start default
+        }
 
-      hms() {
-        home-manager switch --flake ~/.config/home-manager/flake.nix#''${1:-pcLinux};
-      }
-        
-      # fixes a neovim issue with smart_open plugin taking a long time to open
-      clnvim() {
-        rm -f ~/.local/share/nvim/telescope_history
-        rm -f ~/.local/share/nvim/smart_open.sqlite3
-        rm -f ~/.local/state/nvim/shada/main.shada
-      }
+        cd() { builtin cd "$@" && ls . ; }
 
-      # diff 2 binary files
-      bindiff() {
-        colordiff -y <(xxd "$1") <(xxd "$2")
-      }
+        hms() {
+          home-manager switch --flake ~/.config/home-manager/flake.nix#''${1:-pcLinux};
+        }
+          
+        # fixes a neovim issue with smart_open plugin taking a long time to open
+        clnvim() {
+          rm -f ~/.local/share/nvim/telescope_history
+          rm -f ~/.local/share/nvim/smart_open.sqlite3
+          rm -f ~/.local/state/nvim/shada/main.shada
+        }
 
-      floe() {
-        cd ~/Projects/floe
-        nix develop
-      }
+        # diff 2 binary files
+        bindiff() {
+          colordiff -y <(xxd "$1") <(xxd "$2")
+        }
 
-      # Change dir with Fuzzy finding
-      cf() {
-        dir=$(fd . ''${1:-$HOME} --type d 2>/dev/null | fzf)
-        cd "$dir"
-      }
+        floe() {
+          cd ~/Projects/floe
+          nix develop
+        }
 
-      # Search content and Edit
-      se() {
-        rg --files-with-matches "$1" | sad "$1" "$2"
-      }
+        # Change dir with Fuzzy finding
+        cf() {
+          dir=$(fd . ''${1:-$HOME} --type d 2>/dev/null | fzf)
+          cd "$dir"
+        }
 
-      # Search multiline content and Edit
-      sme() {
-        rg --multiline --files-with-matches "$1" | sad --flags m "$1" "$2"
-      }
+        # Search content and Edit
+        se() {
+          rg --files-with-matches "$1" | sad "$1" "$2"
+        }
 
-      # Search git log, preview shows subject, body, and diff
-      fl() {
-        git log --oneline --color=always | fzf --ansi --preview="echo {} | cut -d ' ' -f 1 | xargs -I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1
-      }
+        # Search multiline content and Edit
+        sme() {
+          rg --multiline --files-with-matches "$1" | sad --flags m "$1" "$2"
+        }
 
-      eval "$(zellij setup --generate-completion bash)"
-    '';
+        # Search git log, preview shows subject, body, and diff
+        fl() {
+          git log --oneline --color=always | fzf --ansi --preview="echo {} | cut -d ' ' -f 1 | xargs -I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1
+        }
+
+        eval "$(zellij setup --generate-completion bash)"
+      '';
   };
 
   programs.ssh.enable = true;
-
-  # bitwarden 
-  # NOTE: can't get this working; says my password is incorrect
-  # programs.rbw = {
-  #   enable = true;
-  #   settings.pinentry = "tty";
-  #   settings.email = "";
-  # };
 
   # fancy command history in bash
   programs.atuin = {
@@ -583,7 +585,8 @@ in
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    plugins = with pkgs.vimPlugins;
+    plugins =
+      with pkgs.vimPlugins;
       let
         # use nurl CLI to generate these
         smart-open = pkgs.vimUtils.buildVimPlugin {
@@ -606,21 +609,22 @@ in
         };
         kdl-vim = pkgs.vimUtils.buildVimPlugin {
           name = "kdl.vim";
-          src = pkgs.fetchFromGitHub
-            {
-              owner = "imsnif";
-              repo = "kdl.vim";
-              rev = "b84d7d3a15d8d30da016cf9e98e2cfbe35cddee5";
-              hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
-            };
+          src = pkgs.fetchFromGitHub {
+            owner = "imsnif";
+            repo = "kdl.vim";
+            rev = "b84d7d3a15d8d30da016cf9e98e2cfbe35cddee5";
+            hash = "sha256-IajKK1EjrKs6b2rotOj+RlBBge9Ii2m/iuIuefnjAE4=";
+          };
         };
       in
       [
         {
-          # smart-open requires a path to sqlite, we have to do that here because the 
+          # smart-open requires a path to sqlite, we have to do that here because the
           # path will not stay the same when we use nix
           plugin = pkgs.vimPlugins.sqlite-lua;
-          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${if isLinux then "so" else "dylib"}'";
+          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${
+            if isLinux then "so" else "dylib"
+          }'";
         }
 
         telescope-fzf-native-nvim

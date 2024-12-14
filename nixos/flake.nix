@@ -10,6 +10,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     musnix = { url = "github:musnix/musnix"; };
+    rose-pine-hyprcursor= {
+        url = "github:ndom91/rose-pine-hyprcursor";
+        inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # The `@` syntax here is used to alias the attribute set of the
