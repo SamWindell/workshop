@@ -1,5 +1,3 @@
--- TODO: maybe add https://github.com/ThePrimeagen/harpoon/tree/harpoon2
-
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
@@ -107,28 +105,6 @@ require("bufferline").setup {
         separator_style = "slant"
     }
 }
-
-local split_string_by_words = function(text)
-    local e      = 0
-    local result = {}
-    while true do
-        local b = e + 1
-        b = text:find("%S", b)
-        if b == nil then break end
-        if text:sub(b, b) == "'" then
-            e = text:find("'", b + 1)
-            b = b + 1
-        elseif text:sub(b, b) == '"' then
-            e = text:find('"', b + 1)
-            b = b + 1
-        else
-            e = text:find("%s", b + 1)
-        end
-        if e == nil then e = #text + 1 end
-        table.insert(result, text:sub(b, e - 1))
-    end
-    return result
-end
 
 local signcolumn_width = 7 -- AKA gutter width
 local min_buffer_width = 110 + signcolumn_width
@@ -278,7 +254,7 @@ local run_command = function(command, on_exit)
             for _, line in pairs(d) do
                 line = rtrim(line)
                 line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
-                line = line:gsub('C:\\', '/mnt/c/')                          -- WSL hack
+                line = line:gsub('C:\\', '/mnt/c/')                              -- WSL hack
                 local i1, i2 = line:find("clang failed with stderr: ", 1, true)
                 if i1 ~= nil then
                     table.insert(lines, line:sub(0, i2))
@@ -314,75 +290,12 @@ local run_command = function(command, on_exit)
     vim.api.nvim_set_current_win(get_big_window("primary", true))
 end
 
-local read_ini_file = function(filename)
-    local file = io.open(filename, 'r')
-    if not file then return nil end
-    local result = {}
-    local section = nil
-    for line in file:lines() do
-        local tempSection = line:match('^%[([^%[%]]+)%]$')
-        if tempSection then
-            section = tempSection
-            result[section] = result[section] or {}
-        end
-        local param, value = line:match('^([%w|_]+)%s-=%s-(.+)$')
-        if param ~= nil and value ~= nil then
-            if (tonumber(value)) then
-                value = tonumber(value)
-            elseif (value == 'true') then
-                value = true
-            elseif (value == 'false') then
-                value = false
-            end
-
-            local as_num = tonumber(param)
-            if as_num then
-                param = as_num
-            end
-
-            if not section then
-                result[param] = value
-            else
-                result[section][param] = value
-            end
-        end
-    end
-    file:close()
-    return result
-end
-
-local read_project_file = function()
-    local project = read_ini_file(vim.fn.getcwd() .. "/nvim-project.ini")
-    local cross_platform_project = read_ini_file(vim.fn.getcwd() .. "/nvim-project-cross-platform.ini")
-    if not project and not cross_platform_project then return nil end
-
-    if not project then project = {} end
-    if not cross_platform_project then cross_platform_project = {} end
-
-    for k, v in pairs(cross_platform_project) do project[k] = v end
-
-    if project.variables then
-        local do_all_variable_substitutions = function(value)
-            for variable_key, variable_value in pairs(project.variables) do
-                value = value:gsub("{{" .. variable_key .. "}}", variable_value)
-            end
-            return value
-        end
-
-        for key, value in pairs(project.variables) do
-            project.variables[key] = do_all_variable_substitutions(value)
-        end
-
-
-        for key, value in pairs(project) do
-            if key ~= "variables" then
-                project[key] = do_all_variable_substitutions(value)
-            end
-        end
-    end
-
-    return project
-end
+vim.api.nvim_create_user_command("Run",
+    function(args)
+        run_command(args.args)
+    end,
+    { nargs = '*' }
+)
 
 -- I found use :cn and :cp to be annoying when there is only one error in the list,
 -- and when you reach the start/end, so these are my alternatives that funciton as I want
@@ -479,8 +392,12 @@ nvim_tree.setup {
 
 local which_key = require('which-key')
 which_key.setup()
+
+vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
+
+local first_debug_launch = true
+
 which_key.register({
-    ["<c-a>"]                            = { "<Cmd>%y+<CR>", "Copy all text" },
 
     ["<F4>"]                             = { function() dap.pause() end, "[DAP] pause" },
     ["<F5>"]                             = { function() dap.continue() end, "[DAP] continue" },
@@ -532,48 +449,23 @@ which_key.register({
     ['<leader>g']                        = {
         name = '+task',
         j = { function()
-            local project = read_project_file()
-            if project and project.build then
-                vim.cmd [[ wa ]]
-                run_command(project.build)
-            else
-                print("Error: missing \"build\" field in nvim-project")
-            end
+            vim.cmd [[ wa ]]
+            run_command("just")
         end, "Build" },
         k = { function()
-            local project = read_project_file()
-            if project and project.debug_target then
-                vim.cmd [[ wa ]]
-                run_command(project.build, function(_, exit_code, _)
-                    if exit_code == 0 then
-                        local command = split_string_by_words(project.debug_target)
-                        local config = {
-                            program = command[1],
-                            type = "lldb",
-                            request = "launch",
-                            name = "Debug",
-                            runInTerminal = true,
-                            -- stopOnEntry = true,
-                        }
-                        if #command ~= 1 then
-                            table.remove(command, 1)
-                            config.args = command
-                        end
-                        dap.run(config)
+            vim.cmd [[ wa ]]
+            run_command("just pre-debug", function(_, exit_code, _)
+                if exit_code == 0 then
+                    require('dap.ext.vscode').load_launchjs()
+                    if first_debug_launch then
+                        first_debug_launch = false
+                        dap.continue()
+                    else
+                        dap.run_last()
                     end
-                end)
-            else
-                print("Error: missing \"debug_target\" field in nvim-project")
-            end
+                end
+            end)
         end, "Debug" },
-        h = { function()
-            local project = read_project_file()
-            if project and project.configure then
-                run_command(project.configure)
-            else
-                print("Error: missing \"configure\" field in nvim-project")
-            end
-        end, "Configure" },
     },
     ['<A-tab>']                          = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
     ['<A-s-tab>']                        = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
@@ -819,9 +711,9 @@ end
 
 -- NOTE(Sam): might want to remove this, it makes the LSP _really_ sluggish
 -- IMPORTANT: make sure to setup neodev BEFORE lspconfig
-require("neodev").setup({
-    -- add any options here, or leave empty to use the default settings
-})
+-- require("neodev").setup({
+--     -- add any options here, or leave empty to use the default settings
+-- })
 
 local supported_lsp_servers = {
     'cmake',
@@ -831,7 +723,7 @@ local supported_lsp_servers = {
     'pylsp',
     'zls',
     'svelte',
-    'tsserver',
+    'ts_ls',
     'html',
     'nixd'
 }
@@ -845,6 +737,11 @@ local server_config =
     },
     capabilities = require('cmp_nvim_lsp').default_capabilities(),
     settings = {
+        nixd = {
+            formatting = {
+                command = { "nixfmt" },
+            },
+        },
         Lua = {
             runtime = {
                 -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
@@ -969,6 +866,7 @@ require('lualine').setup(
         sections = { lualine_x = { 'searchcount', 'filetype' } }
     })
 
+---@diagnostic disable-next-line: missing-fields
 require 'nvim-treesitter.configs'.setup {
     textobjects = {
         select = {
