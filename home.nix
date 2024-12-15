@@ -177,7 +177,7 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
-    SHELL = "bash";
+    SHELL = "${pkgs.bashInteractive}/bin/bash";
   };
 
   programs.home-manager.enable = true;
