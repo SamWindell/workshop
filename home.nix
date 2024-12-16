@@ -102,6 +102,54 @@ in
       pkgs.hunspellDicts.en_GB-ise
 
       (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+    ]
+    ++ pkgs.lib.optionals (isLinux && withGui) [
+      pkgs.thunderbird
+      pkgs.loupe # gnome image viewer
+      pkgs.nautilus # gnome files
+      pkgs.sushi # gnome file previewer
+      pkgs.wl-clipboard # needed to get neovim clipboard working
+      pkgs.vesktop # discord
+      pkgs.zulip
+      pkgs.waybar
+      pkgs.firefox
+      pkgs.brave
+      pkgs.hyprpicker
+      pkgs.google-chrome
+      pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
+      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
+      pkgs.gimp
+      pkgs.inkscape
+      pkgs.zeal
+      pkgs.vlc
+      pkgs.obs-studio
+      pkgs.obsidian
+      pkgs.sublime-merge
+      pkgs.libreoffice
+      grimblast # screenshot helper
+      pkgs.xdg-utils # xdg-open
+      pkgs.gnome-system-monitor
+      pkgs.blueberry # bluetooth manager
+      pkgs.quickemu
+      wezterm
+      pkgs.bemoji
+      pkgs.wtype
+
+      pkgs.pinentry-gnome3
+
+      pkgs.geonkick
+      pkgs.reaper
+      pkgs.lsp-plugins
+      pkgs.distrho-ports
+      pkgs.sfizz
+      pkgs.surge-XT
+      pkgs.decent-sampler
+      pkgs.fluidsynth
+      pkgs.qsynth
+      pkgs.musescore
+      pkgs.bitwig-studio
+      pkgs.zrythm
+      pkgs.qtractor
 
       (pkgs.writeShellScriptBin "colour-picker" ''
         colour=$(hyprpicker -a)
@@ -132,59 +180,6 @@ in
         hyprctl dispatch workspace 3 
       '')
     ]
-    ++ pkgs.lib.optionals (isLinux && withGui) [
-      pkgs.thunderbird
-      pkgs.loupe # gnome image viewer
-      pkgs.nautilus # gnome files
-      pkgs.sushi # gnome file previewer
-      pkgs.wl-clipboard # needed to get neovim clipboard working
-      pkgs.vesktop # discord
-      pkgs.zulip
-      pkgs.waybar
-      pkgs.firefox
-      pkgs.brave
-      pkgs.hyprpicker
-      pkgs.google-chrome
-      pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
-      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
-      # pkgs.bitwarden # opens but never syncs vault, Sept 2024
-      pkgs.gimp
-      pkgs.inkscape
-      pkgs.zeal
-      pkgs.vlc
-      pkgs.obs-studio
-      pkgs.obsidian
-      pkgs.sublime-merge
-      pkgs.libreoffice
-      grimblast # screenshot helper
-      pkgs.xdg-utils # xdg-open
-      pkgs.gnome-system-monitor
-      pkgs.blueberry # bluetooth manager
-      pkgs.quickemu
-      pkgs.musescore
-      wezterm
-      pkgs.bemoji
-      pkgs.wtype
-
-      pkgs.pinentry-gnome3
-
-      pkgs.geonkick
-      pkgs.reaper
-      pkgs.lsp-plugins
-      pkgs.distrho-ports
-      pkgs.sfizz
-      pkgs.surge-XT
-      pkgs.decent-sampler
-      pkgs.fluidsynth
-      pkgs.qsynth
-
-      # DAWs
-      pkgs.bitwig-studio
-      pkgs.zrythm
-      # pkgs.carla
-      pkgs.qtractor
-
-    ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
       pkgs.keepassxc
@@ -194,14 +189,15 @@ in
     ];
 
   home.file = {
-    # config.lib.file.mkOutOfStoreSymlink is a handy trick to allow apps to reload their config files
-    # without needing to home-manager switch
+    # mkOutOfStoreSymlink is a handy trick to allow apps to reload their config files without
+    # needing to home-manager switch
     ".config/nvim/lua/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
     ".config/wezterm/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/wezterm";
     ".config/starship.toml".source = ./starship/starship.toml;
-    ".config/waybar/".source = ./waybar;
+    ".config/waybar/".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/waybar";
     ".config/hypr/hyprland.conf".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/hypr/config.conf";
   };
@@ -317,6 +313,21 @@ in
   # picker
   programs.fuzzel = mkIf (isLinux && withGui) {
     enable = true;
+    settings = {
+      colors = {
+        background = "1e1e2edd";
+        text = "cdd6f4ff";
+        prompt = "bac2deff";
+        placeholder = "7f849cff";
+        input = "cdd6f4ff";
+        match = "cba6f7ff";
+        selection = "585b70ff";
+        selection-text = "cdd6f4ff";
+        selection-match = "cba6f7ff";
+        counter = "7f849cff";
+        border = "cba6f7ff";
+      };
+    };
   };
 
   programs.bat = {

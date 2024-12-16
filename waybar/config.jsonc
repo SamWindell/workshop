@@ -5,6 +5,7 @@
     "mode": "dock",
     "exclusive": true,
     "passthrough": false,
+    "reload_style_on_change": true,
     "modules-left": [
         "hyprland/workspaces"
     ],
@@ -18,7 +19,8 @@
         "clock"
     ],
     "hyprland/window": {
-        "format": "{}"
+        "format": "{}",
+        "icon": true,
     },
     "hyprland/workspaces": {
         "disable-scroll": true,
@@ -28,11 +30,11 @@
         "window-rewrite-default": "",
         "window-rewrite": {
             "class<firefox>": "",
-            "class<kitty>": "",
+            "class<org.wezfurlong.wezterm>": "",
             "class<org.gnome.Loupe>": "󰋩",
             "class<org.gnome.Nautilus>": "",
             "class<thunderbird>": "󰇮",
-            "class<Bitwarden>": "󰌋",
+            "class<org.keepassxc.KeePassXC>": "󰌋",
             "class<vesktop>": "󰙯",
             "class<obsidian>": "",
             "class<sublime_merge>": ""
