@@ -495,7 +495,7 @@ vim.keymap.set('n', '<leader>el', jump_backward_in_quickfix, { desc = 'Goto prev
 -- Task mappings
 vim.keymap.set('n', '<leader>gj', function()
     vim.cmd [[ wa ]]
-    run_command("just")
+    run_command("just default")
 end, { desc = 'Build' })
 
 vim.keymap.set('n', '<leader>gk', function()

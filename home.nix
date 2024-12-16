@@ -136,6 +136,8 @@ in
       pkgs.wtype
 
       pkgs.pinentry-gnome3
+      pkgs.rclone
+      pkgs.rclone-browser
 
       pkgs.geonkick
       pkgs.reaper
@@ -179,6 +181,14 @@ in
         firefox-bookmarks --url "$selected" | xargs firefox
         hyprctl dispatch workspace 3 
       '')
+
+      (pkgs.writeShellScriptBin "search-web" ''
+        query=$(fuzzel --dmenu)
+        [ -z "$query" ] && exit 0
+        encoded_query=$(printf '%s' "$query" | jq -sRr @uri)
+        firefox --new-tab "https://www.google.com/search?q=''${encoded_query}"
+        hyprctl dispatch workspace 3
+      '')
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
@@ -205,6 +215,7 @@ in
   home.sessionVariables = {
     EDITOR = "nvim";
     SHELL = "${pkgs.bashInteractive}/bin/bash";
+    TERMINAL = "wezterm";
   };
 
   programs.home-manager.enable = true;
@@ -268,7 +279,7 @@ in
       comment = "Open Floe project in Nix shell";
     };
     "froz" = {
-      name = "Frozenplain";
+      name = "Frozenplain Website";
       icon = "applications-development";
       exec = "froz";
       terminal = false;
@@ -329,7 +340,7 @@ in
     enable = true;
     settings = {
       colors = {
-        background = "1e1e2edd";
+        background = "1e1e2eff";
         text = "cdd6f4ff";
         prompt = "bac2deff";
         placeholder = "7f849cff";
