@@ -5,6 +5,7 @@ local config = wezterm.config_builder()
 config.color_scheme = 'kanagawabones'
 config.disable_default_key_bindings = true
 config.font_size = 11.0
+config.warn_about_missing_glyphs = false
 
 local act = wezterm.action
 config.keys = {

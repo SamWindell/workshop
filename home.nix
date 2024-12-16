@@ -284,9 +284,17 @@ in
     systemd.enable = false;
   };
 
-  dconf.settings = {
-    "org/gnome/desktop/interface" = {
-      color-scheme = "prefer-dark";
+  services.hyprpaper = mkIf (isLinux && withGui) {
+    enable = true;
+    settings = {
+      ipc = "off";
+      preload = [
+        "~/Pictures/wallpaper.jpg"
+      ];
+
+      wallpaper = [
+        "DP-4,~/Pictures/wallpaper.jpg"
+      ];
     };
   };
 
@@ -300,6 +308,12 @@ in
           on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
         }
       ];
+    };
+  };
+
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = "prefer-dark";
     };
   };
 
