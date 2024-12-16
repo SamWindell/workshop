@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
-    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,27 +20,38 @@
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # https://wezfurlong.org/wezterm/install/linux.html#flake
+    wezterm = {
+      url = "github:wez/wezterm?dir=nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, nix-vscode-extensions, home-manager, hyprland-contrib, zig, zls, ... }:
+  outputs =
+    inputs@{
+      nixpkgs,
+      home-manager,
+      ...
+    }:
     let
-      pkgsForSystem = system: import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
+      pkgsForSystem =
+        system:
+        import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+          };
         };
-      };
 
-      mkHomeConfiguration = args: home-manager.lib.homeManagerConfiguration {
-        modules = [ (import ./home.nix) ];
-        pkgs = pkgsForSystem args.system;
-        extraSpecialArgs = args.extraSpecialArgs // {
-          vscode-extensions = nix-vscode-extensions.extensions.${args.system}.vscode-marketplace;
-          hyprland-contrib = hyprland-contrib.packages.${args.system};
-          zig = zig.packages.${args.system};
-          zls = zls.packages.${args.system};
+      mkHomeConfiguration =
+        args:
+        home-manager.lib.homeManagerConfiguration {
+          modules = [ (import ./home.nix) ];
+          pkgs = pkgsForSystem args.system;
+          extraSpecialArgs = args.extraSpecialArgs // {
+            inherit inputs;
+          };
         };
-      };
     in
     {
       homeConfigurations.pcLinux = mkHomeConfiguration {

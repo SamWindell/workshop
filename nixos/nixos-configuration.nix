@@ -2,7 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   # Bootloader.
@@ -31,10 +36,10 @@
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1"; # enable wayland on chromium
+    LIBVA_DRIVER_NAME = "nvidia";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     # XCURSOR_SIZE= "24";
-    # LIBVA_DRIVER_NAME= "nvidia";
     # XDG_SESSION_TYPE= "wayland";
-    # __GLX_VENDOR_LIBRARY_NAME= "nvidia";
     # ELECTRON_OZONE_PLATFORM_HINT= "auto";
     HYPRCURSOR_THEME = "rose-pine-hyprcursor";
   };
@@ -57,7 +62,7 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    withUWSM  = true;
+    withUWSM = true;
   };
 
   services.xserver = {
@@ -73,7 +78,11 @@
   users.users.sam = {
     isNormalUser = true;
     description = "Sam Windell";
-    extraGroups = [ "networkmanager" "wheel" "audio" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "audio"
+    ];
     packages = with pkgs; [ ];
   };
 

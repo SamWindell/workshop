@@ -1,3 +1,6 @@
+-- NOTE: in home.nix, we set use mkOutOfStoreSymlink to manage the nvim config so that
+-- we don't need to home-manager switch with every change of this file.
+
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
@@ -25,6 +28,10 @@ vim.lsp.set_log_level("OFF")
 if vim.loop.os_uname().sysname == "Darwin" then
     vim.keymap.set('i', "<a-3>", "#")
 end
+
+vim.filetype.add({
+    pattern = { [".*/hypr/.*%.conf"] = "hyprlang" },
+})
 
 -- flash text when it's yanked
 vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim.fn['hlexists']('HighlightedyankRegion') > 0 and 'HighlightedyankRegion' or 'IncSearch'), timeout=500}]]
@@ -106,13 +113,16 @@ require("bufferline").setup {
     }
 }
 
+local nvim_tree = require("nvim-tree")
+local nvim_tree_api = require("nvim-tree.api")
+
 local signcolumn_width = 7 -- AKA gutter width
 local min_buffer_width = 110 + signcolumn_width
 local total_dual_panel_cols = min_buffer_width * 2 + 1
 local min_sidebar_width = 10
 local max_sidebar_width = 32
 
-local get_sidebar_cols = function()
+local default_sidebar_cols = function()
     local neovim_cols = vim.o.columns
     local sidebar_cols = neovim_cols - min_buffer_width - 1
     if total_dual_panel_cols < (neovim_cols - min_sidebar_width) then
@@ -125,6 +135,21 @@ local get_sidebar_cols = function()
         sidebar_cols = max_sidebar_width
     end
     return sidebar_cols
+end
+
+local function get_sidebar_cols()
+    local sidebar_width = 0
+    if nvim_tree_api.tree.is_visible() then
+        local wins = vim.api.nvim_list_wins()
+        for _, win in pairs(wins) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if nvim_tree_api.tree.is_tree_buf(buf) then
+                sidebar_width = vim.api.nvim_win_get_width(win)
+                break
+            end
+        end
+    end
+    return sidebar_width
 end
 
 local find_buffer = function(buffer_name)
@@ -158,7 +183,9 @@ local get_big_window = function(mode, create_if_doesnt_exist)
         end
 
         if num_proper_windows == 1 and mode == "secondary" then
-            if vim.o.columns >= total_dual_panel_cols then
+            local sidebar_width = get_sidebar_cols()
+            local remaining_width = vim.o.columns - sidebar_width
+            if remaining_width >= total_dual_panel_cols then
                 vim.cmd('rightb vsplit')
             else
                 vim.cmd('rightb split')
@@ -239,8 +266,15 @@ local run_command = function(command, on_exit)
 
     local win = get_big_window("secondary", true)
     assert(win)
-    vim.api.nvim_set_current_win(win)
 
+    -- if the secondary window is current, move its buffer to the primary window before
+    -- we replace it with the command output buffer
+    if vim.api.nvim_get_current_win() == win then
+        local b = vim.api.nvim_win_get_buf(win)
+        vim.api.nvim_win_set_buf(get_big_window('primary', false), b)
+    end
+
+    vim.api.nvim_set_current_win(win)
     local command_buf = vim.api.nvim_create_buf(true, false)
     vim.api.nvim_win_set_buf(win, command_buf)
 
@@ -249,7 +283,7 @@ local run_command = function(command, on_exit)
     -- NOTE: using termopen sets the terminal width to the width of the window. This means
     --       that you might have lines cut in half if they are long.
     vim.fn.termopen(command, {
-        on_stdout = function(job_id, d, _)
+        on_stdout = function(_, d, _)
             local lines = {}
             for _, line in pairs(d) do
                 line = rtrim(line)
@@ -271,7 +305,7 @@ local run_command = function(command, on_exit)
         on_exit = function(job_id, exit_code, event_type)
             vim.api.nvim_buf_call(command_buf, function()
                 vim.cmd("normal! G") -- scroll to bottom
-                vim.api.nvim_buf_set_option(command_buf, "modified", false)
+                vim.api.nvim_set_option_value("modified", false, { buf = command_buf })
             end)
             if on_exit then on_exit(job_id, exit_code, event_type) end
         end,
@@ -379,124 +413,146 @@ local open_dap_repl = function()
     vim.api.nvim_set_current_win(sec)
 end
 
-local nvim_tree = require("nvim-tree")
-local nvim_tree_api = require("nvim-tree.api")
 nvim_tree.setup {
     sync_root_with_cwd = true,
     view = {
-        width = get_sidebar_cols(),
+        width = default_sidebar_cols(),
         signcolumn = "auto"
     },
     filters = { custom = { "^.git$" } }
 }
 
-local which_key = require('which-key')
-which_key.setup()
+local first_debug_launch = true
 
 vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
 
-local first_debug_launch = true
+vim.keymap.set('n', '<F4>', function() dap.pause() end, { desc = '[DAP] pause' })
+vim.keymap.set('n', '<F5>', function() dap.continue() end, { desc = '[DAP] continue' })
+vim.keymap.set('n', '<F6>', function() dap.terminate() end, { desc = '[DAP] terminate' })
+vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = '[DAP] step over' })
+vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = '[DAP] step into' })
+vim.keymap.set('n', '<F12>', function() dap.step_out() end, { desc = '[DAP] step out' })
 
-which_key.register({
+-- DAP leader mappings
+vim.keymap.set('n', '<leader>db', function() dap.toggle_breakpoint() end, { desc = '[DAP] toggle breakpoint' })
+vim.keymap.set('n', '<leader>dB', function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
+    { desc = '[DAP] set condition breakpoint' })
+vim.keymap.set('n', '<leader>dl', function() dap.list_breakpoints(true) end, { desc = '[DAP] list breakpoints' })
+vim.keymap.set('n', '<leader>dd', function() dap.clear_breakpoints() end, { desc = '[DAP] clear breakpoints' })
+vim.keymap.set('n', '<leader>dq', function() dap.terminate() end, { desc = '[DAP] terminate' })
+vim.keymap.set('n', '<leader>dc', function() dap.run_to_cursor() end, { desc = '[DAP] run to cursor' })
+vim.keymap.set('n', '<leader>dr', open_dap_repl, { desc = '[DAP] toggle REPL' })
+vim.keymap.set('n', '<leader>dk', function() dap_ui_widgets.hover() end, { desc = '[DAP] hover' })
+vim.keymap.set('n', '<leader>dp', function() dap_ui_widgets.preview() end, { desc = '[DAP] preview' })
+vim.keymap.set('n', '<leader>df', function() dap_ui_widgets.centered_float(dap_ui_widgets.frames) end,
+    { desc = '[DAP] frames window' })
+vim.keymap.set('n', '<leader>ds', function() dap_ui_widgets.centered_float(dap_ui_widgets.scopes) end,
+    { desc = '[DAP] scopes window' })
+vim.keymap.set('n', '<leader>dy', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+    { desc = '[DAP] log point message' })
+vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
+vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
+vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 
-    ["<F4>"]                             = { function() dap.pause() end, "[DAP] pause" },
-    ["<F5>"]                             = { function() dap.continue() end, "[DAP] continue" },
-    ["<F6>"]                             = { function() dap.terminate() end, "[DAP] terminate" },
-    ["<F10>"]                            = { function() dap.step_over() end, "[DAP] step over" },
-    ["<F11>"]                            = { function() dap.step_into() end, "[DAP] step into" },
-    ["<F12>"]                            = { function() dap.step_out() end, "[DAP] step out" },
-    ["<leader>d"]                        = {
-        b = { function() dap.toggle_breakpoint() end, "[DAP] toggle breakpoint" },
-        B = { function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, "[DAP] set condition breakpoint" },
-        l = { function() dap.list_breakpoints(true) end, "[DAP] list breakpoints" },
-        d = { function() dap.clear_breakpoints() end, "[DAP] clear breakpoints" },
-        q = { function() dap.terminate() end, "[DAP] terminate" },
-        c = { function() dap.run_to_cursor() end, "[DAP] run to cursor" },
-        r = { open_dap_repl, "[DAP] toggle REPL" },
-        k = { function() dap_ui_widgets.hover() end, "[DAP] hover" },
-        p = { function() dap_ui_widgets.preview() end, "[DAP] preview" },
-        f = { function() dap_ui_widgets.centered_float(dap_ui_widgets.frames) end, "[DAP] frames window" },
-        s = { function() dap_ui_widgets.centered_float(dap_ui_widgets.scopes) end, "[DAP] scopes window" },
-        -- TODO: play with this, what does this do?
-        y = { function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
-            "[DAP] log point message" },
-    },
+-- Find related mappings
+vim.keymap.set('n', '<leader>fj', function() require("telescope").extensions.smart_open.smart_open({}) end,
+    { desc = 'Find File' })
+vim.keymap.set('n', '<leader>ff', '<cmd>Telescope git_files<cr>', { desc = 'Find Git File' })
+vim.keymap.set('n', '<leader>fo', '<cmd>Telescope oldfiles<cr>', { desc = 'Find Recent File' })
+vim.keymap.set('n', '<leader>fb', '<cmd>Telescope buffers<cr>', { desc = 'Find Buffer' })
+vim.keymap.set('n', '<leader>fd', '<cmd>Telescope diagnostics<cr>', { desc = 'Find Diagnostic' })
+vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<cr>', { desc = 'Find Text' })
+vim.keymap.set('n', '<leader>fi', ':Telescope live_grep search_dirs={\'src/\'}<cr>', { desc = 'Find Text in src/' })
+vim.keymap.set('n', '<leader>fG', ':Telescope grep_string<cr>', { desc = 'Find String Under Cursor' })
+vim.keymap.set('n', '<leader>fk', ':Telescope keymaps<cr>', { desc = 'Find Keymap' })
 
-    ["<leader>f"]                        = {
-        name = "+find",
-        j = { function() require("telescope").extensions.smart_open.smart_open({}) end, "Find File" },
-        f = { "<cmd>Telescope git_files<cr>", "Find Git File" },
-        o = { "<cmd>Telescope oldfiles<cr>", "Find Recent File" },
-        b = { "<cmd>Telescope buffers<cr>", "Find Buffer" },
-        d = { "<cmd>Telescope diagnostics<cr>", "Find Diagnostic" },
-        g = { ':Telescope live_grep<cr>', 'Find Text' },
-        i = { ':Telescope live_grep search_dirs={\'src/\'}<cr>', 'Find Text in src/' },
-        G = { ':Telescope grep_string<cr>', 'Find String Under Cursor' },
-        k = { ':Telescope keymaps<cr>', 'Find Keymap' },
-    },
-    ['<leader>rc']                       = { '<cmd>source ~/.config/nvim/lua/nvim-init.lua<cr>', 'Reload Config' },
-    ['<leader>n']                        = { '<cmd>enew<cr>', 'New File' },
-    ['<leader>s']                        = { '<cmd>write<cr>', 'Save File' }, -- This is overridden with format-and-save
-    ['<leader>S']                        = { '<cmd>write<cr>', 'Save File' },
-    ['<leader>e']                        = {
-        name = "+diagnostic",
-        K = { vim.diagnostic.open_float, 'Open diagnostic float' },
-        j = { vim.diagnostic.goto_next, 'Goto next diagnostic' },
-        k = { vim.diagnostic.goto_prev, 'Goto prev diagnostic' },
-        h = { jump_forward_in_quickfix, "Goto next quickfix" },
-        l = { jump_backward_in_quickfix, "Goto prev quickfix" },
-    },
-    ['<leader>g']                        = {
-        name = '+task',
-        j = { function()
-            vim.cmd [[ wa ]]
-            run_command("just")
-        end, "Build" },
-        k = { function()
-            vim.cmd [[ wa ]]
-            run_command("just pre-debug", function(_, exit_code, _)
-                if exit_code == 0 then
-                    require('dap.ext.vscode').load_launchjs()
-                    if first_debug_launch then
-                        first_debug_launch = false
-                        dap.continue()
-                    else
-                        dap.run_last()
-                    end
-                end
-            end)
-        end, "Debug" },
-    },
-    ['<A-tab>']                          = { '<cmd>BufferLineMoveNext<cr>', 'Move buffer forward' },
-    ['<A-s-tab>']                        = { '<cmd>BufferLineMovePrev<cr>', 'Move buffer backward' },
-    ['<tab>']                            = { '<cmd>BufferLineCycleNext<cr>', 'Next buffer' },
-    ['<s-tab>']                          = { '<cmd>BufferLineCyclePrev<cr>', 'Previous buffer' },
-    ['<leader>q']                        = { function()
-        local buf = vim.api.nvim_get_current_buf()
-        vim.cmd("bnext")
-        vim.cmd("bd " .. buf)
-    end, 'Close buffer' },
-
-    ['<leader>1']                        = { function() nvim_tree_api.tree.toggle({ focus = false }) end, 'Toggle files sidebar' },
-    ['<leader>' .. secondary_window_key] = { toggle_secondary_window, "Toggle secondary window" },
-    ['<leader>' .. primary_window_key]   = { function()
-        local secondary = get_big_window("secondary", false)
-        if secondary then
-            vim.api.nvim_win_close(get_big_window("primary", false), false)
-        end
-    end, "Solo secondary window" },
-    ['<leader>4']                        = { function()
-        local secondary = get_big_window("secondary", false)
-        if secondary then
-            local primary = get_big_window("primary", false)
-            local b1 = vim.api.nvim_win_get_buf(primary)
-            local b2 = vim.api.nvim_win_get_buf(secondary)
-            vim.api.nvim_win_set_buf(primary, b2)
-            vim.api.nvim_win_set_buf(secondary, b1)
-        end
-    end, "Swap primary and secondary windows" },
+-- General mappings
+vim.keymap.set("n", "/", [[/\v]], { desc = 'Magic search' })
+vim.keymap.set('n', '<leader>rc', '<cmd>source ~/.config/nvim/lua/nvim-init.lua<cr>', { desc = 'Reload Config' })
+vim.keymap.set('n', '<leader>n', '<cmd>enew<cr>', { desc = 'New File' })
+vim.keymap.set('n', '<leader>s', '<cmd>write<cr>', { desc = 'Save File' }) -- overriden by lsp if loaded
+vim.keymap.set('n', '<leader>S', '<cmd>write<cr>', { desc = 'Save File' })
+vim.keymap.set({ 'i', 'v', 's' }, 'kj', '<esc>', { desc = 'Normal mode' })
+vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = 'Paste from OS clipboard after cursor' })
+vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P', { desc = 'Paste from OS clipboard before cursor' })
+vim.keymap.set({ 'n', 'v' }, '<leader>y', '"+y', { desc = 'Copy to system clipboard' })
+vim.keymap.set("n", "<leader>o", "printf('m`%so<ESC>``', v:count1)", {
+    expr = true,
+    desc = "Create new line below",
+})
+vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
+    expr = true,
+    desc = "Create new line above",
 })
 
+-- Diagnostic mappings
+vim.keymap.set('n', '<leader>eK', vim.diagnostic.open_float, { desc = 'Open diagnostic float' })
+vim.keymap.set('n', '<leader>ej', vim.diagnostic.goto_next, { desc = 'Goto next diagnostic' })
+vim.keymap.set('n', '<leader>ek', vim.diagnostic.goto_prev, { desc = 'Goto prev diagnostic' })
+vim.keymap.set('n', '<leader>eh', jump_forward_in_quickfix, { desc = 'Goto next quickfix' })
+vim.keymap.set('n', '<leader>el', jump_backward_in_quickfix, { desc = 'Goto prev quickfix' })
+
+-- Task mappings
+vim.keymap.set('n', '<leader>gj', function()
+    vim.cmd [[ wa ]]
+    run_command("just")
+end, { desc = 'Build' })
+
+vim.keymap.set('n', '<leader>gk', function()
+    vim.cmd [[ wa ]]
+    run_command("just pre-debug", function(_, exit_code, _)
+        if exit_code == 0 then
+            require('dap.ext.vscode').load_launchjs()
+            if first_debug_launch then
+                first_debug_launch = false
+                dap.continue()
+            else
+                dap.run_last()
+            end
+        end
+    end)
+end, { desc = 'Debug' })
+
+-- Buffer management mappings
+vim.keymap.set('n', '<A-tab>', '<cmd>BufferLineMoveNext<cr>', { desc = 'Move buffer forward' })
+vim.keymap.set('n', '<A-s-tab>', '<cmd>BufferLineMovePrev<cr>', { desc = 'Move buffer backward' })
+vim.keymap.set('n', '<tab>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next buffer' })
+vim.keymap.set('n', '<s-tab>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<leader>q', function()
+    local buf = vim.api.nvim_get_current_buf()
+    vim.cmd("bnext")
+    vim.cmd("bd " .. buf)
+end, { desc = 'Close buffer' })
+
+-- Window management mappings
+vim.keymap.set('n', '<leader>1', function()
+        nvim_tree_api.tree.toggle({ focus = false })
+    end,
+    { desc = 'Toggle files sidebar' })
+vim.keymap.set('n', '<leader>' .. secondary_window_key, toggle_secondary_window, { desc = 'Toggle secondary window' })
+vim.keymap.set('n', '<leader>' .. primary_window_key, function()
+    local secondary = get_big_window("secondary", false)
+    if secondary then
+        vim.api.nvim_win_close(get_big_window("primary", false), false)
+    end
+end, { desc = 'Solo secondary window' })
+vim.keymap.set('n', '<leader>4', function()
+    local secondary = get_big_window("secondary", false)
+    if secondary then
+        local initial_win = vim.api.nvim_get_current_win()
+        local primary = get_big_window("primary", false)
+        local b1 = vim.api.nvim_win_get_buf(primary)
+        local b2 = vim.api.nvim_win_get_buf(secondary)
+        vim.api.nvim_win_set_buf(primary, b2)
+        vim.api.nvim_win_set_buf(secondary, b1)
+
+        if initial_win == primary then
+            vim.api.nvim_set_current_win(secondary)
+        else
+            vim.api.nvim_set_current_win(primary)
+        end
+    end
+end, { desc = 'Swap primary and secondary windows' })
 vim.keymap.set({ 'n' }, '<leader>wh', '<C-w>h', { desc = 'Goto right window' })
 vim.keymap.set({ 'n' }, '<leader>wl', '<C-w>l', { desc = 'Goto left window' })
 vim.keymap.set({ 'n' }, '<leader>wj', '<C-w>j', { desc = 'Goto down window' })
@@ -506,11 +562,7 @@ vim.keymap.set({ 'n' }, '<leader>wo', '<cmd>vertical resize +12<CR>', { desc = '
 vim.keymap.set({ 'n' }, '<leader>wi', '<cmd>resize +8<CR>', { desc = 'Increase window height' })
 vim.keymap.set({ 'n' }, '<leader>wu', '<cmd>resize -8<CR>', { desc = 'Decrease window height' })
 
-vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
-
-vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
-vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
-
+-- luasnip mappings
 vim.keymap.set({ 'i', 's' }, '<c-l>', function()
     local luasnip = require('luasnip')
     if luasnip.expand_or_jumpable() then
@@ -518,33 +570,14 @@ vim.keymap.set({ 'i', 's' }, '<c-l>', function()
     end
 end, { desc = 'Goto next node in snippet', silent = true })
 
-vim.keymap.set({ 'n', 'i' }, '<c-;>', function()
-    local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
-    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
-    vim.api.nvim_buf_set_text(0, row - 1, #line, row - 1, #line, { ";" })
-end, { desc = "Append semicolon on line" })
+-- Refactoring
+vim.keymap.set(
+    { "n", "x" },
+    "<leader>fl",
+    function() require('telescope').extensions.refactoring.refactors() end
+)
 
-vim.keymap.set('n', "<space><space>s",
-    "<cmd>source ~/.config/nvim/lua/snippets.lua<CR>")
-
-require("bufferline")
-
-vim.keymap.set({ 'i', 'v', 's' }, 'kj', '<esc>', { desc = 'Normal mode' })
-
-vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = 'Paste from OS clipboard after cursor' })
-vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P', { desc = 'Paste from OS clipboard before cursor' })
-vim.keymap.set({ 'n', 'v' }, '<leader>y', '"+y', { desc = 'Copy to system clipboard' })
-
-vim.keymap.set("n", "<leader>o", "printf('m`%so<ESC>``', v:count1)", {
-    expr = true,
-    desc = "Create new line below",
-})
-
-vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
-    expr = true,
-    desc = "Create new line above",
-})
-
+-- Copilot
 vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
     expr = true,
     replace_keycodes = false
@@ -552,31 +585,20 @@ vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
 vim.g.copilot_no_tab_map = true
 vim.keymap.set('i', '<C-L>', '<Plug>(copilot-accept-word)')
 
--- Magic mode for search; AKA use proper regex syntax
-vim.keymap.set("n", "/", [[/\v]])
-
-vim.keymap.set(
-    { "n", "x" },
-    "<leader>fl",
-    function() require('telescope').extensions.refactoring.refactors() end
-)
 
 --=================================================================
---
+require("bufferline")
+
 require('refactoring').setup({
     -- prompt for return type
     prompt_func_return_type = {
-        go = true,
         cpp = true,
         c = true,
-        java = true,
     },
     -- prompt for function parameters
     prompt_func_param_type = {
-        go = true,
         cpp = true,
         c = true,
-        java = true,
     },
 })
 
@@ -601,11 +623,12 @@ local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_typ
     vim.cmd("edit " .. filename)
 end
 
+-- Open the selected file in the primary or secondary window
 local telescope_mappings = {
-    [("<C-%s>"):format(primary_window_key)] = function(prompt_bufnr)
+    ["<C-j>"] = function(prompt_bufnr)
         handle_telescope_open_split_helper(prompt_bufnr, "primary")
     end,
-    [("<C-%s>"):format(secondary_window_key)] = function(prompt_bufnr)
+    ["<C-k>"] = function(prompt_bufnr)
         handle_telescope_open_split_helper(prompt_bufnr, "secondary")
     end,
 }
@@ -689,31 +712,31 @@ end
 local on_attach = function(_, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-    which_key.register({
-        ['gt'] = { vim.lsp.buf.type_definition, 'Goto definition of the type of symbol under cursor' },
-        ['gd'] = { telescope_builtin.lsp_definitions, 'Goto definition of symbol under cursor' },
-        ['gD'] = { vim.lsp.buf.declaration, 'Goto declaration of symbol under cursor' },
-        ['gi'] = { telescope_builtin.lsp_implementations, 'Goto implementation of symbol under cursor' },
-        ['gr'] = { telescope_builtin.lsp_references, 'List references of symbol under cursor' },
-        ['K'] = { vim.lsp.buf.hover, 'Show info float for symbol under cursor' },
-        ['<C-k>'] = { vim.lsp.buf.signature_help, 'Show help float for symbol under cursor' },
-        ['<leader>fr'] = { telescope_builtin.lsp_document_symbols, "Find symbol in file" },
-        ['<leader>fe'] = { telescope_builtin.lsp_workspace_symbols, "Find symbol in workspace" },
-        ['<leader>f'] = { function() vim.lsp.buf.format { async = true } end, 'Format document' },
-        ['<leader>s'] = { function()
-            vim.lsp.buf.format()
-            vim.cmd [[ write ]]
-        end, 'Format and save' },
-        ['<leader>rn'] = { vim.lsp.buf.rename, "Rename symbol" },
-        ['<leader>ca'] = { vim.lsp.buf.code_action, "LSP code action" },
-    })
-end
+    vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition,
+        { desc = 'Goto definition of the type of symbol under cursor' })
+    vim.keymap.set('n', 'gd', telescope_builtin.lsp_definitions, { desc = 'Goto definition of symbol under cursor' })
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Goto declaration of symbol under cursor' })
+    vim.keymap.set('n', 'gi', telescope_builtin.lsp_implementations,
+        { desc = 'Goto implementation of symbol under cursor' })
+    vim.keymap.set('n', 'gr', telescope_builtin.lsp_references, { desc = 'List references of symbol under cursor' })
 
--- NOTE(Sam): might want to remove this, it makes the LSP _really_ sluggish
--- IMPORTANT: make sure to setup neodev BEFORE lspconfig
--- require("neodev").setup({
---     -- add any options here, or leave empty to use the default settings
--- })
+    -- LSP information
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Show info float for symbol under cursor' })
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = 'Show help float for symbol under cursor' })
+
+    -- LSP symbol search
+    vim.keymap.set('n', '<leader>fr', telescope_builtin.lsp_document_symbols, { desc = 'Find symbol in file' })
+    vim.keymap.set('n', '<leader>fe', telescope_builtin.lsp_workspace_symbols, { desc = 'Find symbol in workspace' })
+
+    -- LSP formatting and modifications
+    vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, { desc = 'Format document' })
+    vim.keymap.set('n', '<leader>s', function()
+        vim.lsp.buf.format()
+        vim.cmd [[ write ]]
+    end, { desc = 'Format and save' })
+    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename symbol' })
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code action' })
+end
 
 local supported_lsp_servers = {
     'cmake',
@@ -763,9 +786,6 @@ local server_config =
                 enable = true,
             }
         },
-        formatting = {
-            command = "nixpkgs-fmt"
-        }
     }
 }
 
@@ -814,30 +834,27 @@ cmp.setup({
     },
 })
 
-local handle_resize = function()
+local count = 0
+
+local function handle_resize()
+    count = count + 1
     local secondary_win = get_big_window("secondary", false)
     if secondary_win then
-        local sidebar_width = 0
-        if nvim_tree_api.tree.is_visible() then
-            local wins = vim.api.nvim_list_wins()
-            for _, win in pairs(wins) do
-                local buf = vim.api.nvim_win_get_buf(win)
-                if nvim_tree_api.tree.is_tree_buf(buf) then
-                    sidebar_width = vim.api.nvim_win_get_width(win)
-                    break
-                end
-            end
-        end
+        local sidebar_width = get_sidebar_cols()
 
         local remaining_width = vim.o.columns - sidebar_width
-        local secondary_col = vim.api.nvim_win_get_position(secondary_win)[2]
+        local primary_win = get_big_window("primary", false)
+        local main_panels_are_vertical = vim.api.nvim_win_get_position(primary_win)[2] ==
+            vim.api.nvim_win_get_position(secondary_win)[2]
         if remaining_width >= total_dual_panel_cols then
-            if secondary_col == sidebar_width then
+            -- we have enough space for both windows, so the secondary window should be on the right, halfway
+            if main_panels_are_vertical then
                 vim.api.nvim_set_current_win(secondary_win)
                 vim.cmd("wincmd L")
             end
         else
-            if secondary_col ~= sidebar_width and secondary_col ~= (sidebar_width + 1) then
+            -- we don't have enough space for windows to be side by side, so they should be above and below
+            if not main_panels_are_vertical then
                 local buf = vim.api.nvim_win_get_buf(secondary_win)
                 vim.api.nvim_win_close(secondary_win, false)
                 vim.api.nvim_set_current_win(get_big_window("primary", false))
@@ -859,7 +876,20 @@ require('illuminate').configure({ delay = 50 })
 require('leap').add_default_mappings()
 require("nvim-surround").setup()
 require('snippets')
+
+-- Normal Mode
+-- `gcc` - Toggles the current line using linewise comment
+-- `gbc` - Toggles the current line using blockwise comment
+-- `[count]gcc` - Toggles the number of line given as a prefix-count using linewise
+-- `[count]gbc` - Toggles the number of line given as a prefix-count using blockwise
+-- `gc[count]{motion}` - (Op-pending) Toggles the region using linewise comment
+-- `gb[count]{motion}` - (Op-pending) Toggles the region using blockwise comment
+-- `gco` - Insert comment to the next line and enters INSERT mode
+-- `gcO` - Insert comment to the previous line and enters INSERT mode
+-- `gcA` - Insert comment to end of the current line and enters INSERT mode
 require('Comment').setup()
+require('Comment.ft').set('objcpp', '//%s')
+
 require('lualine').setup(
     {
         extensions = { 'nvim-tree' },
@@ -868,6 +898,12 @@ require('lualine').setup(
 
 ---@diagnostic disable-next-line: missing-fields
 require 'nvim-treesitter.configs'.setup {
+    highlight = {
+        enable = true,
+        disable = {
+            "nix", "c", "cpp", "lua", "json", "yaml", "toml", "html", "css", "javascript", "typescript", "svelte"
+        },
+    },
     textobjects = {
         select = {
             enable = true,
