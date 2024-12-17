@@ -52,6 +52,7 @@ in
       pkgs.cloc # count lines of code
       pkgs.lnav # log file viewer
       pkgs.git-town
+      pkgs.parallel
 
       pkgs.cmake
       pkgs.ninja
@@ -106,7 +107,6 @@ in
     ++ pkgs.lib.optionals (isLinux && withGui) [
       pkgs.thunderbird
       pkgs.loupe # gnome image viewer
-      pkgs.nautilus # gnome files
       pkgs.sushi # gnome file previewer
       pkgs.wl-clipboard # needed to get neovim clipboard working
       pkgs.vesktop # discord
@@ -183,12 +183,20 @@ in
       '')
 
       (pkgs.writeShellScriptBin "search-web" ''
-        query=$(fuzzel --dmenu)
+        query=$(fuzzel --dmenu --prompt-only "Web search: ")
         [ -z "$query" ] && exit 0
         encoded_query=$(printf '%s' "$query" | jq -sRr @uri)
         firefox --new-tab "https://www.google.com/search?q=''${encoded_query}"
         hyprctl dispatch workspace 3
       '')
+
+      (pkgs.lib.hiPrio (
+        pkgs.runCommand "nvim.desktop-hide" { } ''
+          mkdir -p "$out/share/applications"
+          cat "${config.programs.neovim.finalPackage}/share/applications/nvim.desktop" > "$out/share/applications/nvim.desktop"
+          echo "Hidden=1" >> "$out/share/applications/nvim.desktop"
+        ''
+      ))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
@@ -210,6 +218,9 @@ in
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/waybar";
     ".config/hypr/hyprland.conf".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/hypr/config.conf";
+    # nautilus extensions is configured in nixos-configuration.nix
+    ".local/share/nautilus-python/extensions/".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nautilus";
   };
 
   home.sessionVariables = {
@@ -277,6 +288,33 @@ in
       terminal = false;
       categories = [ "Development" ];
       comment = "Open Frozenplain Website project";
+    };
+    "wezterm-nvim" = {
+      name = "Wezterm Neovim";
+      icon = "nvim";
+      exec = "wezterm start -- nvim %F";
+      terminal = false;
+      categories = [ "Development" ];
+      comment = "Open Neovim in Wezterm";
+      genericName = "Text Editor";
+      type = "Application";
+      mimeType = [
+        "text/english"
+        "text/plain"
+        "text/x-makefile"
+        "text/x-c++hdr"
+        "text/x-c++src"
+        "text/x-chdr"
+        "text/x-csrc"
+        "text/x-java"
+        "text/x-moc"
+        "text/x-pascal"
+        "text/x-tcl"
+        "text/x-tex"
+        "application/x-shellscript"
+        "text/x-c"
+        "text/x-c++"
+      ];
     };
   };
 
