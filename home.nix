@@ -176,9 +176,9 @@ in
       (pkgs.writers.writeBashBin "firefox-bookmarks" { } (builtins.readFile ./bash/firefox-bookmarks.sh))
 
       (pkgs.writeShellScriptBin "pick-firefox-bookmark" ''
-        selected=$(firefox-bookmarks --list | fuzzel --dmenu) 
+        selected=$(firefox-bookmarks --list menu | sed 's|^menu/||' | fuzzel --dmenu) 
         [ -z "$selected" ] && exit 0
-        firefox-bookmarks --url "$selected" | xargs firefox
+        firefox-bookmarks --url "menu/$selected" | xargs firefox
         hyprctl dispatch workspace 3 
       '')
 
@@ -253,14 +253,6 @@ in
       terminal = false;
       categories = [ "System" ];
       comment = "Stop Hyprland session";
-    };
-    "nix-search" = {
-      name = "Nix Search";
-      icon = "system-search";
-      exec = "firefox https://search.nixos.org/packages";
-      terminal = false;
-      categories = [ "System" ];
-      comment = "Search for a package in Nix";
     };
     "workshop" = {
       name = "Workshop";
