@@ -10,8 +10,8 @@ config.warn_about_missing_glyphs = false
 local act = wezterm.action
 config.keys = {
     { key = 'L', mods = 'CTRL',           action = act.ShowDebugOverlay },
-    { key = 'C', mods = 'CTRL',           action = act.CopyTo "Clipboard" },
-    { key = 'V', mods = 'CTRL',           action = act.PasteFrom "Clipboard" },
+    { key = 'C', mods = 'CTRL|SHIFT',     action = act.CopyTo "Clipboard" },
+    { key = 'V', mods = 'CTRL|SHIFT',     action = act.PasteFrom "Clipboard" },
     { key = '+', mods = 'CTRL|ALT|SHIFT', action = act.SpawnTab "CurrentPaneDomain" },
     { key = '_', mods = 'CTRL|ALT|SHIFT', action = act.CloseCurrentTab { confirm = true } },
     { key = '{', mods = 'CTRL|ALT|SHIFT', action = act.ActivateTabRelative(-1) },

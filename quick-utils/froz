@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+projectDir=~/Projects/frozenplain.com
+
+pane0=$(wezterm cli spawn --cwd "$projectDir" --new-window)
+wezterm cli set-tab-title --pane-id $pane0 "Editor"
+wezterm cli send-text --pane-id $pane0 $'nvim\n'
+
+pane1=$(wezterm cli spawn --cwd "$projectDir" --pane-id $pane0 -- npm run dev)
+wezterm cli set-tab-title --pane-id $pane1 "Dev Server"
+
+pane2=$(wezterm cli spawn --cwd "$projectDir" --pane-id $pane0)
+wezterm cli set-tab-title --pane-id $pane2 "Shell"
+
+wezterm cli activate-pane --pane-id $pane0

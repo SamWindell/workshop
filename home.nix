@@ -158,21 +158,6 @@ in
         notify-send "Colour Picker" "$colour copied to clipboard"
       '')
 
-      (pkgs.writeShellScriptBin "workshop" ''
-        wezterm start -- nvim ~/.config/home-manager
-        hyprctl dispatch focuswindow "org.wezfurlong.wezterm"
-      '')
-
-      (pkgs.writeShellScriptBin "floe" ''
-        wezterm start --cwd ~/Projects/floe -- nix develop
-        hyprctl dispatch focuswindow "org.wezfurlong.wezterm"
-      '')
-
-      (pkgs.writeShellScriptBin "froz" ''
-        wezterm start --cwd ~/Projects/frozenplain.com
-        hyprctl dispatch focuswindow "org.wezfurlong.wezterm"
-      '')
-
       (pkgs.writers.writeBashBin "firefox-bookmarks" { } (builtins.readFile ./bash/firefox-bookmarks.sh))
 
       (pkgs.writeShellScriptBin "pick-firefox-bookmark" ''
@@ -183,20 +168,12 @@ in
       '')
 
       (pkgs.writeShellScriptBin "search-web" ''
-        query=$(fuzzel --dmenu --prompt-only "Web search: ")
+        query=$(fuzzel --dmenu --prompt-only "Web search: " --width 50)
         [ -z "$query" ] && exit 0
         encoded_query=$(printf '%s' "$query" | jq -sRr @uri)
         firefox --new-tab "https://www.google.com/search?q=''${encoded_query}"
         hyprctl dispatch workspace 3
       '')
-
-      (pkgs.lib.hiPrio (
-        pkgs.runCommand "nvim.desktop-hide" { } ''
-          mkdir -p "$out/share/applications"
-          cat "${config.programs.neovim.finalPackage}/share/applications/nvim.desktop" > "$out/share/applications/nvim.desktop"
-          echo "Hidden=1" >> "$out/share/applications/nvim.desktop"
-        ''
-      ))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
@@ -228,6 +205,10 @@ in
     SHELL = "${pkgs.bashInteractive}/bin/bash";
     TERMINAL = "wezterm";
   };
+
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.config/home-manager/quick-utils"
+  ];
 
   programs.home-manager.enable = true;
 
@@ -273,22 +254,6 @@ in
       categories = [ "Development" ];
       comment = "Open Home Manager in Neovim";
     };
-    "floe" = {
-      name = "Floe";
-      icon = "applications-development";
-      exec = "floe";
-      terminal = false;
-      categories = [ "Development" ];
-      comment = "Open Floe project in Nix shell";
-    };
-    "froz" = {
-      name = "Frozenplain Website";
-      icon = "applications-development";
-      exec = "froz";
-      terminal = false;
-      categories = [ "Development" ];
-      comment = "Open Frozenplain Website project";
-    };
     "wezterm-nvim" = {
       name = "Wezterm Neovim";
       icon = "nvim";
@@ -299,21 +264,21 @@ in
       genericName = "Text Editor";
       type = "Application";
       mimeType = [
+        "application/x-shellscript"
         "text/english"
         "text/plain"
-        "text/x-makefile"
+        "text/x-c"
+        "text/x-c++"
         "text/x-c++hdr"
         "text/x-c++src"
         "text/x-chdr"
         "text/x-csrc"
         "text/x-java"
+        "text/x-makefile"
         "text/x-moc"
         "text/x-pascal"
         "text/x-tcl"
         "text/x-tex"
-        "application/x-shellscript"
-        "text/x-c"
-        "text/x-c++"
       ];
     };
   };

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PLACES_DB=$(fd '^places.sqlite$' $HOME/.mozilla/firefox/ -t f)
 

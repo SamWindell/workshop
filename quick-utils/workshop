@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+projectDir=~/.config/home-manager
+
+pane0=$(wezterm cli spawn --cwd "$projectDir" --new-window)
+wezterm cli set-tab-title --pane-id $pane0 "Editor"
+wezterm cli send-text --pane-id $pane0 $'nvim\n'
+
+pane1=$(wezterm cli spawn --cwd "$projectDir" --pane-id $pane0)
+wezterm cli set-tab-title --pane-id $pane1 "Shell"
+
+wezterm cli activate-pane --pane-id $pane0

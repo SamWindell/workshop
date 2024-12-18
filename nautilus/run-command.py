@@ -12,13 +12,16 @@ id = "runcommand"
 
 class RunCommandExtension(GObject.GObject, Nautilus.MenuProvider):
     def _do_action(self, files: List[Nautilus.FileInfo]) -> None:
-        command = subprocess.run(['fuzzel', '--dmenu', '--prompt-only', 'Command: '], stdout=subprocess.PIPE)
-        command = command.stdout.decode('utf-8').strip()
-        if command == "":
-            return
+        try:
+            command = subprocess.run(['fuzzel', '--dmenu', '--prompt-only', 'Command: '], stdout=subprocess.PIPE)
+            command = command.stdout.decode('utf-8').strip()
+            if command == "":
+                return
 
-        paths = [unquote(f.get_uri()[7:]) for f in files]
-        subprocess.run([ 'parallel', command, ':::', *paths ])
+            paths = [unquote(f.get_uri()[7:]) for f in files]
+            subprocess.run([ 'parallel', command, ':::', *paths ])
+        except Exception as e:
+            os.system(f'notify-send "Run Command Error" "{e}"')
 
     def menu_activate_cb(
         self,
