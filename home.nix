@@ -246,14 +246,6 @@ in
       categories = [ "System" ];
       comment = "Stop Hyprland session";
     };
-    "workshop" = {
-      name = "Workshop";
-      icon = "applications-development";
-      exec = "workshop";
-      terminal = false;
-      categories = [ "Development" ];
-      comment = "Open Home Manager in Neovim";
-    };
     "wezterm-nvim" = {
       name = "Wezterm Neovim";
       icon = "nvim";

@@ -1,17 +1,22 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-projectDir=~/Projects/floe
+from pathlib import Path
+from wezterm_setup_core import Project, WeztermSetupBuilder
 
-pane0=$(wezterm cli spawn --cwd "$projectDir" --new-window -- nix develop)
-wezterm cli set-tab-title --pane-id $pane0 "Editor"
-wezterm cli send-text --pane-id $pane0 $'nvim\n'
+if __name__ == "__main__":
+    project = Project(project_dir=Path.home() / "Projects" / "floe")
+    builder = WeztermSetupBuilder(project)
 
-pane1=$(wezterm cli spawn --cwd "$projectDir" --pane-id $pane0 -- nix develop)
-wezterm cli set-tab-title --pane-id $pane1 "Docs Server"
-wezterm cli send-text --pane-id $pane1 $'cd docs\n'
-wezterm cli send-text --pane-id $pane1 $'mdbook serve\n'
+    pane0 = builder.ensure_wezterm_running("nix develop")
+    builder.set_pane_title(pane0, "Editor")
+    builder.send_text(pane0, "nvim\n")
 
-pane2=$(wezterm cli spawn --cwd "$projectDir" --pane-id $pane0 -- nix develop)
-wezterm cli set-tab-title --pane-id $pane2 "Shell"
+    pane1 = builder.spawn_pane(pane0, command="nix develop")
+    builder.set_pane_title(pane1, "Docs Server")
+    builder.send_text(pane1, "cd docs\n")
+    builder.send_text(pane1, "mdbook serve\n")
 
-wezterm cli activate-pane --pane-id $pane0
+    pane2 = builder.spawn_pane(pane0, command="nix develop")
+    builder.set_pane_title(pane2, "Shell")
+
+    builder.activate_pane(pane0)

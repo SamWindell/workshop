@@ -18,10 +18,6 @@ nwn() {
 
 cd() { builtin cd "$@" && ls . ; }
 
-hms() {
-    home-manager switch --flake ~/.config/home-manager/#${1:-pcLinux};
-}
-    
 # fixes a neovim issue with smart_open plugin taking a long time to open
 clnvim() {
     rm -f ~/.local/share/nvim/telescope_history
@@ -32,11 +28,6 @@ clnvim() {
 # diff 2 binary files
 bindiff() {
     colordiff -y <(xxd "$1") <(xxd "$2")
-}
-
-floe() {
-    cd ~/Projects/floe
-    nix develop
 }
 
 # Change dir with Fuzzy finding
@@ -53,9 +44,4 @@ se() {
 # Search multiline content and Edit
 sme() {
     rg --multiline --files-with-matches "$1" | sad --flags m "$1" "$2"
-}
-
-# Search git log, preview shows subject, body, and diff
-fl() {
-    git log --oneline --color=always | fzf --ansi --preview="echo {} | cut -d ' ' -f 1 | xargs -I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1
 }
