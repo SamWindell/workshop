@@ -87,6 +87,8 @@ in
       pkgs.gh
       pkgs.git
 
+      wezterm
+
       pkgs.transcrypt
       # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
       # should manage these dependencies itself
@@ -132,7 +134,6 @@ in
       pkgs.gnome-system-monitor
       pkgs.blueberry # bluetooth manager
       pkgs.quickemu
-      wezterm
       pkgs.bemoji
       pkgs.wtype
 
