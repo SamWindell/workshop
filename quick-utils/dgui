@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# dgui - Run GUI applications in detached mode
+# Usage: dgui <application> [arguments...]
+
+set -euo pipefail
+
+# Help message
+show_help() {
+    cat << EOF
+dgui - Run GUI applications in detached mode
+
+Usage: dgui <application> [arguments...]
+
+Options:
+    -h, --help    Show this help message
+
+Examples:
+    dgui firefox
+    dgui gimp image.png
+    dgui code my-project/
+
+The application will be started in the background, detached from the terminal,
+with output redirected to /dev/null and immune to hangups.
+EOF
+}
+
+# Parse command line arguments
+case "${1:-}" in
+    ""|-h|--help)
+        show_help
+        exit 0
+        ;;
+esac
+
+# Check if application exists
+if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Error: Application '$1' not found in PATH" >&2
+    exit 1
+fi
+
+# Get the application name and arguments
+app="$1"
+shift
+args=("$@")
+
+# Run the application detached with proper output handling
+nohup "$app" "${args[@]}" >/dev/null 2>&1 & disown
+
+echo "Started $app in detached mode (PID: $!)"

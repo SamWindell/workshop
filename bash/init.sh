@@ -45,3 +45,16 @@ se() {
 sme() {
     rg --multiline --files-with-matches "$1" | sad --flags m "$1" "$2"
 }
+
+# Tab completion for dgui
+_dgui_completion() {
+    local cur
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        COMPREPLY=($(compgen -c -- "$cur"))
+    else
+        COMPREPLY=($(compgen -f -- "$cur"))
+    fi
+}
+complete -F _dgui_completion dgui
