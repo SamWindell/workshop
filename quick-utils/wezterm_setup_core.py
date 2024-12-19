@@ -26,11 +26,11 @@ class Project:
     project_dir: Path
 
 
-
 class WeztermSetupBuilder:
     def __init__(self, project: Project):
         self.project = project
         self.class_name = "org.wezfurlong." + hash_string(str(project.project_dir))
+        self.window_pane_id = None
 
     def notify_error(self, message: str):
         subprocess.run(["notify-send", "Script Error", message])
@@ -50,18 +50,36 @@ class WeztermSetupBuilder:
             builder.run_command(["hyprctl","dispatch","workspace",workspace])
 
 
-    def spawn_pane(
+    def add_tab(
         self,
-        current_pane_id: Optional[str] = None,
         command: Optional[Union[str, List[str]]] = None,
         create_new_window: bool = False,
+        title: Optional[str] = None,
     ) -> str:
+        create_new_window = False
+
+        # wezterm requires a running instance to spawn panes
+        if not self.window_pane_id:
+            debug_log("Checking if wezterm is running")
+            if "WEZTERM_UNIX_SOCKET" not in os.environ:
+                self._start_wezterm(command)
+                self.window_pane_id = "0" # in wezterm, 0 is the first pane ID
+                time.sleep(0.6) # give wezterm some time to start
+                if title:
+                    self.set_tab_title(self.window_pane_id, title)
+                return self.window_pane_id
+            else:
+                create_new_window = True
+
         cmd = ["wezterm", "cli", "--class", self.class_name, "spawn"]
 
         if create_new_window:
             cmd.append("--new-window")
-        elif current_pane_id:  # Only use parent_id if not creating new window
-            cmd.extend(["--pane-id", current_pane_id])
+        else:
+            # If we're not creating a new window, we need to let wezterm know which window we're adding a tab to.
+            # This is done by specifying the pane-id.
+            assert self.window_pane_id
+            cmd.extend(["--pane-id", self.window_pane_id])
 
         cmd.extend(["--cwd", str(self.project.project_dir)])
 
@@ -72,9 +90,14 @@ class WeztermSetupBuilder:
             else:
                 cmd.extend(command)
 
-        return self.run_command(cmd)
+        self.window_pane_id = self.run_command(cmd)
 
-    def set_pane_title(self, pane_id: str, title: str):
+        if title:
+            self.set_tab_title(self.window_pane_id, title)
+
+        return self.window_pane_id
+
+    def set_tab_title(self, pane_id: str, title: str):
         self.run_command(
             [
                 "wezterm", "cli", "--class", self.class_name,
@@ -90,7 +113,7 @@ class WeztermSetupBuilder:
             ]
         )
 
-    def activate_pane(self, pane_id: str):
+    def activate_tab(self, pane_id: str):
         self.run_command(
             [
                 "wezterm", "cli", "--class", self.class_name,
@@ -98,7 +121,7 @@ class WeztermSetupBuilder:
             ]
         )
 
-    def start_wezterm(self, command: Optional[Union[str, List[str]]] = None):
+    def _start_wezterm(self, command: Optional[Union[str, List[str]]] = None):
         cmd = [
             "wezterm",
             "start",
@@ -128,19 +151,4 @@ class WeztermSetupBuilder:
             )
         except Exception as e:
             self.notify_error(f"Failed to start wezterm: {e}")
-            sys.exit(1)
-
-    # returns pane ID
-    def ensure_wezterm_running(self, command: Optional[Union[str, List[str]]] = None) -> str:
-        # wezterm requires a running instance to spawn panes, we need to start it using a different command
-        debug_log("Checking if wezterm is running")
-        try:
-            if ("WEZTERM_UNIX_SOCKET" not in os.environ):
-                self.start_wezterm(command)
-                time.sleep(0.6)
-                return "0" # 0 is the default pane ID
-            else:
-                return self.spawn_pane(command=command, create_new_window=True)
-        except Exception as e:
-            debug_log(f"Error: {e}")
             sys.exit(1)

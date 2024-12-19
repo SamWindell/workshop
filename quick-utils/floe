@@ -7,16 +7,13 @@ if __name__ == "__main__":
     project = Project(project_dir=Path.home() / "Projects" / "floe")
     builder = WeztermSetupBuilder(project)
 
-    pane0 = builder.ensure_wezterm_running("nix develop")
-    builder.set_pane_title(pane0, "Editor")
-    builder.send_text(pane0, "nvim\n")
+    editor_tab = builder.add_tab(command="nix develop", title="Editor")
+    builder.send_text(editor_tab, "nvim\n")
 
-    pane1 = builder.spawn_pane(pane0, command="nix develop")
-    builder.set_pane_title(pane1, "Docs Server")
-    builder.send_text(pane1, "cd docs\n")
-    builder.send_text(pane1, "mdbook serve\n")
+    docs_tab = builder.add_tab(command="nix develop", title="Docs Server")
+    builder.send_text(docs_tab, "cd docs\nmdbook serve\n")
 
-    pane2 = builder.spawn_pane(pane0, command="nix develop")
-    builder.set_pane_title(pane2, "Shell")
+    shell_tab = builder.add_tab(command="nix develop", title="Shell")
+    builder.send_text(shell_tab, "git pull\njust default\n")
 
-    builder.activate_pane(pane0)
+    builder.activate_tab(editor_tab)

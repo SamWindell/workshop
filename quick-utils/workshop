@@ -7,12 +7,11 @@ if __name__ == "__main__":
     project = Project(project_dir=Path.home() / ".config" / "home-manager")
     builder = WeztermSetupBuilder(project)
 
-    pane0 = builder.ensure_wezterm_running()
-    builder.set_pane_title(pane0, "Editor")
-    builder.send_text(pane0, "nvim\n")
+    editor_tab = builder.add_tab(title="Editor")
+    builder.send_text(editor_tab, "nvim\n")
 
-    pane1 = builder.spawn_pane(pane0)
-    builder.set_pane_title(pane1, "Shell")
+    shell_tab = builder.add_tab(title="Shell")
+    builder.send_text(shell_tab, "git pull\n")
 
-    builder.activate_pane(pane0)
+    builder.activate_tab(editor_tab)
 
