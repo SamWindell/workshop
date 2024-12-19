@@ -117,9 +117,9 @@ in
       pkgs.hyprpicker
       pkgs.google-chrome
       pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
-      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
       pkgs.gimp
       pkgs.inkscape
+      pkgs.adwaita-icon-theme
       pkgs.zeal
       pkgs.vlc
       pkgs.obs-studio
@@ -135,9 +135,50 @@ in
       pkgs.bemoji
       pkgs.wtype
 
+      # fonts
+      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
+      pkgs.league-of-moveable-type
+      pkgs.roboto
+      pkgs.inter
+      pkgs.quicksand
+      (pkgs.noto-fonts.override {
+        variants = [
+          "NotoSans"
+          "NotoSerif"
+          "NotoMusic"
+          "NotoSansSymbols"
+          "NotoSansMath"
+          "NotoSansMono"
+        ];
+      })
+      pkgs.noto-fonts-emoji
+      pkgs.barlow
+      (pkgs.stdenvNoCC.mkDerivation rec {
+        pname = "outfit-fonts";
+        version = "1.1";
+
+        src = pkgs.fetchzip {
+          url = "https://github.com/Outfitio/Outfit-Fonts/archive/refs/tags/${version}.zip";
+          hash = "sha256-d12SnIhD5LdrgZYH7zzQ8otnRyp45VTCC9vEXVsVKLY=";
+        };
+
+        installPhase = ''
+          runHook preInstall
+          install -Dm644 fonts/variable/*.ttf fonts/ttf/*.ttf -t $out/share/fonts/opentype
+          runHook postInstall
+        '';
+
+        meta = with lib; {
+          description = "Outfit Fonts";
+          homepage = "https://github.com/Outfitio/Outfit-Fonts";
+          license = licenses.ofl;
+          maintainers = [ ];
+          platforms = platforms.all;
+        };
+      })
+
       pkgs.pinentry-gnome3
       pkgs.rclone
-      pkgs.rclone-browser
 
       pkgs.geonkick
       pkgs.reaper
@@ -182,6 +223,8 @@ in
     ++ pkgs.lib.optionals isLinux [
       pkgs.wineWow64Packages.waylandFull
     ];
+
+  fonts.fontconfig.enable = true;
 
   home.file = {
     # mkOutOfStoreSymlink is a handy trick to allow apps to reload their config files without

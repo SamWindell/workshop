@@ -30,7 +30,8 @@
         "window-rewrite-default": "",
         "window-rewrite": {
             "class<firefox>": "",
-            "class<org.wezfurlong.wezterm>": "",
+            "class<org.inkscape.*>": "",
+            "class<org.wezfurlong.*>": "",
             "class<org.gnome.Loupe>": "󰋩",
             "class<org.gnome.Nautilus>": "",
             "class<thunderbird>": "󰇮",

@@ -16,6 +16,9 @@ if __name__ == "__main__":
     shell_tab = builder.add_tab(title="Shell")
     builder.send_text(shell_tab, "git pull\n")
 
+    mount_tab = builder.add_tab(title="S3 Mount")
+    builder.send_text(mount_tab, "rclone mount \"FrozenPlain Public:frozenplain-public/\" \"$HOME/frozenplain-public-s3-bucket\"");
+
     builder.activate_tab(editor_tab)
 
     builder.switch_hyprland_workspace("1")
