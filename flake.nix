@@ -25,12 +25,14 @@
       url = "github:wez/wezterm?dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mac-app-util.url = "github:hraban/mac-app-util";
   };
 
   outputs =
     inputs@{
       nixpkgs,
       home-manager,
+      mac-app-util,
       ...
     }:
     let
@@ -46,7 +48,10 @@
       mkHomeConfiguration =
         args:
         home-manager.lib.homeManagerConfiguration {
-          modules = [ (import ./home.nix) ];
+          modules = [
+            mac-app-util.homeManagerModules.default
+            (import ./home.nix)
+          ];
           pkgs = pkgsForSystem args.system;
           extraSpecialArgs = args.extraSpecialArgs // {
             inherit inputs;
