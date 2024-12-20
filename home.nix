@@ -86,6 +86,7 @@ in
 
       pkgs.gh
       pkgs.git
+      pkgs.rclone
 
       wezterm
 
@@ -180,7 +181,6 @@ in
       })
 
       pkgs.pinentry-gnome3
-      pkgs.rclone
 
       pkgs.geonkick
       pkgs.reaper
