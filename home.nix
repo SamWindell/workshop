@@ -12,6 +12,8 @@ let
   inherit (pkgs.stdenv) isLinux isDarwin;
   inherit (specialArgs) withGui;
 
+  mimeTypes = import ./mime-types.nix;
+
   zig = inputs.zig.packages.${pkgs.system}."0.13.0";
   zls = inputs.zls.packages.${pkgs.system}.zls.overrideAttrs (prev: {
     nativeBuildInputs = [ zig ];
@@ -113,7 +115,6 @@ in
       pkgs.zulip
       pkgs.waybar
       pkgs.firefox
-      pkgs.brave
       pkgs.hyprpicker
       pkgs.google-chrome
       pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
@@ -255,66 +256,66 @@ in
 
   programs.home-manager.enable = true;
 
-  # Allow commands to be run from pickers such as fuzzel
-  xdg.desktopEntries = mkIf (isLinux && withGui) {
-    "hyprpicker" = {
-      name = "Colour Picker";
-      icon = "color-picker";
-      exec = "colour-picker";
-      terminal = false;
-      categories = [ "Utility" ];
-      comment = "Pick a colour from the screen and copy it to the clipboard";
-    };
-    "system-shutdown" = {
-      name = "Shutdown System";
-      icon = "system-shutdown";
-      exec = "systemctl poweroff";
-      terminal = false;
-      categories = [ "System" ];
-      comment = "Shutdown the computer";
-    };
-    "system-reboot" = {
-      name = "Reboot System";
-      icon = "system-reboot";
-      exec = "reboot";
-      terminal = false;
-      categories = [ "System" ];
-      comment = "Restart the computer";
-    };
-    "hyprland-stop" = {
-      name = "Exit Hyprland";
-      icon = "system-log-out";
-      exec = "uwsm stop";
-      terminal = false;
-      categories = [ "System" ];
-      comment = "Stop Hyprland session";
-    };
-    "wezterm-nvim" = {
-      name = "Wezterm Neovim";
-      icon = "nvim";
-      exec = "wezterm start -- nvim %F";
-      terminal = false;
-      categories = [ "Development" ];
-      comment = "Open Neovim in Wezterm";
-      genericName = "Text Editor";
-      type = "Application";
-      mimeType = [
-        "application/x-shellscript"
-        "text/english"
-        "text/plain"
-        "text/x-c"
-        "text/x-c++"
-        "text/x-c++hdr"
-        "text/x-c++src"
-        "text/x-chdr"
-        "text/x-csrc"
-        "text/x-java"
-        "text/x-makefile"
-        "text/x-moc"
-        "text/x-pascal"
-        "text/x-tcl"
-        "text/x-tex"
-      ];
+  xdg = {
+    desktopEntries = mkIf (isLinux && withGui) {
+      "hyprpicker" = {
+        name = "Colour Picker";
+        icon = "color-picker";
+        exec = "colour-picker";
+        terminal = false;
+        categories = [ "Utility" ];
+        comment = "Pick a colour from the screen and copy it to the clipboard";
+      };
+      "system-shutdown" = {
+        name = "Shutdown System";
+        icon = "system-shutdown";
+        exec = "systemctl poweroff";
+        terminal = false;
+        categories = [ "System" ];
+        comment = "Shutdown the computer";
+      };
+      "system-reboot" = {
+        name = "Reboot System";
+        icon = "system-reboot";
+        exec = "reboot";
+        terminal = false;
+        categories = [ "System" ];
+        comment = "Restart the computer";
+      };
+      "hyprland-stop" = {
+        name = "Exit Hyprland";
+        icon = "system-log-out";
+        exec = "uwsm stop";
+        terminal = false;
+        categories = [ "System" ];
+        comment = "Stop Hyprland session";
+      };
+      "wezterm-nvim" = {
+        name = "Wezterm Neovim";
+        icon = "nvim";
+        exec = "wezterm start -- nvim %F";
+        terminal = false;
+        categories = [ "Development" ];
+        comment = "Open Neovim in Wezterm";
+        genericName = "Text Editor";
+        type = "Application";
+        mimeType = mimeTypes.sourceCodeTypes;
+      };
+      # this is purely to override the default nvim desktop entry - we want
+      # no mimeTypes and noDisplay to be true
+      "nvim" = {
+        name = "Neovim";
+        icon = "nvim";
+        exec = "nvim %F";
+        terminal = false;
+        categories = [ "Development" ];
+        comment = "Open Neovim";
+        genericName = "Text Editor";
+        type = "Application";
+        mimeType = [
+        ];
+        noDisplay = true;
+      };
     };
   };
 
