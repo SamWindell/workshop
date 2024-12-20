@@ -217,6 +217,8 @@ in
         firefox --new-tab "https://www.google.com/search?q=''${encoded_query}"
         hyprctl dispatch workspace 3
       '')
+
+      (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./bash/pick-symbol.sh))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
