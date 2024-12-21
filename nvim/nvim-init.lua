@@ -42,11 +42,12 @@ vim.cmd [[set grepformat+=%f:%l:%c:%m]]
 
 local primary_window_key = '2'
 local secondary_window_key = '3'
-local dap_repl_buffer_name = "[dap-repl]"
-local dap_terminal_buffer_name = "[dap-terminal]"
 local command_output_buffer_name = "[command-output]"
 
 vim.g.vim_svelte_plugin_use_typescript = true
+
+vim.g.zig_fmt_parse_errors = 0
+vim.g.zig_fmt_autosave = 0
 
 require('kanagawa').setup({
     dimInactive = true, -- dim inactive window `:h hl-NormalNC`
@@ -97,6 +98,7 @@ require('kanagawa').setup({
 vim.cmd [[colorscheme kanagawa]]
 
 require 'nvim-web-devicons'.setup {}
+vim.notify = require("notify")
 
 require("bufferline").setup {
     options = {
@@ -382,36 +384,8 @@ end
 
 local dap = require("dap")
 local dap_ui_widgets = require("dap.ui.widgets")
-
-local function prepare_for_recreating_secondary_split()
-    local sec = get_big_window("secondary", false)
-    if sec then
-        vim.api.nvim_win_close(sec, false)
-    end
-
-    local prim = get_big_window("primary", true)
-    vim.api.nvim_set_current_win(prim)
-    local width = vim.api.nvim_win_get_width(prim)
-    local wincmd = nil
-    if width < total_dual_panel_cols then
-        wincmd = "split"
-    else
-        wincmd = "rightb vsplit"
-    end
-    return wincmd
-end
-
-local open_dap_repl = function()
-    if open_buffer_in_secondary_window_if_possible(dap_repl_buffer_name, true) then
-        return
-    end
-
-    local wincmd = prepare_for_recreating_secondary_split()
-    dap.repl.open({}, wincmd)
-
-    sec = get_big_window("secondary", false)
-    vim.api.nvim_set_current_win(sec)
-end
+local dap_terminal_float = require('dap-terminal-float')
+local dap_repl_float = require('dap-repl-float')
 
 nvim_tree.setup {
     sync_root_with_cwd = true,
@@ -426,33 +400,56 @@ local first_debug_launch = true
 
 vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
 
+local dap_frames_view = nil
+local dap_scopes_view = nil
+local dap_threads_view = nil
+
+-- DAP mappings
 vim.keymap.set('n', '<F4>', function() dap.pause() end, { desc = '[DAP] pause' })
 vim.keymap.set('n', '<F5>', function() dap.continue() end, { desc = '[DAP] continue' })
 vim.keymap.set('n', '<F6>', function() dap.terminate() end, { desc = '[DAP] terminate' })
 vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = '[DAP] step over' })
 vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = '[DAP] step into' })
 vim.keymap.set('n', '<F12>', function() dap.step_out() end, { desc = '[DAP] step out' })
-
--- DAP leader mappings
 vim.keymap.set('n', '<leader>db', function() dap.toggle_breakpoint() end, { desc = '[DAP] toggle breakpoint' })
 vim.keymap.set('n', '<leader>dB', function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
     { desc = '[DAP] set condition breakpoint' })
 vim.keymap.set('n', '<leader>dl', function() dap.list_breakpoints(true) end, { desc = '[DAP] list breakpoints' })
 vim.keymap.set('n', '<leader>dd', function() dap.clear_breakpoints() end, { desc = '[DAP] clear breakpoints' })
+vim.keymap.set('n', '<leader>do', dap_terminal_float.toggle_dap_float,
+    { noremap = true, silent = true, desc = "Toggle DAP Terminal" })
 vim.keymap.set('n', '<leader>dq', function() dap.terminate() end, { desc = '[DAP] terminate' })
-vim.keymap.set('n', '<leader>dc', function() dap.run_to_cursor() end, { desc = '[DAP] run to cursor' })
-vim.keymap.set('n', '<leader>dr', open_dap_repl, { desc = '[DAP] toggle REPL' })
+vim.keymap.set('n', '<leader>dr', function() dap.run_to_cursor() end, { desc = '[DAP] run to cursor' })
+vim.keymap.set('n', '<leader>dc', dap_repl_float.toggle_dap_repl,
+    { noremap = true, silent = true, desc = "Toggle DAP REPL" })
 vim.keymap.set('n', '<leader>dk', function() dap_ui_widgets.hover() end, { desc = '[DAP] hover' })
 vim.keymap.set('n', '<leader>dp', function() dap_ui_widgets.preview() end, { desc = '[DAP] preview' })
-vim.keymap.set('n', '<leader>df', function() dap_ui_widgets.centered_float(dap_ui_widgets.frames) end,
+vim.keymap.set('n', '<leader>df', function()
+        if dap_frames_view then
+            dap_frames_view.toggle()
+        else
+            dap_frames_view = dap_ui_widgets.centered_float(dap_ui_widgets.frames)
+        end
+    end,
     { desc = '[DAP] frames window' })
-vim.keymap.set('n', '<leader>ds', function() dap_ui_widgets.centered_float(dap_ui_widgets.scopes) end,
+vim.keymap.set('n', '<leader>ds', function()
+        if dap_scopes_view then
+            dap_scopes_view.toggle()
+        else
+            dap_scopes_view = dap_ui_widgets.centered_float(dap_ui_widgets.scopes)
+        end
+    end,
+    { desc = '[DAP] scopes window' })
+vim.keymap.set('n', '<leader>dt', function()
+        if dap_threads_view then
+            dap_threads_view.toggle()
+        else
+            dap_threads_view = dap_ui_widgets.centered_float(dap_ui_widgets.threads)
+        end
+    end,
     { desc = '[DAP] scopes window' })
 vim.keymap.set('n', '<leader>dy', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
     { desc = '[DAP] log point message' })
-vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
-vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
-vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 
 -- Find related mappings
 vim.keymap.set('n', '<leader>fj', function() require("telescope").extensions.smart_open.smart_open({}) end,
@@ -484,6 +481,9 @@ vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
     expr = true,
     desc = "Create new line above",
 })
+vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
+vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
+vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 
 -- Diagnostic mappings
 vim.keymap.set('n', '<leader>eK', vim.diagnostic.open_float, { desc = 'Open diagnostic float' })
@@ -518,6 +518,7 @@ vim.keymap.set('n', '<A-tab>', '<cmd>BufferLineMoveNext<cr>', { desc = 'Move buf
 vim.keymap.set('n', '<A-s-tab>', '<cmd>BufferLineMovePrev<cr>', { desc = 'Move buffer backward' })
 vim.keymap.set('n', '<tab>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next buffer' })
 vim.keymap.set('n', '<s-tab>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<leader>i', '<cmd>BufferLinePick<cr>', { desc = 'Pick buffer' })
 vim.keymap.set('n', '<leader>q', function()
     local buf = vim.api.nvim_get_current_buf()
     vim.cmd("bnext")
@@ -665,6 +666,35 @@ dap.adapters.lldb = {
     name = 'lldb',
 }
 
+local notify = require('notify')
+
+-- Create a notification helper function
+local function notify_debug(msg, level)
+    notify(msg, level, {
+        title = "Debug",
+        icon = "🐛" -- This will only show in GUI clients that support it
+    })
+end
+
+-- Set up listeners for debug events
+-- Debug continue
+dap.listeners.after['event_continue']['dap-notify'] = function()
+    notify_debug("Continuing debug session", "info")
+end
+
+-- Debug stopped
+dap.listeners.after['event_stopped']['dap-notify'] = function(_, body)
+    local reason = body.reason or "Unknown"
+    notify_debug("Stopped: " .. reason, "warn")
+end
+
+-- Debug exited
+dap.listeners.after['event_exited']['dap-notify'] = function(_, body)
+    local exitCode = body.exitCode or "Unknown"
+    notify_debug("Debug session exited (code " .. exitCode .. ")", "info")
+end
+
+
 vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
 
 
@@ -691,23 +721,6 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
         end
     end
 })
-
-dap.defaults.fallback.terminal_win_cmd = function()
-    local prim = get_big_window("primary", true)
-    vim.api.nvim_command(prepare_for_recreating_secondary_split())
-    local bufnr = vim.api.nvim_get_current_buf()
-    local win = vim.api.nvim_get_current_win()
-    vim.api.nvim_set_current_win(prim)
-    return bufnr, win
-end
-
-dap.listeners.before['event_initialized']['sam'] = function(_, _)
-    open_buffer_in_secondary_window_if_possible(dap_terminal_buffer_name)
-end
-
-dap.listeners.after['event_stopped']['sam'] = function(_, _)
-    open_dap_repl()
-end
 
 local on_attach = function(_, bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -832,6 +845,16 @@ cmp.setup({
         { name = 'luasnip' },
         { name = 'nvim_lsp_signature_help' },
     },
+    enabled = function()
+        return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
+            or require("cmp_dap").is_dap_buffer()
+    end
+})
+
+require("cmp").setup.filetype({ "dap-repl" }, {
+    sources = {
+        { name = "dap" },
+    },
 })
 
 local count = 0
@@ -876,6 +899,7 @@ require('illuminate').configure({ delay = 50 })
 require('leap').add_default_mappings()
 require("nvim-surround").setup()
 require('snippets')
+require("visual-whitespace").setup()
 
 -- Normal Mode
 -- `gcc` - Toggles the current line using linewise comment
@@ -890,10 +914,17 @@ require('snippets')
 require('Comment').setup()
 require('Comment.ft').set('objcpp', '//%s')
 
+local function dap_status()
+    if dap.session() then
+        return '🐛 ' .. dap.status()
+    end
+    return ''
+end
+
 require('lualine').setup(
     {
         extensions = { 'nvim-tree' },
-        sections = { lualine_x = { 'searchcount', 'filetype' } }
+        sections = { lualine_x = { dap_status, 'searchcount', 'filetype' } }
     })
 
 ---@diagnostic disable-next-line: missing-fields

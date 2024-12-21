@@ -14,10 +14,6 @@ let
 
   mimeTypes = import ./mime-types.nix;
 
-  zig = inputs.zig.packages.${pkgs.system}."0.13.0";
-  zls = inputs.zls.packages.${pkgs.system}.zls.overrideAttrs (prev: {
-    nativeBuildInputs = [ zig ];
-  });
   grimblast = inputs.hyprland-contrib.packages.${pkgs.system}.grimblast;
   wezterm = inputs.wezterm.packages.${pkgs.system}.default;
 in
@@ -101,8 +97,8 @@ in
       pkgs.gawk # transcrypt
       pkgs.xxd # transcrypt
 
-      zig
-      zls
+      pkgs.zig
+      pkgs.zls
 
       pkgs.hunspell
       pkgs.hunspellDicts.en_GB-ise
@@ -525,6 +521,15 @@ in
             hash = "sha256-WGM21vSuqX8SDu3KCuJBjSCd4dZpeJYpEOHuuZK4T30=";
           };
         };
+        visual-whitespace = pkgs.vimUtils.buildVimPlugin {
+          name = "visual-whitespace";
+          src = pkgs.fetchFromGitHub {
+            owner = "mcauley-penney";
+            repo = "visual-whitespace.nvim";
+            rev = "31d0ed71ad7e376879d7e0df0c8cc4f1467702d4";
+            hash = "sha256-W8ZzGdm1bYNt6vUKI6WJ5zh+wL+0SXFuIp6tQun7iVA=";
+          };
+        };
       in
       [
         {
@@ -570,9 +575,12 @@ in
         vim-just
         copilot-vim
         nvim-dap
+        nvim-notify
+        cmp-dap
 
         vim-svelte-plugin
         smart-open
+        visual-whitespace
       ];
     extraLuaConfig = ''
       lldb_vscode_path = '${pkgs.lldb_18}/bin/lldb-dap'
