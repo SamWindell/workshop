@@ -66,4 +66,3 @@ yabridgectl cannot add yabridge.toml to ~/.nix-profile/lib/clap because the file
 Firefox has some pretty good built-in features for quickly searching bookmarks and history. Go to menu -> bookmarks -> manage bookmarks. You can set tags and keywords for each bookmark. You can just type a keyword in the search bar and hit enter to open it. Additionally the search bar is a fuzzy-finder. Hit CTRL+L to enter the search bar. There are a few prefixes that change the search domain. `*<space>` will filter searches to bookmarks. Some examples:
 - `CTRL+t`: new tab -> `CTRL+l`: open search bar -> `my-keyword<enter>`: opens bookmark with the keyword 'my-keyword'.
 - `CTRL+l`: open search bar -> `* `: change to bookmark search -> `a<tab><enter>`: fuzzy-finds bookmarks with 'a', selects the first result, opens it.
-

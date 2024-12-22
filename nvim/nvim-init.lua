@@ -558,14 +558,6 @@ vim.keymap.set({ 'n' }, '<leader>wo', '<cmd>vertical resize +12<CR>', { desc = '
 vim.keymap.set({ 'n' }, '<leader>wi', '<cmd>resize +8<CR>', { desc = 'Increase window height' })
 vim.keymap.set({ 'n' }, '<leader>wu', '<cmd>resize -8<CR>', { desc = 'Decrease window height' })
 
--- luasnip mappings
-vim.keymap.set({ 'i', 's' }, '<c-l>', function()
-    local luasnip = require('luasnip')
-    if luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-    end
-end, { desc = 'Goto next node in snippet', silent = true })
-
 -- Refactoring
 vim.keymap.set(
     { "n", "x" },
@@ -882,6 +874,7 @@ cmp.setup({
         { name = 'nvim_lsp' },
         { name = 'luasnip' },
         { name = 'nvim_lsp_signature_help' },
+        { name = 'path' },
     },
     enabled = function()
         return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
