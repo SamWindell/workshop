@@ -36,10 +36,6 @@ vim.filetype.add({
 -- flash text when it's yanked
 vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim.fn['hlexists']('HighlightedyankRegion') > 0 and 'HighlightedyankRegion' or 'IncSearch'), timeout=500}]]
 
--- use ripgrep as vimgrep
-vim.cmd [[set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case]]
-vim.cmd [[set grepformat+=%f:%l:%c:%m]]
-
 local primary_window_key = '2'
 local secondary_window_key = '3'
 local command_output_buffer_name = "[command-output]"
@@ -636,16 +632,16 @@ local telescope_mappings = {
 local telescope_builtin = require('telescope.builtin')
 local telescope = require('telescope')
 local file_ignore_patterns = {
-    'node_modules',
-    '.git',
-    '.venv',
-    '.zig-cache',
-    'zig-out',
-    'build',
-    '.vscode/extensions',
-    '.vscode/.*cache',
-    '__pycache__',
-    '.cache',
+    '^node_modules/',
+    '^.git/',
+    '^.venv/',
+    '^.zig-cache/',
+    '^zig-out/',
+    '^build/',
+    '^.vscode/extensions/',
+    '^.vscode/.*cache/',
+    '^__pycache__/',
+    '^.cache/',
 }
 telescope.setup({
     defaults = {
@@ -655,11 +651,13 @@ telescope.setup({
         },
     },
     pickers = {
+        grep_string = {
+            file_ignore_patterns = file_ignore_patterns,
+            additional_args = { "--hidden" }
+        },
         live_grep = {
             file_ignore_patterns = file_ignore_patterns,
-            additional_args = function(_)
-                return { "--hidden", } -- TODO: this isn't showing .github files still?
-            end
+            additional_args = { "--hidden" }
         },
         find_files = {
             file_ignore_patterns = file_ignore_patterns,
