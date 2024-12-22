@@ -459,7 +459,6 @@ vim.keymap.set('n', '<leader>fo', '<cmd>Telescope oldfiles<cr>', { desc = 'Find 
 vim.keymap.set('n', '<leader>fb', '<cmd>Telescope buffers<cr>', { desc = 'Find Buffer' })
 vim.keymap.set('n', '<leader>fd', '<cmd>Telescope diagnostics<cr>', { desc = 'Find Diagnostic' })
 vim.keymap.set('n', '<leader>fg', ':Telescope live_grep<cr>', { desc = 'Find Text' })
-vim.keymap.set('n', '<leader>fi', ':Telescope live_grep search_dirs={\'src/\'}<cr>', { desc = 'Find Text in src/' })
 vim.keymap.set('n', '<leader>fG', ':Telescope grep_string<cr>', { desc = 'Find String Under Cursor' })
 vim.keymap.set('n', '<leader>fk', ':Telescope keymaps<cr>', { desc = 'Find Keymap' })
 
@@ -636,12 +635,36 @@ local telescope_mappings = {
 
 local telescope_builtin = require('telescope.builtin')
 local telescope = require('telescope')
+local file_ignore_patterns = {
+    'node_modules',
+    '.git',
+    '.venv',
+    '.zig-cache',
+    'zig-out',
+    'build',
+    '.vscode/extensions',
+    '.vscode/.*cache',
+    '__pycache__',
+    '.cache',
+}
 telescope.setup({
     defaults = {
         mappings = {
             n = telescope_mappings,
             i = telescope_mappings,
         },
+    },
+    pickers = {
+        live_grep = {
+            file_ignore_patterns = file_ignore_patterns,
+            additional_args = function(_)
+                return { "--hidden", } -- TODO: this isn't showing .github files still?
+            end
+        },
+        find_files = {
+            file_ignore_patterns = file_ignore_patterns,
+            hidden = true
+        }
     },
     extensions = {
         fzf = {
