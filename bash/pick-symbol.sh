@@ -4,10 +4,10 @@ read -r -d '' symbols << 'EOL'
 — em dash
 – en dash
 … ellipsis
-' apostrophe
-' left quote
-" right quote
-" left quote
+‘ left quote
+’ apostrophe, right quote
+“ left quote
+” right quote
 × multiply
 ÷ divide
 ° degree
