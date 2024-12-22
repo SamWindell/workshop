@@ -467,7 +467,7 @@ vim.keymap.set('n', '<leader>fk', ':Telescope keymaps<cr>', { desc = 'Find Keyma
 vim.keymap.set("n", "/", [[/\v]], { desc = 'Magic search' })
 vim.keymap.set('n', '<leader>rc', '<cmd>source ~/.config/nvim/lua/nvim-init.lua<cr>', { desc = 'Reload Config' })
 vim.keymap.set('n', '<leader>n', '<cmd>enew<cr>', { desc = 'New File' })
-vim.keymap.set('n', '<leader>s', '<cmd>write<cr>', { desc = 'Save File' }) -- overriden by lsp if loaded
+vim.keymap.set('n', '<leader>s', '<cmd>write<cr>', { desc = 'Save File' })
 vim.keymap.set('n', '<leader>S', '<cmd>write<cr>', { desc = 'Save File' })
 vim.keymap.set({ 'i', 'v', 's' }, 'kj', '<esc>', { desc = 'Normal mode' })
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { desc = 'Paste from OS clipboard after cursor' })
@@ -743,13 +743,30 @@ local on_attach = function(_, bufnr)
 
     -- LSP formatting and modifications
     vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, { desc = 'Format document' })
-    vim.keymap.set('n', '<leader>s', function()
-        vim.lsp.buf.format()
-        vim.cmd [[ write ]]
-    end, { desc = 'Format and save' })
     vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename symbol' })
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code action' })
 end
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*",
+    callback = function(args)
+        -- Get the buffer number from the event arguments
+        local bufnr = args.buf
+
+        -- Get the clients attached to the current buffer
+        local clients = vim.lsp.get_active_clients({ bufnr = bufnr })
+
+        for _, client in ipairs(clients) do
+            if client.server_capabilities.documentFormattingProvider then
+                vim.lsp.buf.format({
+                    bufnr = bufnr,
+                    async = false
+                })
+                break
+            end
+        end
+    end,
+})
 
 local supported_lsp_servers = {
     'cmake',
