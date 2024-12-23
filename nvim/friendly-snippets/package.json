@@ -58,13 +58,6 @@
             },
             {
                 "language": [
-                    "plaintex",
-                    "tex"
-                ],
-                "path": "./snippets/latex.json"
-            },
-            {
-                "language": [
                     "html",
                     "jade",
                     "pug",
@@ -100,10 +93,6 @@
             {
                 "language": "jsdoc",
                 "path": "./snippets/javascript/jsdoc.json"
-            },
-            {
-                "language": "tsdoc",
-                "path": "./snippets/javascript/tsdoc.json"
             },
             {
                 "language": [
@@ -147,10 +136,6 @@
             {
                 "language": "cmake",
                 "path": "./snippets/cmake.json"
-            },
-            {
-                "language": "zig",
-                "path": "./snippets/zig.json"
             }
         ]
     }
