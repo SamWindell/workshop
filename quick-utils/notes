@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+from wezterm_setup_core import Project, WeztermSetupBuilder
+import os
+
+if __name__ == "__main__":
+    project = Project(project_dir=Path.home() / "MEGA" / "Obsidian")
+    builder = WeztermSetupBuilder(project)
+
+    editor_tab = builder.add_tab()
+    builder.send_text(editor_tab, "nvim\n")
+
+    builder.switch_hyprland_workspace("1")
