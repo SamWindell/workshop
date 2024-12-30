@@ -54,8 +54,9 @@ in
 
       pkgs.cmake
       pkgs.ninja
-      pkgs.llvmPackages_18.clang-unwrapped # clangd
-      pkgs.llvmPackages_18.libllvm # llvm-symbolizer
+      pkgs.llvmPackages.clang
+      pkgs.llvmPackages.clang-unwrapped
+      pkgs.llvmPackages.libllvm
       pkgs.lldb_18
       pkgs.python3
       pkgs.just
@@ -134,6 +135,9 @@ in
       pkgs.bemoji
       pkgs.wtype
 
+      pkgs.playerctl # used by waybar
+      pkgs.zenity # used by waybar
+
       # fonts
       (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
       pkgs.league-of-moveable-type
@@ -197,7 +201,9 @@ in
         notify-send "Colour Picker" "$colour copied to clipboard"
       '')
 
-      (pkgs.writers.writeBashBin "firefox-bookmarks" { } (builtins.readFile ./bash/firefox-bookmarks.sh))
+      (pkgs.writers.writeBashBin "firefox-bookmarks" { } (
+        builtins.readFile ./scripts/firefox-bookmarks.sh
+      ))
 
       (pkgs.writeShellScriptBin "pick-firefox-bookmark" ''
         selected=$(firefox-bookmarks --list menu | sed 's|^menu/||' | fuzzel --dmenu) 
@@ -214,7 +220,12 @@ in
         hyprctl dispatch workspace 3
       '')
 
-      (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./bash/pick-symbol.sh))
+      (pkgs.writers.writePython3Bin "weekly-note-review" {
+        libraries = with pkgs.python3Packages; [ watchdog ];
+        doCheck = false;
+      } (builtins.readFile ./scripts/weekly-note-review.py))
+
+      (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./scripts/pick-symbol.sh))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.tracy
@@ -228,7 +239,7 @@ in
 
   home.file = {
     # mkOutOfStoreSymlink is a handy trick to allow apps to reload their config files without
-    # needing to home-manager switch
+    # needing to `home-manager switch`
     ".config/nvim/lua/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
     ".config/wezterm/".source =
@@ -363,6 +374,14 @@ in
   # notifications
   services.swaync = mkIf (isLinux && withGui) {
     enable = true;
+    settings = {
+      scripts = {
+        play-sound = {
+          exec = "${pkgs.sox}/bin/play ${sounds/definite-555.ogg}";
+          app-name = ".*";
+        };
+      };
+    };
   };
 
   # picker
@@ -440,7 +459,7 @@ in
         export LLDB_DEBUGSERVER_PATH=/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/Resources/debugserver
       ''
       + ''
-        source "${./bash/init.sh}"
+        source "${./scripts/init.sh}"
         source "${pkgs.wezterm}/etc/profile.d/wezterm.sh"
       '';
   };

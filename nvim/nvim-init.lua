@@ -571,8 +571,24 @@ vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
     replace_keycodes = false
 })
 vim.g.copilot_no_tab_map = true
-vim.keymap.set('i', '<C-L>', '<Plug>(copilot-accept-word)')
 
+-- 
+vim.keymap.set({ 'i', 's' }, '<c-l>', function()
+    local luasnip = require('luasnip')
+    if luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+    else
+        -- accept Copilot word
+        vim.cmd('normal! <Plug>(copilot-accept-word)')
+    end
+end, { desc = 'Goto next node in snippet', silent = true })
+
+vim.keymap.set({ 'i', 's' }, '<c-h>', function()
+    local luasnip = require('luasnip')
+    if luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+    end
+end, { desc = 'Goto previous node in snippet', silent = true })
 
 --=================================================================
 require("bufferline")
@@ -881,6 +897,7 @@ cmp.setup({
             or require("cmp_dap").is_dap_buffer()
     end
 })
+
 
 require("cmp").setup.filetype({ "dap-repl" }, {
     sources = {
