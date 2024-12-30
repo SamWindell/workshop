@@ -5,7 +5,7 @@ import json
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-REVIEW_FILE = os.path.expanduser("~/MEGA/Obsidian/Resources/Weekly Review Tracking.md")
+REVIEW_FILE = os.path.expanduser("~/MEGA/Obsidian/Weekly Review Tracking.md")
 
 def parse_date(string):
    try:
