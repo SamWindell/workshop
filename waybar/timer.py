@@ -10,8 +10,6 @@ import time
 HOME = os.environ['HOME']
 CONFIG_DIR = f"{HOME}/.config/waybar-timer"
 TFILE = f"{CONFIG_DIR}/timer"
-ICON_SIZE = "13"
-RISE = "-2000"
 
 # Create config directory if it doesn't exist
 os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -32,7 +30,7 @@ def check_timer():
     
     if content == "READY":
         return json.dumps({
-            "text": f"<span font='{ICON_SIZE}' rise='{RISE}'>󰔛</span> ",
+            "text": "󰔛",
             "tooltip": "Timer is not active"
         })
 
@@ -41,7 +39,8 @@ def check_timer():
             f.write("READY")
         notify("Timer expired!")
         return json.dumps({
-            "text": f"<span font='{ICON_SIZE}' rise='{RISE}'>󰔛</span> "
+            "text": "󰔛",
+            "tooltip": "Timer is not active"
         })
 
     try:
@@ -50,15 +49,21 @@ def check_timer():
 
         if target_datetime > now:
             remaining = target_datetime - now
-            days = remaining.days
             hours, remainder = divmod(remaining.seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
+            minutes, _ = divmod(remainder, 60)
+            seconds = remaining.seconds % 60
+
+            remaining_str = ""
+            if hours > 0:
+                remaining_str += f"{hours}h "
+            if minutes > 0:
+                remaining_str += f"{minutes}m "
+            remaining_str += f"{seconds}s"
             
-            remaining_str = f"{days}d {hours:02d}:{minutes:02d}:{seconds:02d}"
             target_short = target_datetime_str[:-3]
 
             return json.dumps({
-                "text": f"<span font='{ICON_SIZE}' rise='{RISE}'>󰔟</span> {remaining_str}",
+                "text": f"󰔟 {remaining_str}",
                 "class": "active",
                 "tooltip": f"{title}\n\n{target_short}"
             })
@@ -66,20 +71,20 @@ def check_timer():
             with open(TFILE, 'w') as f:
                 f.write("FINISHED")
             return json.dumps({
-                "text": f"<span font='{ICON_SIZE}' rise='{RISE}'>󰔛</span> "
+                "text": "󰔛"
             })
     except ValueError:
         with open(TFILE, 'w') as f:
             f.write("READY")
         return json.dumps({
-            "text": f"<span font='{ICON_SIZE}' rise='{RISE}'>󰔛</span> "
+            "text": "󰔛"
         })
 
 def minute_dialog():
     try:
         result = subprocess.run(
             ['zenity', '--scale', '--title=Set timer', '--text=In x minutes:',
-             '--min-value=1', '--max-value=600', '--step=1', '--value=10'],
+             '--min-value=1', '--max-value=120', '--step=1', '--value=10'],
             capture_output=True, text=True
         )
         

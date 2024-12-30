@@ -1,12 +1,13 @@
 /* Credits to https://github.com/ChrisTitusTech/hyprland-titus */
 * {
     border: none;
-    border-radius: 0;
     font-family: Ubuntu Nerd Font, monospace;
     font-weight: bold;
     font-size: 14px;
     min-height: 0;
     color: #e0e0e0;
+    border-radius: 5px;
+    background: none;
 }
 
 window#waybar {
@@ -14,12 +15,17 @@ window#waybar {
     color: #cdd6f4;
 }
 
-tooltip {
+tooltip,
+#tray menu {
     background: #1e1e2e;
-    border-radius: 0px;
     border-width: 2px;
     border-style: solid;
     border-color: #11111b;
+}
+
+/* Left */
+#workspaces {
+    padding: 0px;
 }
 
 #workspaces button {
@@ -32,85 +38,73 @@ tooltip {
     background: rgba(100, 100, 100, 0.4);
 }
 
-#custom-weekly-review {
-    background: #8f0000;
-    padding: 5px;
-}
 
 #workspaces button.focused {
     color: #a6adc8;
     background: #eba0ac;
-    border-radius: 0px;
 }
 
 #workspaces button.urgent {
     color: #11111b;
     background: #a6e3a1;
-    border-radius: 0px;
 }
 
 #workspaces button:hover {
     background: rgba(100, 100, 100, 0.6);
-    border-radius: 0px;
 }
 
-#window,
-#clock,
-#battery,
-#pulseaudio,
-#network,
-#workspaces,
-#tray {
-    padding: 0px 10px;
-    margin: 0px 0px;
-    margin-top: 0px;
-}
-
-#tray {
-    border-radius: 0px;
-    margin-right: 10px;
-}
-
-#workspaces {
-    border-radius: 0px;
-    margin-left: 0px;
-    padding-right: 0px;
-    padding-left: 5px;
-}
-
+/* Middle */
+#custom-media,
 #window {
-    border-radius: 0px;
-    margin-left: 60px;
-    margin-right: 60px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 5px;
 }
 
-#clock {
-    border-radius: 10px;
-    margin-left: 5px;
-    border-right: 0px;
+#custom-media:hover {
+    background: rgba(100, 100, 100, 0.6);
 }
 
-#network {
-    border-left: 0px;
-    border-right: 0px;
+/* Right */
+#custom-timer.active {
+    background: #8f0000;
+    padding: 5px;
+}
+
+#custom-timer button:hover {
+    background: rgba(100, 100, 100, 0.6);
+}
+
+#clock,
+#pulseaudio,
+#custom-timer,
+#custom-weekly-review,
+#clock,
+#tray {
+    padding: 0px 5px;
+    margin: 0px 5px;
+}
+
+#tray {
+    border: 0px;
+}
+
+#pulseaudio:hover,
+#custom-timer:hover,
+#clock:hover,
+#tray .passive {
+    background: rgba(100, 100, 100, 0.3);
+}
+
+#custom-weekly-review {
+    background: #8f0000;
 }
 
 #pulseaudio {
-    border-radius: 10px 0px 0px 10px;
     border-left: 0px;
     border-right: 0px;
 }
 
-#pulseaudio.microphone {
-    border-radius: 0px 10px 10px 0px;
-    border-left: 0px;
-    border-right: 0px;
-    margin-right: 5px;
+#clock {
+    margin-right: 0px;
 }
-
-#battery {
-    border-radius: 0 10px 10px 0;
-    margin-right: 10px;
-    border-left: 0px;
-}
-

@@ -40,14 +40,15 @@
         "tooltip": true,
         "return-type": "json",
         "exec": "python3 $HOME/.config/waybar/timer.py check",
-        "on-click": "python3 $HOME/.config/waybar/timer.py minute_dialog",
-        "on-click-right": "python3 $HOME/.config/waybar/timer.py pomodoro",
-        "on-click-middle": "python3 $HOME/.config/waybar/timer.py stop",
+        "on-click": "python3 $HOME/.config/waybar/timer.py pomodoro",
+        "on-click-middle": "python3 $HOME/.config/waybar/timer.py minute_dialog",
+        "on-click-right": "python3 $HOME/.config/waybar/timer.py stop",
         "interval": 1
     },
     "hyprland/window": {
         "format": "{}",
         "icon": true,
+        "icon-size": 16,
     },
     "hyprland/workspaces": {
         "disable-scroll": true,
@@ -86,7 +87,6 @@
     },
     "clock": {
         "format": " {:%H:%M  %A %d %B}",
-        "format-alt": "{:%A, %B %d, %Y (%R)}  ",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "year",
@@ -101,13 +101,13 @@
                 "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
             }
         },
-        "actions": {
-            "on-click-right": "mode",
-            "on-click-forward": "tz_up",
-            "on-click-backward": "tz_down",
-            "on-scroll-up": "shift_up",
-            "on-scroll-down": "shift_down"
-        }
+        // "actions": {
+        //     "on-click-right": "mode",
+        //     "on-click-forward": "tz_up",
+        //     "on-click-backward": "tz_down",
+        //     "on-scroll-up": "shift_up",
+        //     "on-scroll-down": "shift_down"
+        // }
     },
     "pulseaudio": {
         "format": "{icon} {volume}%",
