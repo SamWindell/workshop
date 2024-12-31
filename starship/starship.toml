@@ -11,6 +11,7 @@ $directory\
 $git_branch\
 $git_state\
 $git_status\
+$nix_shell\
 $line_break\
 $character"""
 
@@ -40,3 +41,9 @@ stashed = "≡"
 [git_state]
 format = '\([$state( $progress_current/$progress_total)]($style)\) '
 style = "bright-black"
+
+# [custom.nixshell]
+# command = "echo ❄️"
+# when = "test -n \"$IN_NIX_SHELL\""
+# format = "[$output]($style) "
+# style = "bold blue"
