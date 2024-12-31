@@ -80,6 +80,7 @@ tooltip,
 #custom-timer,
 #custom-weekly-review,
 #clock,
+#custom-notification,
 #tray {
     padding: 0px 5px;
     margin: 0px 5px;
@@ -92,6 +93,7 @@ tooltip,
 #pulseaudio:hover,
 #custom-timer:hover,
 #clock:hover,
+#custom-notification:hover,
 #tray .passive {
     background: rgba(100, 100, 100, 0.3);
 }
