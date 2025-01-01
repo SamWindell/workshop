@@ -1,0 +1,14 @@
+# Ignore all hidden files and folders
+.*
+
+# But not .github folder
+!.github/
+!.github/**
+
+# And not .vscode/launch.json
+!.vscode/
+!.vscode/launch.json
+
+# Re-ignore any other files in .vscode
+.vscode/*
+!.vscode/launch.json

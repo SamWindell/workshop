@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# New Tab Neovim. Use provided path or current directory path
+local target="$(readlink -f "${1:-$(pwd)}")"  # Convert to absolute path
+wezterm cli spawn -- nvim "$target"

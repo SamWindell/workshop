@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# fixes a neovim issue with smart_open plugin taking a long time to open
+rm -f ~/.local/share/nvim/telescope_history
+rm -f ~/.local/share/nvim/smart_open.sqlite3
+rm -f ~/.local/state/nvim/shada/main.shada

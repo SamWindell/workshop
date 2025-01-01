@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Search multiline content and Edit
+
+rg --multiline --files-with-matches "$1" | sad "$1" "$2"

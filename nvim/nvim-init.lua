@@ -571,24 +571,8 @@ vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
     replace_keycodes = false
 })
 vim.g.copilot_no_tab_map = true
+vim.keymap.set('i', '<C-P>', '<Plug>(copilot-accept-word)')
 
--- 
-vim.keymap.set({ 'i', 's' }, '<c-l>', function()
-    local luasnip = require('luasnip')
-    if luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-    else
-        -- accept Copilot word
-        vim.cmd('normal! <Plug>(copilot-accept-word)')
-    end
-end, { desc = 'Goto next node in snippet', silent = true })
-
-vim.keymap.set({ 'i', 's' }, '<c-h>', function()
-    local luasnip = require('luasnip')
-    if luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-    end
-end, { desc = 'Goto previous node in snippet', silent = true })
 
 --=================================================================
 require("bufferline")
@@ -639,18 +623,6 @@ local telescope_mappings = {
 
 local telescope_builtin = require('telescope.builtin')
 local telescope = require('telescope')
-local file_ignore_patterns = {
-    '^node_modules/',
-    '^.git/',
-    '^.venv/',
-    '^.zig-cache/',
-    '^zig-out/',
-    '^build/',
-    '^.vscode/extensions/',
-    '^.vscode/.*cache/',
-    '^__pycache__/',
-    '^.cache/',
-}
 telescope.setup({
     defaults = {
         mappings = {
@@ -658,26 +630,12 @@ telescope.setup({
             i = telescope_mappings,
         },
     },
-    pickers = {
-        grep_string = {
-            file_ignore_patterns = file_ignore_patterns,
-            additional_args = { "--hidden" }
-        },
-        live_grep = {
-            file_ignore_patterns = file_ignore_patterns,
-            additional_args = { "--hidden" }
-        },
-        find_files = {
-            file_ignore_patterns = file_ignore_patterns,
-            hidden = true
-        }
-    },
     extensions = {
         fzf = {
-            fuzzy = true,                   -- false will only do exact matching
-            override_generic_sorter = true, -- override the generic sorter
-            override_file_sorter = true,    -- override the file sorter
-            case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
         },
         smart_open = {
             match_algorithm = "fzf",

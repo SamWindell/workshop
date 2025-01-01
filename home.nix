@@ -252,6 +252,8 @@ in
     # nautilus extensions is configured in nixos-configuration.nix
     ".local/share/nautilus-python/extensions/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nautilus";
+    ".config/fd/ignore".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/search-ignore";
   };
 
   home.sessionVariables = {
@@ -475,6 +477,9 @@ in
   # fuzzy search. this also enables integration with bash e.g.: `nvim **<TAB>`
   programs.fzf = {
     enable = true;
+    defaultOptions = [
+      "--bind ctrl-a:toggle-all"
+    ];
   };
 
   # better cd
@@ -483,7 +488,12 @@ in
   };
 
   # nicer grep
-  programs.ripgrep.enable = true;
+  programs.ripgrep = {
+    enable = true;
+    arguments = [
+      "--ignore-file=${config.home.homeDirectory}/.config/home-manager/search-ignore"
+    ];
+  };
 
   # nicer prompt
   programs.starship.enable = true;

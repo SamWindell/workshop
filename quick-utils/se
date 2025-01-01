@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Search content and Edit
+
+rg --files-with-matches "$1" | sad "$1" "$2"
