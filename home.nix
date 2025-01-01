@@ -16,6 +16,9 @@ let
 
   grimblast = inputs.hyprland-contrib.packages.${pkgs.system}.grimblast;
   wezterm = inputs.wezterm.packages.${pkgs.system}.default;
+
+  # we have nixpkgs-unstable in input and we want to use it for neovim
+  neovim-unwrapped = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.neovim-unwrapped;
 in
 {
   home.username = specialArgs.username;
@@ -528,6 +531,7 @@ in
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
+    package = neovim-unwrapped;
     plugins =
       with pkgs.vimPlugins;
       let
