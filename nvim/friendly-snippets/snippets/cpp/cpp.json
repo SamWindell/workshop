@@ -124,49 +124,6 @@
         ],
         "description": "Code snippet for empty class"
     },
-    "qclass": {
-        "prefix": "qclass",
-        "body": [
-            "class ${1:MyClass} : public QObject {",
-            "\tQ_OBJECT;",
-            "public:",
-            "\nexplicit $1(QObject *parent = nullptr);",
-            "\t$2",
-            "signals:",
-            "",
-            "public slots:",
-            "};",
-            ""
-        ],
-        "description": "Code snippet for empty Qt class"
-    },
-    "classi": {
-        "prefix": "classi",
-        "body": [
-            "class ${1:MyClass} {",
-            "public:",
-            "\t$1() = default;",
-            "\t$1($1 &&) = default;",
-            "\t$1(const $1 &) = default;",
-            "\t$1 &operator=($1 &&) = default;",
-            "\t$1 &operator=(const $1 &) = default;",
-            "\t~$1() = default;",
-            "",
-            "private:",
-            "\t$2",
-            "};"
-        ],
-        "description": "Code snippet for class with inline constructor/destructor"
-    },
-    "interface": {
-        "prefix": "interface",
-        "body": [
-            "__interface I${1:Interface} {",
-            "\t$0",
-            "};"
-        ],
-        "description": "Code snippet for interface (Visual C++)"
-    },
     "namespace": {
         "prefix": "namespace",
         "body": [
