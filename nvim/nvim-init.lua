@@ -570,8 +570,8 @@ vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
     expr = true,
     replace_keycodes = false
 })
+vim.keymap.set('i', '<C-s-o>', '<Plug>(copilot-accept-word)')
 vim.g.copilot_no_tab_map = true
-vim.keymap.set('i', '<C-P>', '<Plug>(copilot-accept-word)')
 
 
 --=================================================================
@@ -672,7 +672,9 @@ end
 -- Debug stopped
 dap.listeners.after['event_stopped']['dap-notify'] = function(_, body)
     local reason = body.reason or "Unknown"
-    notify_debug("Stopped: " .. reason, "warn")
+    if reason ~= "step" then
+        notify_debug("Stopped: " .. reason, "warn")
+    end
 end
 
 -- Debug exited
@@ -765,7 +767,8 @@ local supported_lsp_servers = {
     'svelte',
     'ts_ls',
     'html',
-    'nixd'
+    'nixd',
+    'yamlls',
 }
 
 local lspconfig = require('lspconfig')

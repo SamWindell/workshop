@@ -83,6 +83,7 @@ in
       pkgs.python3Packages.python-lsp-server
       pkgs.black # python formatter
       pkgs.cmake-format
+      pkgs.yaml-language-server
 
       pkgs.gh
       pkgs.git
@@ -375,6 +376,26 @@ in
   };
 
   services.megasync.enable = isLinux && withGui; # cloud sync program
+  systemd.user.services.megasync = mkIf (isLinux && withGui) {
+    Service = {
+      ExecStart = "${config.services.megasync.package}/bin/megasync";
+      Restart = "always";
+      RestartSec = 3;
+      Type = "simple";
+      Environment = [
+        "PATH=${pkgs.xorg.xrdb}/bin:${config.home.profileDirectory}/bin"
+      ];
+      # Inherit environment variables from user session
+      PassEnvironment = [
+        "XDG_CURRENT_DESKTOP"
+        "WAYLAND_DISPLAY"
+        "XDG_SESSION_TYPE"
+      ];
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
 
   # notifications
   services.swaync = mkIf (isLinux && withGui) {

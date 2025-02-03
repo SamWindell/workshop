@@ -12,16 +12,49 @@ id = "runcommand"
 
 class RunCommandExtension(GObject.GObject, Nautilus.MenuProvider):
     def _do_action(self, files: List[Nautilus.FileInfo]) -> None:
-        try:
-            command = subprocess.run(['fuzzel', '--dmenu', '--prompt-only', 'Command: '], stdout=subprocess.PIPE)
-            command = command.stdout.decode('utf-8').strip()
-            if command == "":
-                return
+        command = subprocess.run(['fuzzel', '--dmenu', '--prompt-only', 'Command: ', '--width', '50'], stdout=subprocess.PIPE)
+        command = command.stdout.decode('utf-8').strip()
+        if command == "":
+            return
 
-            paths = [unquote(f.get_uri()[7:]) for f in files]
-            subprocess.run([ 'parallel', command, ':::', *paths ])
+        paths = [unquote(f.get_uri()[7:]) for f in files]
+
+        try:
+            # Run parallel command with both stdout and stderr captured
+            result = subprocess.run(
+                ['parallel', command, ':::', *paths],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True  # Automatically decode output to string
+            )
+            
+            # Prepare notification message
+            if result.returncode == 0:
+                # Success case
+                if result.stdout:
+                    notification_msg = f"Command completed successfully:\n{result.stdout[:200]}"
+                else:
+                    notification_msg = "Command completed successfully"
+            else:
+                # Error case
+                error_msg = result.stderr if result.stderr else result.stdout
+                notification_msg = f"Command failed (code {result.returncode}):\n{error_msg[:200]}"
+
+            # Send notification
+            subprocess.run([
+                'notify-send',
+                'Parallel Command Result',
+                notification_msg
+            ])
+
         except Exception as e:
-            os.system(f'notify-send "Run Command Error" "{e}"')
+            # Handle any unexpected errors
+            subprocess.run([
+                'notify-send',
+                'Parallel Command Error',
+                f"Failed to execute command: {str(e)}"
+            ])
+
 
     def menu_activate_cb(
         self,

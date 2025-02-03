@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from wezterm_setup_core import Project, WeztermSetupBuilder
+import sys
 
 if __name__ == "__main__":
     project = Project(project_dir=Path.home() / "Projects" / "floe")
@@ -11,9 +12,18 @@ if __name__ == "__main__":
     builder.send_text(editor_tab, "nvim\n")
 
     docs_tab = builder.add_tab(command="nix develop", title="Docs Server")
-    builder.send_text(docs_tab, "cd docs\nmdbook serve\n")
+    builder.send_text(docs_tab, "cd docs\nmdbook serve --open\n")
 
     shell_tab = builder.add_tab(command="nix develop", title="Shell")
     builder.send_text(shell_tab, "git pull\njust default\n")
+
+    shell_tab = builder.add_tab(title="Log")
+
+    log_folder = "" 
+    if sys.platform == "darwin":
+        log_folder = "~/Library/Logs/Floe"
+    elif sys.platform == "linux":
+        log_folder = "~/.local/state/Floe"
+    builder.send_text(shell_tab, f"cd {log_folder}\nnvim\n 1:terminal tail -f -n 10000 latest.log\nG")
 
     builder.activate_tab(editor_tab)
