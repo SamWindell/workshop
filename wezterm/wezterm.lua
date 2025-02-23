@@ -2,9 +2,15 @@ local wezterm = require 'wezterm'
 
 local config = wezterm.config_builder()
 
+local is_macos = wezterm.target_triple:find("darwin") ~= nil
+
 config.color_scheme = 'kanagawabones'
 config.disable_default_key_bindings = true
-config.font_size = 11.0
+if is_macos then
+    config.font_size = 13.0
+else
+    config.font_size = 11.0
+end
 config.warn_about_missing_glyphs = false
 
 local act = wezterm.action
