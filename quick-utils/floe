@@ -12,7 +12,7 @@ if __name__ == "__main__":
     builder.send_text(editor_tab, "nvim\n")
 
     docs_tab = builder.add_tab(command="nix develop", title="Docs Server")
-    builder.send_text(docs_tab, "cd docs\nmdbook serve --open\n")
+    builder.send_text(docs_tab, "cd docs\nmdbook serve --open --watcher native\n")
 
     shell_tab = builder.add_tab(command="nix develop", title="Shell")
     builder.send_text(shell_tab, "git pull\njust default\n")
