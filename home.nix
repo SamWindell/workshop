@@ -528,9 +528,30 @@ in
     delta.enable = true; # use the delta program for diff syntax highlighting
     userName = "Sam Windell";
     userEmail = "info@frozenplain.com";
+    # https://blog.gitbutler.com/how-git-core-devs-configure-git/
     extraConfig = {
-      "init" = {
-        "defaultBranch" = "main";
+      init = {
+        defaultBranch = "main";
+      };
+      diff = {
+        algorithm = "histogram";
+        colorMoved = "plain";
+        mnemonicPrefix = true;
+        renames = true;
+      };
+      rerere = {
+        enabled = true;
+        autoupdate = true;
+      };
+      push = {
+        default = "simple";
+        autoSetupRemote = true;
+        followTags = true;
+      };
+      fetch = {
+        prune = true;
+        pruneTags = true;
+        all = true;
       };
       "credential \"https://github.com\"" = {
         helper = "!${pkgs.gh}/bin/gh auth git-credential";
