@@ -91,8 +91,6 @@ in
       pkgs.git
       pkgs.rclone
 
-      wezterm
-
       pkgs.transcrypt
       # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
       # should manage these dependencies itself
@@ -237,6 +235,7 @@ in
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.keepassxc
+      wezterm
     ]
     ++ pkgs.lib.optionals isLinux [
       pkgs.wineWow64Packages.waylandFull
