@@ -19,6 +19,8 @@ let
 
   # we have nixpkgs-unstable in input and we want to use it for neovim
   neovim-unwrapped = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.neovim-unwrapped;
+
+  tracy-wayland = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.tracy-wayland;
 in
 {
   home.username = specialArgs.username;
@@ -139,6 +141,8 @@ in
       pkgs.bemoji
       pkgs.wtype
 
+      tracy-wayland
+
       pkgs.playerctl # used by waybar
       pkgs.zenity # used by waybar
 
@@ -232,11 +236,13 @@ in
       (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./scripts/pick-symbol.sh))
     ]
     ++ pkgs.lib.optionals withGui [
-      pkgs.tracy
       pkgs.keepassxc
     ]
     ++ pkgs.lib.optionals isLinux [
       pkgs.wineWow64Packages.waylandFull
+    ]
+    ++ pkgs.lib.optionals isDarwin [
+      pkgs.tracy
     ];
 
   fonts.fontconfig.enable = true;
