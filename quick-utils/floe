@@ -23,7 +23,7 @@ if __name__ == "__main__":
     if sys.platform == "darwin":
         log_folder = "~/Library/Logs/Floe"
     elif sys.platform == "linux":
-        log_folder = "~/.local/state/Floe"
+        log_folder = "~/.local/state/Floe/Logs"
     builder.send_text(shell_tab, f"cd {log_folder}\nnvim\n 1:terminal tail -f -n 10000 latest.log\nG")
 
     builder.activate_tab(editor_tab)
