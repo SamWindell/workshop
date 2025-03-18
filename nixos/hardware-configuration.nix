@@ -50,6 +50,17 @@
   #     options = [ "rw" "uid=1000" ];
   #   };
 
+  fileSystems."/mnt/SSHD" = {
+    device = "/dev/disk/by-label/SSHD";
+    fsType = "ntfs";
+    options = [
+      "defaults"
+      "user"
+      "rw"
+      "uid=1000"
+    ];
+  };
+
   swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
