@@ -14,7 +14,6 @@ let
 
   mimeTypes = import ./mime-types.nix;
 
-  grimblast = inputs.hyprland-contrib.packages.${pkgs.system}.grimblast;
   wezterm = inputs.wezterm.packages.${pkgs.system}.default;
 
   # we have nixpkgs-unstable in input and we want to use it for neovim
@@ -131,13 +130,13 @@ in
       pkgs.obsidian
       pkgs.sublime-merge
       pkgs.libreoffice
-      grimblast # screenshot helper
       pkgs.xdg-utils # xdg-open
       pkgs.gnome-system-monitor
       pkgs.blueberry # bluetooth manager
       pkgs.quickemu
       pkgs.bemoji
       pkgs.wtype
+      pkgs.hyprshot # screenshot tool
 
       tracy-wayland
 
@@ -232,6 +231,7 @@ in
       } (builtins.readFile ./scripts/weekly-note-review.py))
 
       (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./scripts/pick-symbol.sh))
+      (pkgs.writers.writeBashBin "take-screenshot" { } (builtins.readFile ./scripts/take-screenshot.sh))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.keepassxc
