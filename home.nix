@@ -126,7 +126,6 @@ in
       pkgs.adwaita-icon-theme
       pkgs.zeal
       pkgs.vlc
-      pkgs.obs-studio
       pkgs.obsidian
       pkgs.sublime-merge
       pkgs.libreoffice
@@ -372,6 +371,13 @@ in
         }
       ];
     };
+  };
+
+  programs.obs-studio = mkIf (isLinux && withGui) {
+    enable = true;
+    plugins = [
+      pkgs.obs-studio-plugins.wlrobs
+    ];
   };
 
   dconf.settings = {

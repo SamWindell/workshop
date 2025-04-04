@@ -63,7 +63,11 @@
     ];
   };
 
-  hardware.graphics.enable = true;
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [ nvidia-vaapi-driver ];
+  };
+
   hardware.graphics.enable32Bit = true;
 
   hardware.nvidia = {
