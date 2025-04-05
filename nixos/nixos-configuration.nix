@@ -6,6 +6,7 @@
   config,
   pkgs,
   inputs,
+  pkgs-unstable,
   ...
 }:
 
@@ -83,6 +84,8 @@
     enable = true;
     xwayland.enable = true;
     withUWSM = true;
+    package = pkgs-unstable.hyprland;
+    portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
   services.xserver = {

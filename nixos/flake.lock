@@ -160,7 +160,7 @@
       "inputs": {
         "hyprlang": "hyprlang",
         "nixpkgs": [
-          "nixpkgs-unstable"
+          "nixpkgs"
         ],
         "utils": "utils"
       },
