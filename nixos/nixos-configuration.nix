@@ -88,6 +88,22 @@
     portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    config = {
+      common.default = [ "gtk" ];
+      hyprland.default = [
+        "gtk"
+        "hyprland"
+      ];
+    };
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs-unstable.xdg-desktop-portal-hyprland
+    ];
+  };
+
   services.xserver = {
     # Configure keymap in X11
     xkb = {
@@ -106,7 +122,7 @@
       "wheel"
       "audio"
     ];
-    packages = with pkgs; [ ];
+    packages = with pkgs; [ xdg-desktop-portal-gtk ];
   };
 
   # Enable automatic login for the user.
