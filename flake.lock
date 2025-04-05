@@ -145,6 +145,22 @@
         "type": "github"
       }
     },
+    "hyprshot": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1718570582,
+        "narHash": "sha256-9vsBNe6qTvbw2rgf1y5MIxN1eZzdCtimMvEXF8M36cQ=",
+        "owner": "Gustash",
+        "repo": "hyprshot",
+        "rev": "f95068db7765b85a2bbae0f083e29074d7bee027",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Gustash",
+        "repo": "hyprshot",
+        "type": "github"
+      }
+    },
     "libpng": {
       "flake": false,
       "locked": {
@@ -236,6 +252,7 @@
       "inputs": {
         "home-manager": "home-manager",
         "hyprland-contrib": "hyprland-contrib",
+        "hyprshot": "hyprshot",
         "mac-app-util": "mac-app-util",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",

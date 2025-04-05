@@ -136,6 +136,8 @@ in
       pkgs.bemoji
       pkgs.wtype
       pkgs.hyprshot # screenshot tool
+      pkgs.slurp # screen selection tool needed by record-screen
+      pkgs.wf-recorder # screen recording tool
 
       tracy-wayland
 
@@ -231,6 +233,7 @@ in
 
       (pkgs.writers.writeBashBin "pick-symbol" { } (builtins.readFile ./scripts/pick-symbol.sh))
       (pkgs.writers.writeBashBin "take-screenshot" { } (builtins.readFile ./scripts/take-screenshot.sh))
+      (pkgs.writers.writeBashBin "record-screen" { } (builtins.readFile ./scripts/record-screen.sh))
     ]
     ++ pkgs.lib.optionals withGui [
       pkgs.keepassxc

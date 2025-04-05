@@ -10,5 +10,5 @@ selected=$(echo "$options" | fuzzel --dmenu)
 option=$(echo "$selected" | awk '{print $1}')
 
 hyprctl keyword decoration:dim_inactive false
-hyprshot -m "$option"
+hyprshot -m "$option" --delay 1 
 hyprctl keyword decoration:dim_inactive true

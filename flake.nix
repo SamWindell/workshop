@@ -18,6 +18,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mac-app-util.url = "github:hraban/mac-app-util";
+    # Add hyprshot as a new input
+    hyprshot = {
+      url = "github:Gustash/hyprshot";
+      flake = false;
+    };
   };
 
   outputs =
@@ -25,6 +30,7 @@
       nixpkgs,
       home-manager,
       mac-app-util,
+      hyprshot,
       ...
     }:
     let
@@ -35,6 +41,57 @@
           config = {
             allowUnfree = true;
           };
+          overlays = [
+            # Add an overlay to create a custom hyprshot package
+            (final: prev: {
+              hyprshot = final.callPackage (
+                {
+                  stdenvNoCC,
+                  lib,
+                  hyprland,
+                  jq,
+                  grim,
+                  slurp,
+                  wl-clipboard,
+                  libnotify,
+                  withFreeze ? true,
+                  hyprpicker,
+                  makeWrapper,
+                }:
+                stdenvNoCC.mkDerivation {
+                  pname = "hyprshot";
+                  version = "git-${builtins.substring 0 8 (builtins.readFile (builtins.toFile "hash" hyprshot.rev))}";
+                  src = hyprshot;
+                  nativeBuildInputs = [ makeWrapper ];
+                  installPhase = ''
+                    runHook preInstall
+                    install -Dm755 hyprshot -t "$out/bin"
+                    wrapProgram "$out/bin/hyprshot" \
+                      --prefix PATH ":" ${
+                        lib.makeBinPath (
+                          [
+                            hyprland
+                            jq
+                            grim
+                            slurp
+                            wl-clipboard
+                            libnotify
+                          ]
+                          ++ lib.optionals withFreeze [ hyprpicker ]
+                        )
+                      }
+                    runHook postInstall
+                  '';
+                  meta = with lib; {
+                    homepage = "https://github.com/Gustash/hyprshot";
+                    description = "Hyprshot is an utility to easily take screenshots in Hyprland using your mouse";
+                    license = licenses.gpl3Only;
+                    platforms = hyprland.meta.platforms;
+                  };
+                }
+              ) { };
+            })
+          ];
         };
 
       mkHomeConfiguration =
