@@ -258,8 +258,6 @@ in
     ".config/starship.toml".source = ./starship/starship.toml;
     ".config/waybar/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/waybar";
-    ".config/hypr/hyprland.conf".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/hypr/config.conf";
     # nautilus extensions is configured in nixos-configuration.nix
     ".local/share/nautilus-python/extensions/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nautilus";
@@ -347,6 +345,12 @@ in
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
+    plugins = [
+      inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.hyprlandPlugins.hyprbars
+    ];
+    extraConfig = ''
+      source = ~/.config/home-manager/hypr/config.conf
+    '';
   };
 
   services.hyprpaper = mkIf (isLinux && withGui) {
