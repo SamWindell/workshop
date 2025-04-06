@@ -87,7 +87,8 @@
             "class<org.keepassxc.KeePassXC>": "󰌋",
             "class<vesktop>": "󰙯",
             "class<obsidian>": "",
-            "class<sublime_merge>": ""
+            "class<sublime_merge>": "",
+            "class<REAPER>": "󱀞"
         },
         "persistent-workspaces": {
             "1": [],

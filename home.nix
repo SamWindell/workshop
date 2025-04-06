@@ -65,6 +65,7 @@ in
       pkgs.python3
       pkgs.just
       pkgs.awscli2
+      pkgs.optipng
 
       pkgs.nixd # nix LSP
       pkgs.nixpkgs-fmt # nix code formatting
@@ -110,21 +111,17 @@ in
       (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
     ]
     ++ pkgs.lib.optionals (isLinux && withGui) [
-      pkgs.thunderbird
       pkgs.loupe # gnome image viewer
       pkgs.sushi # gnome file previewer
       pkgs.wl-clipboard # needed to get neovim clipboard working
       pkgs.vesktop # discord
-      pkgs.zulip
       pkgs.waybar
       pkgs.firefox
       pkgs.hyprpicker
       pkgs.google-chrome
       pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
-      pkgs.gimp
       pkgs.inkscape
       pkgs.adwaita-icon-theme
-      pkgs.zeal
       pkgs.vlc
       pkgs.obsidian
       pkgs.sublime-merge
@@ -132,7 +129,6 @@ in
       pkgs.xdg-utils # xdg-open
       pkgs.gnome-system-monitor
       pkgs.blueberry # bluetooth manager
-      pkgs.quickemu
       pkgs.bemoji
       pkgs.wtype
       pkgs.hyprshot # screenshot tool
@@ -378,13 +374,6 @@ in
         }
       ];
     };
-  };
-
-  programs.obs-studio = mkIf (isLinux && withGui) {
-    enable = true;
-    plugins = [
-      pkgs.obs-studio-plugins.wlrobs
-    ];
   };
 
   dconf.settings = {

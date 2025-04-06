@@ -34,7 +34,12 @@ sleep 1
 
 notify-send -h string:wf-recorder:record -t 950 "Recording in:" "<span font='26px'><i><b>1</b></i></span>"
 
-sleep 1
+sleep 0.5
+
+# our notification system plays audio with "${pkgs.sox}/bin/play ${sounds/definite-555.ogg}", we need to kill it before we start recording
+pkill -x play
+
+sleep 0.5
 
 filename="$(date +'%Y-%m-%d-%H%M%S_recording')"
 
