@@ -608,8 +608,8 @@ in
           src = pkgs.fetchFromGitHub {
             owner = "mcauley-penney";
             repo = "visual-whitespace.nvim";
-            rev = "31d0ed71ad7e376879d7e0df0c8cc4f1467702d4";
-            hash = "sha256-W8ZzGdm1bYNt6vUKI6WJ5zh+wL+0SXFuIp6tQun7iVA=";
+            rev = "7d44824249f60d2e19803bd94fe1b99907578f9c";
+            hash = "sha256-r8bIB5xvxAHOiFabTgM6nC4u2g1lwXlwz3e/E3K1gz4=";
           };
         };
       in
