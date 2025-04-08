@@ -17,6 +17,7 @@
         "custom/weekly-review",
         "tray",
         "custom/timer",
+        "disk",
         "pulseaudio",
         "pulseaudio#microphone",
         "custom/notification",
@@ -161,5 +162,10 @@
         "on-scroll-up": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SOURCE@ 5%+",
         "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-",
         "scroll-step": 5
-    }
+    },
+    "disk": {
+        "interval": 30,
+        "format": "  {percentage_used}%",
+        "path": "/"
+    },
 }
