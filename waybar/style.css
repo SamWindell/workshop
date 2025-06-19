@@ -1,7 +1,7 @@
 /* Credits to https://github.com/ChrisTitusTech/hyprland-titus */
 * {
     border: none;
-    font-family: Ubuntu Nerd Font, monospace;
+    font-family: "Ubuntu Nerd Font", sans-serif;
     font-weight: bold;
     font-size: 14px;
     min-height: 0;

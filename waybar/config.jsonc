@@ -14,7 +14,7 @@
         "custom/media",
     ],
     "modules-right": [
-        "custom/weekly-review",
+        // "custom/weekly-review",
         "tray",
         "custom/timer",
         "disk",

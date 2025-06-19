@@ -26,6 +26,18 @@
 
   musnix.enable = true;
 
+  # lutris esync
+  # https://github.com/lutris/docs/blob/master/HowToEsync.md
+  systemd.extraConfig = "DefaultLimitNOFILE=524288";
+  security.pam.loginLimits = [
+    {
+      domain = "sam";
+      type = "hard";
+      item = "nofile";
+      value = "524288";
+    }
+  ];
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -40,6 +52,7 @@
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     HYPRCURSOR_THEME = "rose-pine-hyprcursor";
+    HYPRCURSOR_SIZE = "24";
     NAUTILUS_4_EXTENSION_DIR = "${pkgs.nautilus-python}/lib/nautilus/extensions-4";
   };
 
@@ -88,28 +101,31 @@
     portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-    config = {
-      common.default = [ "gtk" ];
-      hyprland.default = [
-        "gtk"
-        "hyprland"
-      ];
-    };
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-      pkgs-unstable.xdg-desktop-portal-hyprland
-    ];
-  };
+  # xdg.portal = {
+  #   enable = true;
+  #   xdgOpenUsePortal = true;
+  #   config = {
+  #     common = {
+  #       default = "gtk";
+  #     };
+  #     hyprland = {
+  #       default = "gtk";
+  #       "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
+  #       "org.freedesktop.impl.portal.Screenshot" = "hyprland";
+  #     };
+  #   };
+  #   extraPortals = [
+  #     pkgs.xdg-desktop-portal-gtk
+  #     pkgs-unstable.xdg-desktop-portal-hyprland
+  #   ];
+  # };
 
-  # Automatic Garbage Collection
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
+  # # Automatic Garbage Collection
+  # nix.gc = {
+  #   automatic = true;
+  #   dates = "weekly";
+  #   options = "--delete-older-than 7d";
+  # };
 
   services.xserver = {
     # Configure keymap in X11

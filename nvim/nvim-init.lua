@@ -394,7 +394,7 @@ nvim_tree.setup {
 
 local first_debug_launch = true
 
-vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
+-- vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
 
 local dap_frames_view = nil
 local dap_scopes_view = nil
@@ -809,6 +809,10 @@ local server_config =
     }
 }
 
+server_config.capabilities.general = server_config.capabilities.general or {}
+server_config.capabilities.general.positionEncodings = { "utf-16" }
+server_config.capabilities.offsetEncoding = { 'utf-16' }
+
 for _, v in pairs(supported_lsp_servers) do
     if (v == 'clangd') then
         server_config.cmd = { "clangd", "--offset-encoding=utf-16", "--clang-tidy", }
@@ -908,7 +912,6 @@ require('illuminate').configure({ delay = 50 })
 require('leap').add_default_mappings()
 require("nvim-surround").setup()
 require('snippets')
-require("visual-whitespace").setup()
 
 -- Normal Mode
 -- `gcc` - Toggles the current line using linewise comment
@@ -922,6 +925,8 @@ require("visual-whitespace").setup()
 -- `gcA` - Insert comment to end of the current line and enters INSERT mode
 require('Comment').setup()
 require('Comment.ft').set('objcpp', '//%s')
+
+require('note-to-midi')
 
 local function dap_status()
     if dap.session() then

@@ -5,7 +5,7 @@
 { config, pkgs, ... }:
 
 {
-  # inotify settings to help reduce inotify watch limit errors 
+  # inotify settings to help reduce inotify watch limit errors
   boot.kernel.sysctl = {
     "fs.inotify.max_user_instances" = 4096;
     "fs.inotify.max_user_watches" = 524288;
@@ -26,10 +26,15 @@
         automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=4s,x-systemd.mount-timeout=4s,nofail";
 
       in
-      [ "${automount_opts},file_mode=0777,dir_mode=0777,credentials=/home/sam/.config/home-manager/secrets/smb-credentials.txt" ];
+      [
+        "${automount_opts},file_mode=0777,dir_mode=0777,credentials=/home/sam/.config/home-manager/secrets/smb-credentials.txt"
+      ];
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   hardware.bluetooth.enable = true; # enables support for Bluetooth
   hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
@@ -58,6 +63,50 @@
     cifs-utils
     neovim
     pinentry-tty
+  ];
+
+  fonts.packages = [
+    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.nerd-fonts.ubuntu
+    pkgs.league-of-moveable-type
+    pkgs.roboto
+    pkgs.inter
+    pkgs.quicksand
+    (pkgs.noto-fonts.override {
+      variants = [
+        "NotoSans"
+        "NotoSerif"
+        "NotoMusic"
+        "NotoSansSymbols"
+        "NotoSansMath"
+        "NotoSansMono"
+      ];
+    })
+    pkgs.noto-fonts-emoji
+    pkgs.barlow
+    (pkgs.stdenvNoCC.mkDerivation rec {
+      pname = "outfit-fonts";
+      version = "1.1";
+
+      src = pkgs.fetchzip {
+        url = "https://github.com/Outfitio/Outfit-Fonts/archive/refs/tags/${version}.zip";
+        hash = "sha256-d12SnIhD5LdrgZYH7zzQ8otnRyp45VTCC9vEXVsVKLY=";
+      };
+
+      installPhase = ''
+        runHook preInstall
+        install -Dm644 fonts/variable/*.ttf fonts/ttf/*.ttf -t $out/share/fonts/opentype
+        runHook postInstall
+      '';
+
+      meta = with pkgs.lib; {
+        description = "Outfit Fonts";
+        homepage = "https://github.com/Outfitio/Outfit-Fonts";
+        license = licenses.ofl;
+        maintainers = [ ];
+        platforms = platforms.all;
+      };
+    })
   ];
 
   # This value determines the NixOS release from which the default

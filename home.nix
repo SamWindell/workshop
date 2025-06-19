@@ -15,11 +15,6 @@ let
   mimeTypes = import ./mime-types.nix;
 
   wezterm = inputs.wezterm.packages.${pkgs.system}.default;
-
-  # we have nixpkgs-unstable in input and we want to use it for neovim
-  neovim-unwrapped = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.neovim-unwrapped;
-
-  tracy-wayland = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.tracy-wayland;
 in
 {
   home.username = specialArgs.username;
@@ -102,20 +97,19 @@ in
       pkgs.gawk # transcrypt
       pkgs.xxd # transcrypt
 
-      pkgs.zig
-      pkgs.zls
+      specialArgs.pkgs-unstable.zig
+      specialArgs.pkgs-unstable.zls
 
       pkgs.hunspell
       pkgs.hunspellDicts.en_GB-ise
 
-      (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      pkgs.nerd-fonts.jetbrains-mono
     ]
     ++ pkgs.lib.optionals (isLinux && withGui) [
       pkgs.loupe # gnome image viewer
       pkgs.sushi # gnome file previewer
       pkgs.wl-clipboard # needed to get neovim clipboard working
       pkgs.vesktop # discord
-      pkgs.waybar
       pkgs.firefox
       pkgs.hyprpicker
       pkgs.google-chrome
@@ -135,60 +129,22 @@ in
       pkgs.slurp # screen selection tool needed by record-screen
       pkgs.wf-recorder # screen recording tool
 
-      tracy-wayland
+      specialArgs.pkgs-unstable.tracy-wayland
+
+      pkgs.bottles
 
       pkgs.playerctl # used by waybar
       pkgs.zenity # used by waybar
 
-      # fonts
-      (pkgs.nerdfonts.override { fonts = [ "Ubuntu" ]; })
-      pkgs.league-of-moveable-type
-      pkgs.roboto
-      pkgs.inter
-      pkgs.quicksand
-      (pkgs.noto-fonts.override {
-        variants = [
-          "NotoSans"
-          "NotoSerif"
-          "NotoMusic"
-          "NotoSansSymbols"
-          "NotoSansMath"
-          "NotoSansMono"
-        ];
-      })
-      pkgs.noto-fonts-emoji
-      pkgs.barlow
-      (pkgs.stdenvNoCC.mkDerivation rec {
-        pname = "outfit-fonts";
-        version = "1.1";
-
-        src = pkgs.fetchzip {
-          url = "https://github.com/Outfitio/Outfit-Fonts/archive/refs/tags/${version}.zip";
-          hash = "sha256-d12SnIhD5LdrgZYH7zzQ8otnRyp45VTCC9vEXVsVKLY=";
-        };
-
-        installPhase = ''
-          runHook preInstall
-          install -Dm644 fonts/variable/*.ttf fonts/ttf/*.ttf -t $out/share/fonts/opentype
-          runHook postInstall
-        '';
-
-        meta = with lib; {
-          description = "Outfit Fonts";
-          homepage = "https://github.com/Outfitio/Outfit-Fonts";
-          license = licenses.ofl;
-          maintainers = [ ];
-          platforms = platforms.all;
-        };
-      })
-
       pkgs.pinentry-gnome3
 
       pkgs.geonkick
-      pkgs.reaper
+      pkgs.show-midi
+      specialArgs.pkgs-unstable.reaper
       pkgs.lsp-plugins
       pkgs.distrho-ports
       pkgs.sfizz
+      pkgs.metersLv2
       pkgs.surge-XT
       pkgs.decent-sampler
       pkgs.fluidsynth
@@ -197,6 +153,7 @@ in
       pkgs.bitwig-studio
       pkgs.zrythm
       pkgs.qtractor
+      pkgs.hydrogen
 
       (pkgs.writeShellScriptBin "colour-picker" ''
         colour=$(hyprpicker -a)
@@ -348,6 +305,9 @@ in
       source = ~/.config/home-manager/hypr/config.conf
     '';
   };
+  programs.waybar = mkIf (isLinux && withGui) {
+    enable = true;
+  };
 
   services.hyprpaper = mkIf (isLinux && withGui) {
     enable = true;
@@ -453,6 +413,7 @@ in
     cursorTheme = {
       name = "Dracula-cursors";
       package = pkgs.dracula-theme;
+      size = 24;
     };
     iconTheme = {
       name = "Dracula";
@@ -580,20 +541,24 @@ in
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    package = neovim-unwrapped;
+    package = specialArgs.pkgs-unstable.neovim-unwrapped;
     plugins =
       with pkgs.vimPlugins;
       let
         # use nurl CLI to generate these
-        smart-open = pkgs.vimUtils.buildVimPlugin {
-          name = "smart-open";
-          src = pkgs.fetchFromGitHub {
-            owner = "danielfalk";
-            repo = "smart-open.nvim";
-            rev = "cf8cbaab3b802f4690eda3b1cc6dfc606d313695";
-            hash = "sha256-57UmLohd47/b6ytTMcJTPU/rk5g4sRxznBeHe/1ppEk=";
-          };
-        };
+        smart-open =
+          (pkgs.vimUtils.buildVimPlugin {
+            name = "smart-open";
+            src = pkgs.fetchFromGitHub {
+              owner = "danielfalk";
+              repo = "smart-open.nvim";
+              rev = "f079c3201a0a62b1582563bd5ce4256c253634d4";
+              hash = "sha256-usLu/18JRLveeOllxiqc607SZCvJWg9Gw8uJzZVbohg=";
+            };
+          }).overrideAttrs
+            {
+              doCheck = false;
+            };
         vim-svelte-plugin = pkgs.vimUtils.buildVimPlugin {
           name = "vim-svelte-plugin";
           src = pkgs.fetchFromGitHub {
@@ -601,15 +566,6 @@ in
             repo = "vim-svelte-plugin";
             rev = "fcc81292340c0969e83131021c5a6c9aa0c741dc";
             hash = "sha256-WGM21vSuqX8SDu3KCuJBjSCd4dZpeJYpEOHuuZK4T30=";
-          };
-        };
-        visual-whitespace = pkgs.vimUtils.buildVimPlugin {
-          name = "visual-whitespace";
-          src = pkgs.fetchFromGitHub {
-            owner = "mcauley-penney";
-            repo = "visual-whitespace.nvim";
-            rev = "7d44824249f60d2e19803bd94fe1b99907578f9c";
-            hash = "sha256-r8bIB5xvxAHOiFabTgM6nC4u2g1lwXlwz3e/E3K1gz4=";
           };
         };
       in
@@ -659,10 +615,10 @@ in
         nvim-dap
         nvim-notify
         cmp-dap
+        vim-repeat
 
         vim-svelte-plugin
         smart-open
-        visual-whitespace
       ];
     extraLuaConfig = ''
       lldb_vscode_path = '${pkgs.lldb_18}/bin/lldb-dap'
