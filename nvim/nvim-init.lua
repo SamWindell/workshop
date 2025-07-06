@@ -265,8 +265,8 @@ local run_command = function(command, on_exit)
     local win = get_big_window("secondary", true)
     assert(win)
 
-    -- if the secondary window is current, move its buffer to the primary window before
-    -- we replace it with the command output buffer
+    -- If the secondary window is current, move its buffer to the primary window before
+    -- we replace it with the command output buffer.
     if vim.api.nvim_get_current_win() == win then
         local b = vim.api.nvim_win_get_buf(win)
         vim.api.nvim_win_set_buf(get_big_window('primary', false), b)
@@ -490,12 +490,12 @@ vim.keymap.set('n', '<leader>el', jump_backward_in_quickfix, { desc = 'Goto prev
 -- Task mappings
 vim.keymap.set('n', '<leader>gj', function()
     vim.cmd [[ wa ]]
-    run_command("just default")
+    run_command("bash .workshop/build.sh")
 end, { desc = 'Build' })
 
 vim.keymap.set('n', '<leader>gk', function()
     vim.cmd [[ wa ]]
-    run_command("just pre-debug", function(_, exit_code, _)
+    run_command("bash .workshop/pre-debug.sh", function(_, exit_code, _)
         if exit_code == 0 then
             require('dap.ext.vscode').load_launchjs()
             if first_debug_launch then
