@@ -5,10 +5,10 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.hlsearch = true
 vim.opt.termguicolors = true
-vim.opt.tabstop = 4      -- number of visual spaces per TAB
-vim.opt.softtabstop = 4  -- number of spaces in tab when editing
-vim.opt.shiftwidth = 4   -- number of spaces to use for autoindent
-vim.opt.expandtab = true -- expand tab to spaces so that tabs are spaces
+vim.opt.tabstop = 4      -- Number of visual spaces per TAB>
+vim.opt.softtabstop = 4  -- Number of spaces in tab when editing
+vim.opt.shiftwidth = 4   -- Number of spaces to use for autoindent
+vim.opt.expandtab = true -- Expand tab to spaces so that tabs are spaces
 vim.opt.shiftround = true
 vim.opt.inccommand = 'nosplit'
 vim.opt.incsearch = true
@@ -769,6 +769,7 @@ local supported_lsp_servers = {
     'html',
     'nixd',
     'yamlls',
+    'harper_ls',
 }
 
 local lspconfig = require('lspconfig')
@@ -805,6 +806,9 @@ local server_config =
             format = {
                 enable = true,
             }
+        },
+        ["harper-ls"] = {
+            dialect = "British",
         },
     }
 }
@@ -914,15 +918,15 @@ require("nvim-surround").setup()
 require('snippets')
 
 -- Normal Mode
--- `gcc` - Toggles the current line using linewise comment
--- `gbc` - Toggles the current line using blockwise comment
--- `[count]gcc` - Toggles the number of line given as a prefix-count using linewise
--- `[count]gbc` - Toggles the number of line given as a prefix-count using blockwise
--- `gc[count]{motion}` - (Op-pending) Toggles the region using linewise comment
--- `gb[count]{motion}` - (Op-pending) Toggles the region using blockwise comment
--- `gco` - Insert comment to the next line and enters INSERT mode
--- `gcO` - Insert comment to the previous line and enters INSERT mode
--- `gcA` - Insert comment to end of the current line and enters INSERT mode
+-- `gcc` - Toggles the current line using linewise comment.
+-- `gbc` - Toggles the current line using blockwise comment.
+-- `[count]gcc` - Toggles the number of line given as a prefix-count using linewise.
+-- `[count]gbc` - Toggles the number of line given as a prefix-count using blockwise.
+-- `gc[count]{motion}` - (Op-pending) Toggles the region using linewise comment.
+-- `gb[count]{motion}` - (Op-pending) Toggles the region using blockwise comment.
+-- `gco` - Insert comment to the next line and enters INSERT mode.
+-- `gcO` - Insert comment to the previous line and enters INSERT mode.
+-- `gcA` - Insert comment to end of the current line and enters INSERT mode.
 require('Comment').setup()
 require('Comment.ft').set('objcpp', '//%s')
 

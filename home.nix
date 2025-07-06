@@ -68,6 +68,8 @@ in
       pkgs.nix-init
       pkgs.nixfmt-rfc-style
 
+      pkgs.harper # grammar checker LS
+
       pkgs.sqlite # needed by nvim smart-open plugin
       pkgs.lua-language-server
       pkgs.nodejs_22
