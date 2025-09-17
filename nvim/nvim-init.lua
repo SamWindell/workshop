@@ -446,6 +446,17 @@ vim.keymap.set('n', '<leader>dt', function()
     { desc = '[DAP] scopes window' })
 vim.keymap.set('n', '<leader>dy', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
     { desc = '[DAP] log point message' })
+vim.keymap.set('n', '<leader>da', function()
+    require('dap').run({
+        type = 'lldb',
+        request = 'attach',
+        name = 'Attach to process',
+        pid = require('dap.utils').pick_process,
+        -- program = function()
+        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        -- end,
+    })
+end, { desc = '[DAP] attach to process' })
 
 -- Find related mappings
 vim.keymap.set('n', '<leader>fj', function() require("telescope").extensions.smart_open.smart_open({}) end,
@@ -646,6 +657,7 @@ telescope.load_extension('fzf')
 telescope.load_extension('dap')
 telescope.load_extension("smart_open")
 telescope.load_extension("refactoring")
+telescope.load_extension("ui-select")
 
 dap.adapters.lldb = {
     type = 'executable',
@@ -795,10 +807,10 @@ local server_config =
                 -- Get the language server to recognize the `vim` global
                 globals = { 'vim' },
             },
-            workspace = {
-                -- Make the server aware of Neovim runtime files
-                library = vim.api.nvim_get_runtime_file("", true),
-            },
+            -- workspace = {
+            --     -- Make the server aware of Neovim runtime files
+            --     library = vim.api.nvim_get_runtime_file("", true),
+            -- },
             -- Do not send telemetry data containing a randomized but unique identifier
             telemetry = {
                 enable = false,
@@ -809,6 +821,9 @@ local server_config =
         },
         ["harper-ls"] = {
             dialect = "British",
+            linters = {
+                LongSentences = false,
+            },
         },
     }
 }

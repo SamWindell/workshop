@@ -13,4 +13,4 @@ filename="$(date +'%Y-%m-%d-%H%M%S_screenshot.png')"
 
 hyprctl keyword decoration:dim_inactive false
 hyprshot -m "$option" --delay 1 --filename "$filename" -- optipng
-hyprctl keyword decoration:dim_inactive true
+# hyprctl keyword decoration:dim_inactive true

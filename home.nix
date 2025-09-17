@@ -70,6 +70,8 @@ in
 
       pkgs.harper # grammar checker LS
 
+      specialArgs.pkgs-unstable.claude-code
+
       pkgs.sqlite # needed by nvim smart-open plugin
       pkgs.lua-language-server
       pkgs.nodejs_22
@@ -117,6 +119,7 @@ in
       pkgs.google-chrome
       pkgs.appimage-run # `appimage-run foo.AppImage` https://nixos.wiki/wiki/Appimage
       pkgs.inkscape
+      pkgs.gimp3
       pkgs.adwaita-icon-theme
       pkgs.vlc
       pkgs.obsidian
@@ -130,6 +133,9 @@ in
       pkgs.hyprshot # screenshot tool
       pkgs.slurp # screen selection tool needed by record-screen
       pkgs.wf-recorder # screen recording tool
+      pkgs.pulseaudio
+      pkgs.pavucontrol
+      pkgs.kdePackages.kdenlive
 
       specialArgs.pkgs-unstable.tracy-wayland
 
@@ -152,10 +158,11 @@ in
       pkgs.fluidsynth
       pkgs.qsynth
       pkgs.musescore
-      pkgs.bitwig-studio
+      specialArgs.pkgs-unstable.bitwig-studio
       pkgs.zrythm
       pkgs.qtractor
       pkgs.hydrogen
+      pkgs.airwindows
 
       (pkgs.writeShellScriptBin "colour-picker" ''
         colour=$(hyprpicker -a)
@@ -306,6 +313,8 @@ in
     extraConfig = ''
       source = ~/.config/home-manager/hypr/config.conf
     '';
+    package = null;
+    portalPackage = null;
   };
   programs.waybar = mkIf (isLinux && withGui) {
     enable = true;
@@ -415,7 +424,7 @@ in
     cursorTheme = {
       name = "Dracula-cursors";
       package = pkgs.dracula-theme;
-      size = 24;
+      size = 48;
     };
     iconTheme = {
       name = "Dracula";
@@ -587,6 +596,7 @@ in
         vim-illuminate
         telescope-nvim
         telescope-dap-nvim
+        telescope-ui-select-nvim
         leap-nvim
         gitsigns-nvim
         nvim-surround

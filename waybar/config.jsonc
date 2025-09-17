@@ -15,6 +15,7 @@
     ],
     "modules-right": [
         // "custom/weekly-review",
+        "custom/recording",
         "tray",
         "custom/timer",
         "disk",
@@ -23,6 +24,15 @@
         "custom/notification",
         "clock"
     ],
+    "custom/recording": {
+        "format": "🔴 REC",
+        "tooltip": "Click to stop recording",
+        "exec": "echo '{\"class\": \"recording\"}'",
+        "exec-if": "pgrep -x wf-recorder",
+        "return-type": "json",
+        "on-click": "pkill -INT wf-recorder",
+        "interval": 2
+    },
     "custom/weekly-review": {
         "exec": "weekly-note-review",
         "return-type": "json",

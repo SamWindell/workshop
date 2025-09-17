@@ -52,7 +52,7 @@
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     HYPRCURSOR_THEME = "rose-pine-hyprcursor";
-    HYPRCURSOR_SIZE = "24";
+    HYPRCURSOR_SIZE = "48";
     NAUTILUS_4_EXTENSION_DIR = "${pkgs.nautilus-python}/lib/nautilus/extensions-4";
   };
 
