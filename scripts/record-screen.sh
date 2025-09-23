@@ -3,6 +3,11 @@
 SYSTEM_AUDIO="alsa_output.usb-Yamaha_Corporation_Steinberg_UR22-00.analog-stereo.monitor"
 MIC_INPUT="alsa_input.usb-Yamaha_Corporation_Steinberg_UR22-00.analog-stereo"
 
+# Audio quality settings
+AUDIO_CODEC="flac"
+SAMPLE_RATE="44100"
+SAMPLE_FORMAT="s16"
+
 # Function to check if audio devices exist
 check_audio_devices() {
    if ! pactl list sources | grep -q "Name: $SYSTEM_AUDIO"; then
@@ -31,6 +36,27 @@ cleanup_audio() {
 # Global variable to store mic recording PID
 MIC_RECORD_PID=""
 
+# Function to start wf-recorder with audio quality settings
+start_wf_recorder() {
+    local audio_source="$1"
+    local output_file="$2"
+    local region="$3"
+    
+    local wf_args=(
+        --audio="$audio_source"
+        -C "$AUDIO_CODEC"
+        -p "sample_rate=$SAMPLE_RATE"
+        -p "sample_fmt=$SAMPLE_FORMAT"
+        -f "$output_file"
+    )
+    
+    if [[ -n "$region" ]]; then
+        wf_args+=(-g "$region")
+    fi
+    
+    wf-recorder "${wf_args[@]}"
+}
+
 # Cleanup function for script exit
 cleanup_and_exit() {
    # Kill mic recording if it's running
@@ -54,16 +80,12 @@ record_with_separate_tracks() {
     local filename="$1"
     local region="$2"
     
-    # Start mic recording in background
-    parecord --device="$MIC_INPUT" --file-format=flac --channels=1 "$HOME/${filename}_mic.flac" &
+    # Start mic recording in background with high quality settings
+    parecord --device="$MIC_INPUT" --file-format=flac --rate="$SAMPLE_RATE" --format="${SAMPLE_FORMAT}le" --channels=1 "${filename}_mic.flac" &
     MIC_RECORD_PID=$!
     
-    # Start video recording and wait for it to finish
-    if [[ -n "$region" ]]; then
-        wf-recorder --audio="$SYSTEM_AUDIO" -f "$HOME/${filename}.mp4" -g "$region"
-    else
-        wf-recorder --audio="$SYSTEM_AUDIO" -f "$HOME/${filename}.mp4"
-    fi
+    # Start video recording with high quality audio
+    start_wf_recorder "$SYSTEM_AUDIO" "${filename}.mp4" "$region"
 }
 
 # Function for standard combined recording
@@ -73,11 +95,8 @@ record_with_combined_audio() {
     
     setup_combined_audio
     
-    if [[ -n "$region" ]]; then
-        wf-recorder --audio=Combined.monitor -f "$HOME/${filename}.mp4" -g "$region"
-    else
-        wf-recorder --audio=Combined.monitor -f "$HOME/${filename}.mp4"
-    fi
+    # Start video recording with high quality combined audio
+    start_wf_recorder "Combined.monitor" "${filename}.mp4" "$region"
 }
 
 # Set trap for cleanup on script exit
@@ -142,14 +161,19 @@ sleep 0.5
 pkill -x play
 sleep 0.5
 
+# Create output directory
+output_dir="$HOME/Videos/Screen Recordings"
+mkdir -p "$output_dir"
+
 # Generate filename
 filename="$(date +'%Y-%m-%d-%H%M%S_recording')"
+full_path="$output_dir/$filename"
 
 # Record based on selected mode
 if [[ "$recording_mode" == "separate" ]]; then
-    record_with_separate_tracks "$filename" "$region"
-    notify-send -h string:wf-recorder:record "Recording finished!" "Video: ${filename}.mp4\nMic: ${filename}_mic.flac"
+    record_with_separate_tracks "$full_path" "$region"
+    notify-send -h string:wf-recorder:record "Recording finished!" "Video: ${full_path}.mp4\nMic: ${full_path}_mic.flac"
 else
-    record_with_combined_audio "$filename" "$region"
-    notify-send -h string:wf-recorder:record "Recording finished!" "File: ${filename}.mp4"
+    record_with_combined_audio "$full_path" "$region"
+    notify-send -h string:wf-recorder:record "Recording finished!" "File: ${full_path}.mp4"
 fi
