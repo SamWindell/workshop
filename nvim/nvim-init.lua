@@ -382,6 +382,16 @@ local dap = require("dap")
 local dap_ui_widgets = require("dap.ui.widgets")
 local dap_terminal_float = require('dap-terminal-float')
 local dap_repl_float = require('dap-repl-float')
+local dap_vscode = require('dap.ext.vscode')
+dap_vscode.json_decode = require('json5').parse
+
+local function load_launch_json()
+    dap_vscode.load_launchjs(
+        vim.fn.getcwd() .. '/.workshop/launch.json5',
+        {
+            lldb = { "zig", "c", "cpp", "objcpp", "objc" },
+        })
+end
 
 nvim_tree.setup {
     sync_root_with_cwd = true,
@@ -402,7 +412,10 @@ local dap_threads_view = nil
 
 -- DAP mappings
 vim.keymap.set('n', '<F4>', function() dap.pause() end, { desc = '[DAP] pause' })
-vim.keymap.set('n', '<F5>', function() dap.continue() end, { desc = '[DAP] continue' })
+vim.keymap.set('n', '<F5>', function()
+    load_launch_json()
+    dap.continue()
+end, { desc = '[DAP] continue' })
 vim.keymap.set('n', '<F6>', function() dap.terminate() end, { desc = '[DAP] terminate' })
 vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = '[DAP] step over' })
 vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = '[DAP] step into' })
@@ -504,11 +517,12 @@ vim.keymap.set('n', '<leader>gj', function()
     run_command("bash .workshop/build.sh")
 end, { desc = 'Build' })
 
+
 vim.keymap.set('n', '<leader>gk', function()
     vim.cmd [[ wa ]]
     run_command("bash .workshop/pre-debug.sh", function(_, exit_code, _)
         if exit_code == 0 then
-            require('dap.ext.vscode').load_launchjs()
+            load_launch_json()
             if first_debug_launch then
                 first_debug_launch = false
                 dap.continue()
@@ -782,6 +796,7 @@ local supported_lsp_servers = {
     'nixd',
     'yamlls',
     'harper_ls',
+    'mdx_analyzer',
 }
 
 local lspconfig = require('lspconfig')
@@ -827,6 +842,8 @@ local server_config =
         },
     }
 }
+
+vim.lsp.enable('mdx_analyzer')
 
 server_config.capabilities.general = server_config.capabilities.general or {}
 server_config.capabilities.general.positionEncodings = { "utf-16" }
@@ -1060,6 +1077,12 @@ require 'nvim-treesitter.configs'.setup {
         },
     },
 }
+
+vim.filetype.add({
+    extension = {
+        mdx = "markdown",
+    }
+})
 
 local function start_up_func()
     nvim_tree_api.tree.toggle({ focus = false })

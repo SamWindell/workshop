@@ -42,13 +42,18 @@ start_wf_recorder() {
     local output_file="$2"
     local region="$3"
     
-    local wf_args=(
-        --audio="$audio_source"
-        -C "$AUDIO_CODEC"
-        -p "sample_rate=$SAMPLE_RATE"
-        -p "sample_fmt=$SAMPLE_FORMAT"
-        -f "$output_file"
-    )
+    local wf_args=()
+    
+    if [[ -n "$audio_source" ]]; then
+        wf_args+=(
+            --audio="$audio_source"
+            -C "$AUDIO_CODEC"
+            -R "$SAMPLE_RATE"
+            -X "$SAMPLE_FORMAT"
+        )
+    fi
+    
+    wf_args+=(-f "$output_file")
     
     if [[ -n "$region" ]]; then
         wf_args+=(-g "$region")
@@ -99,6 +104,15 @@ record_with_combined_audio() {
     start_wf_recorder "Combined.monitor" "${filename}.mp4" "$region"
 }
 
+# Function for video-only recording (no audio)
+record_video_only() {
+    local filename="$1"
+    local region="$2"
+    
+    # Start video recording without audio
+    start_wf_recorder "" "${filename}.mp4" "$region"
+}
+
 # Set trap for cleanup on script exit
 trap cleanup_and_exit EXIT INT TERM
 
@@ -109,6 +123,7 @@ pgrep -x "wf-recorder" && pkill -INT -x wf-recorder && notify-send -h string:wf-
 read -r -d '' mode_options << 'EOL'
 🎥 Standard (mixed audio)
 🎬 Separate tracks (system + mic)
+📹 Video only (no audio)
 EOL
 
 selected_mode=$(echo "$mode_options" | fuzzel --dmenu)
@@ -119,6 +134,8 @@ if [[ "$selected_mode" == *"Standard"* ]]; then
     recording_mode="standard"
 elif [[ "$selected_mode" == *"Separate"* ]]; then
     recording_mode="separate"
+elif [[ "$selected_mode" == *"Video only"* ]]; then
+    recording_mode="video_only"
 else
     exit 0
 fi
@@ -148,8 +165,10 @@ elif [[ "$option" == "window" ]]; then
    fi
 fi
 
-# Check audio devices
-check_audio_devices
+# Check audio devices (skip for video-only mode)
+if [[ "$recording_mode" != "video_only" ]]; then
+    check_audio_devices
+fi
 
 # Countdown
 notify-send -h string:wf-recorder:record -t 1000 "Recording in:" "<span font='26px'><i><b>3</b></i></span>"
@@ -173,6 +192,9 @@ full_path="$output_dir/$filename"
 if [[ "$recording_mode" == "separate" ]]; then
     record_with_separate_tracks "$full_path" "$region"
     notify-send -h string:wf-recorder:record "Recording finished!" "Video: ${full_path}.mp4\nMic: ${full_path}_mic.flac"
+elif [[ "$recording_mode" == "video_only" ]]; then
+    record_video_only "$full_path" "$region"
+    notify-send -h string:wf-recorder:record "Recording finished!" "Video only: ${full_path}.mp4"
 else
     record_with_combined_audio "$full_path" "$region"
     notify-send -h string:wf-recorder:record "Recording finished!" "File: ${full_path}.mp4"

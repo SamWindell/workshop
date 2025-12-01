@@ -8,13 +8,13 @@ if __name__ == "__main__":
     project = Project(project_dir=Path.home() / "Projects" / "floe")
     builder = WeztermSetupBuilder(project)
 
-    editor_tab = builder.add_tab(command="nix develop", title="Editor")
+    editor_tab = builder.add_tab(command="nix develop .#with-validators", title="Editor")
     builder.send_text(editor_tab, "nvim\n")
 
-    docs_tab = builder.add_tab(command="nix develop", title="Docs Server")
-    builder.send_text(docs_tab, "cd docs\nmdbook serve --open\n")
+    docs_tab = builder.add_tab(command="nix develop .#with-validators", title="Website")
+    builder.send_text(docs_tab, "zig build script:website-dev")
 
-    shell_tab = builder.add_tab(command="nix develop", title="Shell")
+    shell_tab = builder.add_tab(command="nix develop .#with-validators", title="Shell")
     builder.send_text(shell_tab, "git pull\nbash .workshop/build.sh\n")
 
     # shell_tab = builder.add_tab(title="Log")

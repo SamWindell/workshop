@@ -2,4 +2,55 @@
 
 # Search content and Edit
 
-rg --files-with-matches "$1" | sad "$1" "$2"
+show_help() {
+    cat << EOF
+se - Search content and Edit using ripgrep + sad
+
+USAGE:
+    se [OPTIONS] <pattern> [replacement]
+
+ARGUMENTS:
+    <pattern>       Search pattern (regex supported)
+    [replacement]   Replacement text (empty = delete matches)
+
+OPTIONS:
+    -i              Case-insensitive search and replace
+    -h, --help      Show this help message
+
+EXAMPLES:
+    se "old_text" "new_text"     # Replace old_text with new_text (case-sensitive)
+    se -i "old_text" "new_text"  # Replace old_text with new_text (case-insensitive)
+    se "remove_me"               # Delete all occurrences of remove_me
+    se -i "TODO:"                # Delete all TODO: comments (case-insensitive)
+
+Note: This tool searches files with ripgrep and performs replacements with sad.
+Use -k flag with sad directly if you want to commit changes without preview.
+EOF
+}
+
+case_flag=""
+sad_flags=""
+
+case "$1" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    -i)
+        case_flag="-i"
+        sad_flags="-f i"
+        shift
+        ;;
+    *)
+        # Default: case-sensitive (disable smartcase)
+        sad_flags="-f I"
+        ;;
+esac
+
+if [[ $# -lt 1 ]]; then
+    echo "Error: Missing pattern argument"
+    echo "Use 'se --help' for usage information"
+    exit 1
+fi
+
+rg --files-with-matches $case_flag "$1" | sad $sad_flags "$1" "$2"

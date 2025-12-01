@@ -51,13 +51,10 @@
     NIXOS_OZONE_WL = "1"; # enable wayland on chromium
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    HYPRCURSOR_THEME = "rose-pine-hyprcursor";
-    HYPRCURSOR_SIZE = "48";
     NAUTILUS_4_EXTENSION_DIR = "${pkgs.nautilus-python}/lib/nautilus/extensions-4";
   };
 
   environment.systemPackages = [
-    inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default
     pkgs.nautilus
     pkgs.nautilus-python
   ];

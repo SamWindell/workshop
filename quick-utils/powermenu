@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+options="Shutdown\nReboot\nExit Hyprland"
+
+choice=$(echo -e "$options" | fuzzel --dmenu --prompt "Power: " --lines 3 --width 15)
+
+case "$choice" in
+    "Shutdown")
+        systemctl poweroff
+        ;;
+    "Reboot")
+        systemctl reboot
+        ;;
+    "Exit Hyprland")
+        uwsm stop
+        ;;
+esac

@@ -13,10 +13,6 @@
     musnix = {
       url = "github:musnix/musnix";
     };
-    rose-pine-hyprcursor = {
-      url = "github:ndom91/rose-pine-hyprcursor";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   # The `@` syntax here is used to alias the attribute set of the
@@ -45,21 +41,20 @@
             # Pass unstable packages to modules
             pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
           };
-          modules =
-            [
-              # Add the overlay to make unstable packages available
-              { nixpkgs.overlays = [ overlay-unstable ]; }
-              inputs.musnix.nixosModules.musnix
-              ./configuration.nix
-            ]
-            ++ nixpkgs.lib.optionals isWsl [
-              ./wsl-configuration.nix
-              inputs.nixos-wsl.nixosModules.wsl
-            ]
-            ++ nixpkgs.lib.optionals (!isWsl) [
-              ./hardware-configuration.nix
-              ./nixos-configuration.nix
-            ];
+          modules = [
+            # Add the overlay to make unstable packages available
+            { nixpkgs.overlays = [ overlay-unstable ]; }
+            inputs.musnix.nixosModules.musnix
+            ./configuration.nix
+          ]
+          ++ nixpkgs.lib.optionals isWsl [
+            ./wsl-configuration.nix
+            inputs.nixos-wsl.nixosModules.wsl
+          ]
+          ++ nixpkgs.lib.optionals (!isWsl) [
+            ./hardware-configuration.nix
+            ./nixos-configuration.nix
+          ];
         };
     in
 

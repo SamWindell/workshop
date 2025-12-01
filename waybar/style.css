@@ -1,26 +1,27 @@
 /* Credits to https://github.com/ChrisTitusTech/hyprland-titus */
+/* Kanagawa theme colors */
 * {
     border: none;
     font-family: "Ubuntu Nerd Font", sans-serif;
     font-weight: bold;
     font-size: 14px;
     min-height: 0;
-    color: #e0e0e0;
-    border-radius: 5px;
+    color: #DCD7BA; /* fujiWhite - default foreground */
+    /* border-radius: 5px; */
     background: none;
 }
 
 window#waybar {
-    background: rgba(21, 18, 27, 0.9);
-    color: #cdd6f4;
+    background: rgba(31, 31, 40, 0.9); /* sumiInk1 - default background */
+    color: #DCD7BA; /* fujiWhite */
 }
 
 tooltip,
 #tray menu {
-    background: #1e1e2e;
+    background: #16161D; /* sumiInk0 - dark background */
     border-width: 2px;
     border-style: solid;
-    border-color: #11111b;
+    border-color: #54546D; /* sumiInk4 - float borders */
 }
 
 /* Left */
@@ -30,27 +31,27 @@ tooltip,
 
 #workspaces button {
     padding: 5px;
-    color: #313244;
+    color: #54546D; /* sumiInk4 - darker foreground */
     margin-right: 5px;
 }
 
 #workspaces button.active {
-    background: rgba(100, 100, 100, 0.4);
+    background: #2A2A37; /* sumiInk2 - lighter background */
 }
 
 
 #workspaces button.focused {
-    color: #a6adc8;
-    background: #eba0ac;
+    color: #DCD7BA; /* fujiWhite */
+    background: #7E9CD8; /* crystalBlue - functions and titles */
 }
 
 #workspaces button.urgent {
-    color: #11111b;
-    background: #a6e3a1;
+    color: #16161D; /* sumiInk0 */
+    background: #E82424; /* samuraiRed - diagnostic error */
 }
 
 #workspaces button:hover {
-    background: rgba(100, 100, 100, 0.6);
+    background: #363646; /* sumiInk3 - lighter background (cursorline) */
 }
 
 /* Middle */
@@ -62,17 +63,17 @@ tooltip,
 }
 
 #custom-media:hover {
-    background: rgba(100, 100, 100, 0.6);
+    background: #363646; /* sumiInk3 */
 }
 
 /* Right */
 #custom-timer.active {
-    background: #8f0000;
+    background: #C34043; /* autumnRed - git delete */
     padding: 5px;
 }
 
 #custom-timer button:hover {
-    background: rgba(100, 100, 100, 0.6);
+    background: #363646; /* sumiInk3 */
 }
 
 #clock,
@@ -96,11 +97,11 @@ tooltip,
 #clock:hover,
 #custom-notification:hover,
 #tray .passive {
-    background: rgba(100, 100, 100, 0.3);
+    background: #2A2A37; /* sumiInk2 */
 }
 
 #custom-weekly-review {
-    background: #8f0000;
+    background: #C34043; /* autumnRed */
 }
 
 #pulseaudio {
