@@ -385,12 +385,21 @@ local dap_repl_float = require('dap-repl-float')
 local dap_vscode = require('dap.ext.vscode')
 dap_vscode.json_decode = require('json5').parse
 
+-- Because we are using a non-standard launch.json filename/location, we need to run this
+-- init code. This is based on the DAP plugin code.
+dap.providers.configs["dap.launch.json"] = function()
+    local path = vim.fn.getcwd() .. '/.workshop/launch.json5'
+    local ok, configs = pcall(dap_vscode.getconfigs, path)
+    if not ok then
+        local msg = "Can't get configurations from launch.json5:\n%s" .. configs
+        vim.notify_once(msg, vim.log.levels.WARN, { title = "DAP" })
+        return {}
+    end
+    return configs
+end
+
 local function load_launch_json()
-    dap_vscode.load_launchjs(
-        vim.fn.getcwd() .. '/.workshop/launch.json5',
-        {
-            lldb = { "zig", "c", "cpp", "objcpp", "objc" },
-        })
+    dap_vscode.load_launchjs(vim.fn.getcwd() .. '/.workshop/launch.json5', nil)
 end
 
 nvim_tree.setup {
@@ -460,7 +469,7 @@ vim.keymap.set('n', '<leader>dt', function()
 vim.keymap.set('n', '<leader>dy', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
     { desc = '[DAP] log point message' })
 vim.keymap.set('n', '<leader>da', function()
-    require('dap').run({
+    dap.run({
         type = 'lldb',
         request = 'attach',
         name = 'Attach to process',
