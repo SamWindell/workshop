@@ -14,8 +14,6 @@ let
 
   mimeTypes = import ./mime-types.nix;
 
-  wezterm = inputs.wezterm.packages.${pkgs.system}.default;
-
   cursorThemeName = "phinger-cursors-dark";
 in
 {
@@ -112,6 +110,7 @@ in
     pkgs.nerd-fonts.jetbrains-mono
   ]
   ++ pkgs.lib.optionals (isLinux && withGui) [
+    (pkgs.callPackage ./packages/convertwithmoss.nix { })
     pkgs.loupe # gnome image viewer
     pkgs.sushi # gnome file previewer
     pkgs.wl-clipboard # needed to get neovim clipboard working
@@ -138,10 +137,11 @@ in
     pkgs.pulseaudio
     pkgs.pavucontrol
     pkgs.kdePackages.kdenlive
+    pkgs.libnotify # notify-send
 
     specialArgs.pkgs-unstable.tracy-wayland
 
-    pkgs.bottles
+    pkgs.lutris
 
     pkgs.playerctl # used by waybar
     pkgs.zenity # used by waybar
@@ -203,7 +203,7 @@ in
   ]
   ++ pkgs.lib.optionals withGui [
     pkgs.keepassxc
-    wezterm
+    pkgs.wezterm
   ]
   ++ pkgs.lib.optionals isLinux [
     pkgs.wineWow64Packages.waylandFull
@@ -353,7 +353,10 @@ in
     };
   };
 
-  services.megasync.enable = isLinux && withGui; # cloud sync program
+  services.megasync = {
+    enable = isLinux && withGui; # cloud sync program
+    package = specialArgs.pkgs-master.megasync;
+  };
   systemd.user.services.megasync = mkIf (isLinux && withGui) {
     Service = {
       ExecStart = "${config.services.megasync.package}/bin/megasync";
@@ -464,7 +467,10 @@ in
       '';
   };
 
-  programs.ssh.enable = true;
+  programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+  };
 
   # fancy command history in bash
   programs.atuin = {
@@ -499,11 +505,12 @@ in
   programs.git = {
     enable = true;
     lfs.enable = true;
-    delta.enable = true; # use the delta program for diff syntax highlighting
-    userName = "Sam Windell";
-    userEmail = "info@frozenplain.com";
     # https://blog.gitbutler.com/how-git-core-devs-configure-git/
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Sam Windell";
+        email = "info@frozenplain.com";
+      };
       init = {
         defaultBranch = "main";
       };
@@ -533,7 +540,15 @@ in
       "credential \"https://gist.github.com\"" = {
         helper = "!${pkgs.gh}/bin/gh auth git-credential";
       };
+      "credential \"http://192.168.68.103:30008\"" = {
+        helper = "store";
+      };
     };
+  };
+
+  programs.delta = {
+    enable = true; # use the delta program for diff syntax highlighting
+    enableGitIntegration = true;
   };
 
   # better ls
@@ -651,7 +666,7 @@ in
         nvim-treesitter-textobjects
         text-case-nvim
         vim-just
-        copilot-vim
+        # copilot-vim
         nvim-dap
         nvim-notify
         cmp-dap

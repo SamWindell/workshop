@@ -11,8 +11,31 @@
     "fs.inotify.max_user_watches" = 524288;
   };
 
+  # Load uinput kernel module for antimicrox
+  boot.kernelModules = [ "uinput" ];
+
   programs.appimage.enable = true;
   programs.appimage.binfmt = true;
+
+  programs.steam.enable = true;
+  programs.gamemode.enable = true;
+
+  programs.gamescope = {
+    enable = true;
+    capSysNice = false;
+  };
+  programs.steam.gamescopeSession = {
+    enable = true;
+    args = [
+      "--immediate-flips"
+      "--hdr-enabled"
+      "--adaptive-sync"
+    ];
+    steamArgs = [
+      "-tenfoot"
+      "-pipewire-dmabuf"
+    ];
+  };
 
   # fix pinentry-gnome3
   services.dbus.packages = [ pkgs.gcr ];
@@ -36,8 +59,10 @@
     "flakes"
   ];
 
-  hardware.bluetooth.enable = true; # enables support for Bluetooth
-  hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
 
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
@@ -59,10 +84,19 @@
   nixpkgs.config.allowUnfree = true;
   services.gvfs.enable = true;
 
+  # udev rules for antimicrox to access uinput
+  services.udev.extraRules = ''
+    # Allow users in the input group to access uinput
+    KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput", GROUP="input", MODE="0660"
+  '';
+
   environment.systemPackages = with pkgs; [
     cifs-utils
     neovim
     pinentry-tty
+    antimicrox
+    gamescope-wsi # HDR support for gamescope
+    bottles
   ];
 
   fonts.packages = [
@@ -82,7 +116,7 @@
         "NotoSansMono"
       ];
     })
-    pkgs.noto-fonts-emoji
+    pkgs.noto-fonts-color-emoji
     pkgs.barlow
     (pkgs.stdenvNoCC.mkDerivation rec {
       pname = "outfit-fonts";

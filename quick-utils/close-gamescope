@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Shutdown Steam and Gamescope
+steam -shutdown
+killall -9 gamescope

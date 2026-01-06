@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# Launch Steam in gamescope with HDR support
+# Usage: gamescope-steam [OUTPUT] [REFRESH_RATE] [SIZE]
+# Example: gamescope-steam HDMI-A-2 60 native
+# Example: gamescope-steam DP-4 120 1080
+# If no args provided, uses DP-4 @ 120Hz @ native resolution
+
+OUTPUT="${1:-DP-4}"
+REFRESH="${2:-120}"
+SIZE="${3:-native}"
+
+# Auto-detect native resolution for the specified output
+CONNECTOR_PATH=$(ls /sys/class/drm/card*-${OUTPUT}/modes 2>/dev/null | head -n1)
+if [[ -z "$CONNECTOR_PATH" ]]; then
+  echo "Error: Could not find output ${OUTPUT}"
+  echo "Available outputs:"
+  ls /sys/class/drm/card*/card*-*/status | xargs grep -l "^connected$" | sed 's|/status||; s|.*/||'
+  exit 1
+fi
+
+RESOLUTION=$(head -n1 "$CONNECTOR_PATH")
+NATIVE_WIDTH=$(echo "$RESOLUTION" | cut -d'x' -f1)
+NATIVE_HEIGHT=$(echo "$RESOLUTION" | cut -d'x' -f2)
+
+# Handle SIZE parameter
+if [[ "$SIZE" == "native" ]]; then
+  WIDTH="$NATIVE_WIDTH"
+  HEIGHT="$NATIVE_HEIGHT"
+elif [[ "$SIZE" == "1080" ]]; then
+  WIDTH=1920
+  HEIGHT=1080
+else
+  # Allow custom resolution like "2560x1440"
+  WIDTH=$(echo "$SIZE" | cut -d'x' -f1)
+  HEIGHT=$(echo "$SIZE" | cut -d'x' -f2)
+fi
+
+echo "Launching gamescope on ${OUTPUT} at ${WIDTH}x${HEIGHT} @ ${REFRESH}Hz"
+
+exec gamescope \
+  -W "$WIDTH" -H "$HEIGHT" \
+  -r "$REFRESH" \
+  -f \
+  -e \
+  -O "$OUTPUT" \
+  --backend drm \
+  --immediate-flips \
+  -F fsr \
+  --hdr-enabled \
+  --adaptive-sync \
+  -- steam -tenfoot

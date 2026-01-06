@@ -600,12 +600,12 @@ vim.keymap.set(
 )
 
 -- Copilot
-vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
-    expr = true,
-    replace_keycodes = false
-})
-vim.keymap.set('i', '<C-s-o>', '<Plug>(copilot-accept-word)')
-vim.g.copilot_no_tab_map = true
+-- vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
+--     expr = true,
+--     replace_keycodes = false
+-- })
+-- vim.keymap.set('i', '<C-s-o>', '<Plug>(copilot-accept-word)')
+-- vim.g.copilot_no_tab_map = true
 
 
 --=================================================================
@@ -746,48 +746,41 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     end
 })
 
-local on_attach = function(_, bufnr)
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-    vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition,
-        { desc = 'Goto definition of the type of symbol under cursor' })
-    vim.keymap.set('n', 'gd', telescope_builtin.lsp_definitions, { desc = 'Goto definition of symbol under cursor' })
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Goto declaration of symbol under cursor' })
-    vim.keymap.set('n', 'gi', telescope_builtin.lsp_implementations,
-        { desc = 'Goto implementation of symbol under cursor' })
-    vim.keymap.set('n', 'gr', telescope_builtin.lsp_references, { desc = 'List references of symbol under cursor' })
-
-    -- LSP information
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Show info float for symbol under cursor' })
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, { desc = 'Show help float for symbol under cursor' })
-
-    -- LSP symbol search
-    vim.keymap.set('n', '<leader>fr', telescope_builtin.lsp_document_symbols, { desc = 'Find symbol in file' })
-    vim.keymap.set('n', '<leader>fe', telescope_builtin.lsp_workspace_symbols, { desc = 'Find symbol in workspace' })
-
-    -- LSP formatting and modifications
-    vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, { desc = 'Format document' })
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename symbol' })
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'LSP code action' })
-end
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = "*",
+-- LspAttach autocmd for keymaps and per-buffer setup
+vim.api.nvim_create_autocmd('LspAttach', {
+    group = vim.api.nvim_create_augroup('user-lsp-attach', { clear = true }),
     callback = function(args)
-        -- Get the buffer number from the event arguments
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
         local bufnr = args.buf
 
-        -- Get the clients attached to the current buffer
-        local clients = vim.lsp.get_active_clients({ bufnr = bufnr })
+        vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
-        for _, client in ipairs(clients) do
-            if client.server_capabilities.documentFormattingProvider then
-                vim.lsp.buf.format({
-                    bufnr = bufnr,
-                    async = false
-                })
-                break
-            end
+        -- Keymaps
+        local function map(mode, lhs, rhs, desc)
+            vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+        end
+
+        map('n', 'gt', vim.lsp.buf.type_definition, 'Goto definition of the type of symbol under cursor')
+        map('n', 'gd', require('telescope.builtin').lsp_definitions, 'Goto definition of symbol under cursor')
+        map('n', 'gD', vim.lsp.buf.declaration, 'Goto declaration of symbol under cursor')
+        map('n', 'gi', require('telescope.builtin').lsp_implementations, 'Goto implementation of symbol under cursor')
+        map('n', 'gr', require('telescope.builtin').lsp_references, 'List references of symbol under cursor')
+        map('n', 'K', vim.lsp.buf.hover, 'Show info float for symbol under cursor')
+        map('n', '<C-k>', vim.lsp.buf.signature_help, 'Show help float for symbol under cursor')
+        map('n', '<leader>fr', require('telescope.builtin').lsp_document_symbols, 'Find symbol in file')
+        map('n', '<leader>fe', require('telescope.builtin').lsp_workspace_symbols, 'Find symbol in workspace')
+        map('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, 'Format document')
+        map('n', '<leader>rn', vim.lsp.buf.rename, 'Rename symbol')
+        map('n', '<leader>ca', vim.lsp.buf.code_action, 'LSP code action')
+
+        -- Auto-format on save
+        if client.server_capabilities.documentFormattingProvider then
+            vim.api.nvim_create_autocmd('BufWritePre', {
+                buffer = bufnr,
+                callback = function()
+                    vim.lsp.buf.format({ bufnr = bufnr, id = client.id, async = false })
+                end,
+            })
         end
     end,
 })
@@ -808,20 +801,27 @@ local supported_lsp_servers = {
     'mdx_analyzer',
 }
 
-local lspconfig = require('lspconfig')
-local server_config =
-{
-    on_attach = on_attach,
-    flags = {
-        debounce_text_changes = 150,
-    },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
-    settings = {
+-- Base capabilities for all servers
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+capabilities.general = capabilities.general or {}
+capabilities.general.positionEncodings = { "utf-16" }
+capabilities.offsetEncoding = { 'utf-16' }
+
+-- Configure base settings for all servers
+vim.lsp.config('*', {
+    capabilities = capabilities,
+})
+
+-- Server-specific settings
+local server_settings = {
+    nixd = {
         nixd = {
             formatting = {
                 command = { "nixfmt" },
             },
         },
+    },
+    lua_ls = {
         Lua = {
             runtime = {
                 -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
@@ -843,28 +843,31 @@ local server_config =
                 enable = true,
             }
         },
+    },
+    harper_ls = {
         ["harper-ls"] = {
             dialect = "British",
             linters = {
                 LongSentences = false,
             },
         },
-    }
+    },
 }
 
-vim.lsp.enable('mdx_analyzer')
+-- Configure each server
+for _, server_name in pairs(supported_lsp_servers) do
+    local config = {}
 
-server_config.capabilities.general = server_config.capabilities.general or {}
-server_config.capabilities.general.positionEncodings = { "utf-16" }
-server_config.capabilities.offsetEncoding = { 'utf-16' }
-
-for _, v in pairs(supported_lsp_servers) do
-    if (v == 'clangd') then
-        server_config.cmd = { "clangd", "--offset-encoding=utf-16", "--clang-tidy", }
-    else
-        server_config.cmd = nil
+    if server_settings[server_name] then
+        config.settings = server_settings[server_name]
     end
-    lspconfig[v].setup(server_config);
+
+    if server_name == 'clangd' then
+        config.cmd = { "clangd", "--offset-encoding=utf-16", "--clang-tidy" }
+    end
+
+    vim.lsp.config(server_name, config)
+    vim.lsp.enable(server_name)
 end
 
 
@@ -954,7 +957,11 @@ require('textcase').setup {}
 
 require('gitsigns').setup()
 require('illuminate').configure({ delay = 50 })
-require('leap').add_default_mappings()
+
+-- Leap keymaps (default arrangement)
+vim.keymap.set({'n', 'x', 'o'}, 's', '<Plug>(leap)')
+vim.keymap.set('n', 'S', '<Plug>(leap-from-window)')
+
 require("nvim-surround").setup()
 require('snippets')
 

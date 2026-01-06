@@ -2,19 +2,15 @@
   description = "Home Manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-master.url = "github:nixos/nixpkgs/master";
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # https://wezfurlong.org/wezterm/install/linux.html#flake
-    wezterm = {
-      url = "github:wez/wezterm?dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mac-app-util.url = "github:hraban/mac-app-util";
@@ -29,6 +25,7 @@
     inputs@{
       nixpkgs,
       nixpkgs-unstable,
+      nixpkgs-master,
       home-manager,
       mac-app-util,
       hyprshot,
@@ -104,6 +101,15 @@
           };
         };
 
+      masterPkgsForSystem =
+        system:
+        import nixpkgs-master {
+          inherit system;
+          config = {
+            allowUnfree = true;
+          };
+        };
+
       mkHomeConfiguration =
         args:
         home-manager.lib.homeManagerConfiguration {
@@ -115,6 +121,7 @@
           extraSpecialArgs = args.extraSpecialArgs // {
             inherit inputs;
             pkgs-unstable = unstablePkgsForSystem args.system;
+            pkgs-master = masterPkgsForSystem args.system;
           };
         };
     in

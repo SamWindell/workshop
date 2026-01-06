@@ -39,17 +39,30 @@
     ];
   };
 
+  fileSystems."/nix/store" = {
+    device = "/dev/disk/by-uuid/81e9bc10-f452-4981-a294-e6bf2e71c98b";
+    fsType = "btrfs";
+    neededForBoot = true;
+    options = [
+      "subvol=@nix-store"
+      "compress=zstd:1"
+      "noatime"
+    ];
+  };
+
+  fileSystems."/mnt/data" = {
+    device = "/dev/disk/by-uuid/81e9bc10-f452-4981-a294-e6bf2e71c98b";
+    fsType = "btrfs";
+    options = [
+      "subvol=@data"
+      "noatime"
+    ];
+  };
+
   # fileSystems."/mnt/FrozenVault" = {
   #   device = "systemd-1";
   #   fsType = "autofs";
   # };
-
-  # fileSystems."/media/sshd" =
-  #   {
-  #     device = "/dev/disk/by-uuid/940E86490E8623F8";
-  #     fsType = "ntfs-3g";
-  #     options = [ "rw" "uid=1000" ];
-  #   };
 
   fileSystems."/mnt/SSHD" = {
     device = "/dev/disk/by-label/SSHD";
@@ -59,6 +72,20 @@
       "user"
       "rw"
       "uid=1000"
+      "nofail"
+    ];
+  };
+
+  fileSystems."/mnt/GamesSSD" = {
+    device = "/dev/disk/by-label/Games\\x20SSD";
+    fsType = "ntfs";
+    options = [
+      "rw"
+      "uid=1000"
+      "gid=100"
+      "umask=0022"
+      "exec"
+      "windows_names"
     ];
   };
 

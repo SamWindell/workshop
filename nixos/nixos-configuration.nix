@@ -22,13 +22,16 @@
     useOSProber = true;
     default = 2;
   };
-  boot.supportedFilesystems = [ "ntfs" ];
+  boot.supportedFilesystems = [ "ntfs" "btrfs" ];
+  boot.initrd.supportedFilesystems = [ "btrfs" ];
 
   musnix.enable = true;
 
   # lutris esync
   # https://github.com/lutris/docs/blob/master/HowToEsync.md
-  systemd.extraConfig = "DefaultLimitNOFILE=524288";
+  systemd.settings.Manager = {
+    DefaultLimitNOFILE = "524288";
+  };
   security.pam.loginLimits = [
     {
       domain = "sam";
@@ -141,12 +144,26 @@
       "networkmanager"
       "wheel"
       "audio"
+      "input"
     ];
     packages = with pkgs; [ xdg-desktop-portal-gtk ];
   };
 
   # Enable automatic login for the user.
   services.getty.autologinUser = "sam";
+
+  # services.kmscon = {
+  #   enable = true;
+  #   hwRender = true;
+  #   useXkbConfig = true;
+  #   autologinUser = "sam";
+  #   fonts = [
+  #     {
+  #       name = "JetBrainsMono Nerd Font Mono";
+  #       package = pkgs.nerd-fonts.jetbrains-mono;
+  #     }
+  #   ];
+  # };
 
   security.rtkit.enable = true;
 

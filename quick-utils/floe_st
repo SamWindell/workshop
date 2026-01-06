@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-/home/sam/Projects/floe/zig-out/x86_64-linux/floe_standalone
+/home/sam/Projects/floe/zig-out/bin/floe_standalone
