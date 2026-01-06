@@ -50,11 +50,11 @@
     ];
   };
 
-  fileSystems."/mnt/data" = {
+  fileSystems."/mnt/Agora" = {
     device = "/dev/disk/by-uuid/81e9bc10-f452-4981-a294-e6bf2e71c98b";
     fsType = "btrfs";
     options = [
-      "subvol=@data"
+      "subvol=@agora"
       "noatime"
     ];
   };

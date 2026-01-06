@@ -19,10 +19,13 @@
     enable = true;
     device = "nodev";
     efiSupport = true;
-    useOSProber = true;
+    useOSProber = false;
     default = 2;
   };
-  boot.supportedFilesystems = [ "ntfs" "btrfs" ];
+  boot.supportedFilesystems = [
+    "ntfs"
+    "btrfs"
+  ];
   boot.initrd.supportedFilesystems = [ "btrfs" ];
 
   musnix.enable = true;
