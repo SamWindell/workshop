@@ -19,6 +19,9 @@
       url = "github:Gustash/hyprshot";
       flake = false;
     };
+    quickemu = {
+      url = "github:quickemu-project/quickemu";
+    };
   };
 
   outputs =
@@ -29,6 +32,7 @@
       home-manager,
       mac-app-util,
       hyprshot,
+      quickemu,
       ...
     }:
     let

@@ -56,6 +56,8 @@
     options = [
       "subvol=@agora"
       "noatime"
+      "rw"
+      "users"
     ];
   };
 
@@ -66,12 +68,9 @@
 
   fileSystems."/mnt/SSHD" = {
     device = "/dev/disk/by-label/SSHD";
-    fsType = "ntfs";
+    fsType = "ext4";
     options = [
       "defaults"
-      "user"
-      "rw"
-      "uid=1000"
       "nofail"
     ];
   };

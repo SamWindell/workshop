@@ -145,7 +145,8 @@ in
 
     pkgs.playerctl # used by waybar
     pkgs.zenity # used by waybar
-    pkgs.quickemu
+    inputs.quickemu.packages.${pkgs.system}.default
+    pkgs.spice-gtk
 
     pkgs.pinentry-gnome3
 
@@ -206,7 +207,6 @@ in
     pkgs.wezterm
   ]
   ++ pkgs.lib.optionals isLinux [
-    pkgs.wineWow64Packages.waylandFull
   ]
   ++ pkgs.lib.optionals isDarwin [
     pkgs.tracy

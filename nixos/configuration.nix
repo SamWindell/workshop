@@ -97,6 +97,10 @@
     antimicrox
     gamescope-wsi # HDR support for gamescope
     bottles
+
+    # Wine for running Windows applications
+    wineWowPackages.waylandFull
+    winetricks
   ];
 
   fonts.packages = [
