@@ -244,9 +244,10 @@ in
     EDITOR = "nvim";
     SHELL = "${pkgs.bashInteractive}/bin/bash";
     TERMINAL = "wezterm";
+  } // lib.optionalAttrs isLinux {
     XCURSOR_THEME = cursorThemeName;
     XCURSOR_SIZE = config.home.pointerCursor.size;
-  };
+  }; 
 
   home.sessionPath = [
     "${config.home.homeDirectory}/.config/home-manager/quick-utils"
@@ -615,7 +616,7 @@ in
 
           postInstall =
             if isDarwin then
-              "cp ${lua-json5-bin}/lib/liblua_json5.dylib $out/lua/json5.dylib"
+              "cp ${lua-json5-bin}/lib/liblua_json5.dylib $out/lua/json5.so"
             else
               "strip ${lua-json5-bin}/lib/liblua_json5.so -o $out/lua/json5.so";
           doCheck = false;
