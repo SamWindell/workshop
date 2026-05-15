@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# State files in tmpfs for fast access
+STATE_DIR="/run/user/$(id -u)/transcribe"
+PID_FILE="$STATE_DIR/recording.pid"
+AUDIO_FILE="$STATE_DIR/recording.wav"
+
+mkdir -p "$STATE_DIR"
+
+# Check if already recording
+if [ -f "$PID_FILE" ]; then
+    PID=$(cat "$PID_FILE")
+
+    # Check if the process is actually running
+    if ! kill -0 "$PID" 2>/dev/null; then
+        # Stale PID file, clean up and start fresh
+        rm -f "$PID_FILE" "$AUDIO_FILE"
+        ffmpeg -f pulse -i default -y "$AUDIO_FILE" 2>/dev/null &
+        echo $! > "$PID_FILE"
+        exit 0
+    fi
+
+    # Stop recording
+    kill "$PID" 2>/dev/null || true
+    wait "$PID" 2>/dev/null || true
+
+    # Transcribe and output (trim whitespace without xargs to avoid quote issues)
+    if [ -f "$AUDIO_FILE" ]; then
+        result=$(whisper-cli -m "$WHISPER_MODEL" -f "$AUDIO_FILE" --no-prints --no-timestamps 2>/dev/null)
+        # Trim leading and trailing whitespace
+        result="${result#"${result%%[![:space:]]*}"}"
+        result="${result%"${result##*[![:space:]]}"}"
+        echo -n "$result"
+    fi
+
+    # Cleanup
+    rm -f "$PID_FILE" "$AUDIO_FILE"
+else
+    # Start recording
+    ffmpeg -f pulse -i default -y "$AUDIO_FILE" 2>/dev/null &
+    echo $! > "$PID_FILE"
+fi

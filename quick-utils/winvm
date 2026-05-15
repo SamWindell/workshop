@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd /mnt/Agora/VirtualMachines 
+quickemu --vm windows-11.conf --display spice
