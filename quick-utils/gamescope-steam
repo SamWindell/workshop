@@ -38,6 +38,8 @@ fi
 
 echo "Launching gamescope on ${OUTPUT} at ${WIDTH}x${HEIGHT} @ ${REFRESH}Hz"
 
+pactl set-default-sink alsa_output.pci-0000_01_00.1.hdmi-stereo
+
 exec gamescope \
   -W "$WIDTH" -H "$HEIGHT" \
   -r "$REFRESH" \

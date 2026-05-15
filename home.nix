@@ -55,11 +55,12 @@ in
     pkgs.llvmPackages.clang
     pkgs.llvmPackages.clang-unwrapped
     pkgs.llvmPackages.libllvm
-    pkgs.lldb_18
+    pkgs.lldb
     pkgs.python3
     pkgs.just
     pkgs.awscli2
     pkgs.optipng
+    pkgs.uv
 
     pkgs.nixd # nix LSP
     pkgs.nixpkgs-fmt # nix code formatting
@@ -101,8 +102,8 @@ in
     pkgs.gawk # transcrypt
     pkgs.xxd # transcrypt
 
-    specialArgs.pkgs-unstable.zig
-    specialArgs.pkgs-unstable.zls
+    pkgs.zig_0_14
+    pkgs.zls_0_14
 
     pkgs.hunspell
     pkgs.hunspellDicts.en_GB-ise
@@ -139,13 +140,20 @@ in
     pkgs.kdePackages.kdenlive
     pkgs.libnotify # notify-send
 
-    specialArgs.pkgs-unstable.tracy-wayland
+    pkgs.tracy-wayland
+
+    pkgs.ghostty
 
     pkgs.lutris
 
+    (pkgs.whisper-cpp.override {
+      cudaSupport = true;
+      withSDL = true;
+    })
+
     pkgs.playerctl # used by waybar
     pkgs.zenity # used by waybar
-    inputs.quickemu.packages.${pkgs.system}.default
+    specialArgs.pkgs-unstable.quickemu
     pkgs.spice-gtk
 
     pkgs.pinentry-gnome3
@@ -243,11 +251,13 @@ in
   home.sessionVariables = {
     EDITOR = "nvim";
     SHELL = "${pkgs.bashInteractive}/bin/bash";
-    TERMINAL = "wezterm";
-  } // lib.optionalAttrs isLinux {
+    TERMINAL = "ghostty";
+  }
+  // lib.optionalAttrs isLinux {
     XCURSOR_THEME = cursorThemeName;
     XCURSOR_SIZE = config.home.pointerCursor.size;
-  }; 
+    WHISPER_MODEL = "${config.home.homeDirectory}/.local/share/whisper/models/ggml-base.en.bin";
+  };
 
   home.sessionPath = [
     "${config.home.homeDirectory}/.config/home-manager/quick-utils"
@@ -273,13 +283,13 @@ in
         categories = [ "System" ];
         comment = "Show power options menu";
       };
-      "wezterm-nvim" = {
-        name = "Wezterm Neovim";
+      "ghostty-nvim" = {
+        name = "Ghostty Neovim";
         icon = "nvim";
-        exec = "wezterm start -- nvim %F";
+        exec = "ghostty -e nvim %F";
         terminal = false;
         categories = [ "Development" ];
-        comment = "Open Neovim in Wezterm";
+        comment = "Open Neovim in Ghostty";
         genericName = "Text Editor";
         type = "Application";
         mimeType = mimeTypes.sourceCodeTypes;
@@ -307,15 +317,18 @@ in
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
+    # Use unstable for hyprland + plugins so nixpkgs keeps versions in sync
+    package = specialArgs.pkgs-unstable.hyprland;
+    # Portal is managed by NixOS programs.hyprland + xdg.portal in nixos-configuration.nix
+    portalPackage = null;
     plugins = [
-      inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.hyprlandPlugins.hyprbars
+      # TODO: re-enable once nixpkgs-unstable updates hyprbars to match hyprland 0.54.2
+      # specialArgs.pkgs-unstable.hyprlandPlugins.hyprbars
     ];
     extraConfig = ''
       exec-once=hyprctl setcursor ${config.home.pointerCursor.name} ${toString config.home.pointerCursor.size}"
       source = ~/.config/home-manager/hypr/config.conf
     '';
-    package = null;
-    portalPackage = null;
   };
   programs.waybar = mkIf (isLinux && withGui) {
     enable = true;
@@ -341,8 +354,8 @@ in
       listener = [
         {
           timeout = 100; # seconds
-          on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
-          on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+          on-timeout = "${specialArgs.pkgs-unstable.hyprland}/bin/hyprctl dispatch dpms off";
+          on-resume = "${specialArgs.pkgs-unstable.hyprland}/bin/hyprctl dispatch dpms on";
         }
       ];
     };
@@ -421,14 +434,7 @@ in
 
   gtk = mkIf (isLinux && withGui) {
     enable = true;
-    theme = {
-      name = "Kanagawa-B-LB";
-      package = pkgs.kanagawa-gtk-theme;
-    };
-    iconTheme = {
-      name = "Kanagawa";
-      package = pkgs.kanagawa-icon-theme;
-    };
+    colorScheme = "dark";
     gtk4 = {
       extraConfig = {
         gtk-application-prefer-dark-theme = true;
@@ -541,7 +547,7 @@ in
       "credential \"https://gist.github.com\"" = {
         helper = "!${pkgs.gh}/bin/gh auth git-credential";
       };
-      "credential \"http://192.168.68.103:30008\"" = {
+      "credential \"http://192.168.1.192:30008\"" = {
         helper = "store";
       };
     };
@@ -633,6 +639,9 @@ in
           }'";
         }
 
+        # use unstable nvim-treesitter to match neovim-unwrapped from unstable
+        # (stable's version is too old for the nvim 0.12 treesitter API)
+        specialArgs.pkgs-unstable.vimPlugins.nvim-treesitter
         telescope-fzf-native-nvim
         zig-vim
         bufferline-nvim
@@ -646,9 +655,6 @@ in
         nvim-surround
         kanagawa-nvim
         targets-vim
-        nvim-treesitter
-        nvim-treesitter.withAllGrammars
-        nvim-treesitter-textobjects
         nvim-lspconfig
         nvim-tree-lua
         nvim-web-devicons
@@ -664,7 +670,6 @@ in
         typescript-vim
         refactoring-nvim
         plenary-nvim
-        nvim-treesitter-textobjects
         text-case-nvim
         vim-just
         # copilot-vim
@@ -677,7 +682,7 @@ in
         smart-open
       ];
     extraLuaConfig = ''
-      lldb_vscode_path = '${pkgs.lldb_18}/bin/lldb-dap'
+      lldb_vscode_path = '${pkgs.lldb}/bin/lldb-dap'
       require "nvim-init"
     '';
   };

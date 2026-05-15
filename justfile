@@ -19,7 +19,7 @@ default:
     fi
 
     echo "Switching to $config"
-    home-manager switch --flake .#$config
+    home-manager switch --flake .#$config --show-trace
     # You must run nvim like this: nvim --listen ~/.cache/nvim/server.pipe;
     # nvim --server ~/.cache/nvim/server.pipe --remote-send " rc" 
 

@@ -104,24 +104,21 @@
     portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
-  # xdg.portal = {
-  #   enable = true;
-  #   xdgOpenUsePortal = true;
-  #   config = {
-  #     common = {
-  #       default = "gtk";
-  #     };
-  #     hyprland = {
-  #       default = "gtk";
-  #       "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
-  #       "org.freedesktop.impl.portal.Screenshot" = "hyprland";
-  #     };
-  #   };
-  #   extraPortals = [
-  #     pkgs.xdg-desktop-portal-gtk
-  #     pkgs-unstable.xdg-desktop-portal-hyprland
-  #   ];
-  # };
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    config = {
+      hyprland = {
+        default = [
+          "hyprland"
+          "gtk"
+        ];
+      };
+    };
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+    ];
+  };
 
   # # Automatic Garbage Collection
   # nix.gc = {
@@ -149,7 +146,7 @@
       "audio"
       "input"
     ];
-    packages = with pkgs; [ xdg-desktop-portal-gtk ];
+    packages = [ ];
   };
 
   # Enable automatic login for the user.

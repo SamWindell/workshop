@@ -76,15 +76,12 @@
   };
 
   fileSystems."/mnt/GamesSSD" = {
-    device = "/dev/disk/by-label/Games\\x20SSD";
-    fsType = "ntfs";
+    device = "/dev/disk/by-label/GamesSSD";
+    fsType = "ext4";
     options = [
-      "rw"
-      "uid=1000"
-      "gid=100"
-      "umask=0022"
-      "exec"
-      "windows_names"
+      "defaults"
+      "noatime"
+      "nodiratime"
     ];
   };
 

@@ -19,3 +19,6 @@ _dgui_completion() {
     fi
 }
 complete -F _dgui_completion dgui
+
+# uv executables
+export PATH="/home/sam/.local/share/../bin:$PATH"

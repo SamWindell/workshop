@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
+pactl set-default-sink alsa_output.usb-Yamaha_Corporation_Steinberg_UR22-00.analog-stereo
+
 exec systemd-cat -t uwsm_start uwsm start default

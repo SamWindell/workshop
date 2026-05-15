@@ -18,7 +18,11 @@
   programs.appimage.binfmt = true;
 
   programs.steam.enable = true;
+  programs.steam.remotePlay.openFirewall = true;
+  programs.steam.localNetworkGameTransfers.openFirewall = true;
   programs.gamemode.enable = true;
+
+  programs.nix-ld.enable = true;
 
   programs.gamescope = {
     enable = true;
@@ -41,7 +45,7 @@
   services.dbus.packages = [ pkgs.gcr ];
 
   fileSystems."/mnt/FrozenVault" = {
-    device = "//192.168.68.103/frozenvault1";
+    device = "//192.168.1.192/frozenvault1";
     fsType = "cifs";
     options =
       let
