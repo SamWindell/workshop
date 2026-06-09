@@ -8,7 +8,8 @@
 #   existing window is reused — nnd re-runs with whatever it was started with.
 set -euo pipefail
 
-APP_ID="com.mitchellh.ghostty.nnd-debugger"
+key=i$(printf '%s\0' "$@" | sha1sum | cut -c1-12)
+APP_ID="com.mitchellh.ghostty.nnd-debugger.$key"
 
 id=$(niri msg --json windows \
     | jq -r --arg id "$APP_ID" '.[] | select(.app_id==$id) | .id' \

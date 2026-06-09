@@ -536,6 +536,9 @@ in
     ignores = [
       ".workshop/"
       ".claude/"
+      ".direnv/"
+      ".env"
+      ".envrc"
     ];
     # https://blog.gitbutler.com/how-git-core-devs-configure-git/
     settings = {

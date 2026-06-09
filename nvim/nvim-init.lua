@@ -142,6 +142,8 @@ vim.keymap.set("n", "<leader>O", "printf('m`%sO<ESC>``', v:count1)", {
     desc = "Create new line above",
 })
 vim.keymap.set('v', '<leader>/', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>N', { desc = 'Search for selection' })
+vim.keymap.set('v', '<leader>R', 'y/\\V<C-R>=escape(@",\'/\\\')<CR><CR>Ncgn',
+    { desc = 'Replace selection (type new text, . to repeat)' })
 vim.keymap.set('t', '<esc>', '<C-\\><C-n>', { desc = 'Normal mode' })
 vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 
@@ -411,7 +413,6 @@ require('mini.statusline').setup()
 require('mini.tabline').setup()
 require('mini.trailspace').setup()
 require('mini.notify').setup()
--- require('mini.clue').setup()
 
 require('note-to-midi')
 

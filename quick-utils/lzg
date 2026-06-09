@@ -6,7 +6,8 @@
 # Subsequent calls: focuses the existing window.
 set -euo pipefail
 
-APP_ID="com.mitchellh.ghostty.lazygit"
+key=i$(pwd -P | sha1sum | cut -c1-12)
+APP_ID="com.mitchellh.ghostty.lazygit.$key"
 
 id=$(niri msg --json windows \
     | jq -r --arg id "$APP_ID" '.[] | select(.app_id==$id) | .id' \

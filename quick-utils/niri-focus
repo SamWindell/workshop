@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# niri-focus <app_id> [--contains]
+#
+# Focus a niri window by app_id. If multiple windows match, cycle through them
+# on repeated invocations (the next match after the currently focused one).
+
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+    echo "usage: niri-focus <app_id> [--contains]" >&2
+    exit 2
+fi
+
+needle="$1"
+mode="exact"
+if [[ "${2:-}" == "--contains" ]]; then
+    mode="contains"
+fi
+
+filter='.app_id == $n'
+if [[ "$mode" == "contains" ]]; then
+    filter='(.app_id // "") | test($n; "i")'
+fi
+
+windows_json="$(niri msg -j windows)"
+
+id="$(jq -r --arg n "$needle" "
+    [.[] | select($filter)] as \$m
+    | if (\$m | length) == 0 then empty
+      else
+        (\$m | map(.is_focused) | index(true)) as \$i
+        | if \$i == null then \$m[0].id
+          else \$m[((\$i + 1) % (\$m | length))].id
+          end
+      end
+" <<<"$windows_json")"
+
+if [[ -z "$id" ]]; then
+    echo "niri-focus: no window matching '$needle'" >&2
+    exit 1
+fi
+
+niri msg action focus-window --id "$id"
