@@ -89,6 +89,7 @@ in
     pkgs.gh
     pkgs.git
     pkgs.rclone
+    pkgs.lazygit
 
     pkgs.transcrypt
     # I'm not sure why I have to add these too, the nixpkgs source for transcrypt looks like it
@@ -532,7 +533,10 @@ in
   programs.git = {
     enable = true;
     lfs.enable = true;
-    ignores = [ ".workshop/" ];
+    ignores = [
+      ".workshop/"
+      ".claude/"
+    ];
     # https://blog.gitbutler.com/how-git-core-devs-configure-git/
     settings = {
       user = {
@@ -682,7 +686,6 @@ in
         plenary-nvim
         text-case-nvim
         vim-just
-        nvim-notify
         vim-repeat
 
         vim-svelte-plugin

@@ -15,7 +15,7 @@ id=$(niri msg --json windows \
     | head -n1)
 
 if [ -z "$id" ]; then
-    exec setsid -f ghostty "--class=$APP_ID" -e nnd "$@" >/dev/null 2>&1
+    exec setsid -f ghostty "--class=$APP_ID" --window-decoration=false -e nnd "$@" >/dev/null 2>&1
 fi
 
 niri msg action focus-window --id "$id"

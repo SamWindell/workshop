@@ -36,10 +36,6 @@ vim.filetype.add({
 -- flash text when it's yanked
 vim.cmd [[autocmd TextYankPost * silent! lua vim.highlight.on_yank {higroup=(vim.fn['hlexists']('HighlightedyankRegion') > 0 and 'HighlightedyankRegion' or 'IncSearch'), timeout=500}]]
 
-local primary_window_key = '2'
-local secondary_window_key = '3'
-local command_output_buffer_name = "[command-output]"
-
 vim.g.vim_svelte_plugin_use_typescript = true
 
 vim.g.zig_fmt_parse_errors = 0
@@ -94,249 +90,23 @@ require('kanagawa').setup({
 vim.cmd [[colorscheme kanagawa]]
 
 require 'nvim-web-devicons'.setup {}
-vim.notify = require("notify")
-
--- require("bufferline").setup {
---     options = {
---         numbers = "ordinal",
---         offsets = {
---             {
---                 filetype = "NvimTree",
---                 text = "Filesystem",
---                 highlight = "Directory",
---                 separator = true -- use a "true" to enable the default, or set your own character
---             }
---         },
---         separator_style = "slant"
---     }
--- }
 
 local nvim_tree = require("nvim-tree")
 local nvim_tree_api = require("nvim-tree.api")
-
-local signcolumn_width = 7 -- AKA gutter width
-local min_buffer_width = 110 + signcolumn_width
-local total_dual_panel_cols = min_buffer_width * 2 + 1
-local min_sidebar_width = 10
-local max_sidebar_width = 32
-
-local default_sidebar_cols = function()
-    local neovim_cols = vim.o.columns
-    local sidebar_cols = neovim_cols - min_buffer_width - 1
-    if total_dual_panel_cols < (neovim_cols - min_sidebar_width) then
-        sidebar_cols = neovim_cols - total_dual_panel_cols - 1
-    end
-    if sidebar_cols < min_sidebar_width then
-        sidebar_cols = min_sidebar_width
-    end
-    if sidebar_cols > max_sidebar_width then
-        sidebar_cols = max_sidebar_width
-    end
-    return sidebar_cols
-end
-
-local function get_sidebar_cols()
-    local sidebar_width = 0
-    if nvim_tree_api.tree.is_visible() then
-        local wins = vim.api.nvim_list_wins()
-        for _, win in pairs(wins) do
-            local buf = vim.api.nvim_win_get_buf(win)
-            if nvim_tree_api.tree.is_tree_buf(buf) then
-                sidebar_width = vim.api.nvim_win_get_width(win)
-                break
-            end
-        end
-    end
-    return sidebar_width
-end
-
-local find_buffer = function(buffer_name)
-    for _, buf in pairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_get_name(buf):find(buffer_name, 1, true) then
-            return buf
-        end
-    end
-    return nil
-end
-
-local get_big_window = function(mode, create_if_doesnt_exist)
-    local num_proper_windows = 0
-    local last_window = nil
-    local first_window = nil
-
-    local wins = vim.api.nvim_list_wins()
-    for _, win in pairs(wins) do
-        local window_is_really_small_vertically = vim.api.nvim_win_get_height(win) <= 4
-        if not require('nvim-tree.api').tree.is_tree_buf(vim.api.nvim_win_get_buf(win)) and not window_is_really_small_vertically then
-            num_proper_windows = num_proper_windows + 1
-            if not first_window then first_window = win end
-            last_window = win
-        end
-    end
-
-    if create_if_doesnt_exist then
-        if num_proper_windows == 0 then
-            vim.cmd("vertical rightb new")
-            return vim.api.nvim_get_current_win()
-        end
-
-        if num_proper_windows == 1 and mode == "secondary" then
-            local sidebar_width = get_sidebar_cols()
-            local remaining_width = vim.o.columns - sidebar_width
-            if remaining_width >= total_dual_panel_cols then
-                vim.cmd('rightb vsplit')
-            else
-                vim.cmd('rightb split')
-            end
-            return vim.api.nvim_get_current_win()
-        end
-    end
-
-    if mode == "secondary" then
-        if last_window == first_window then return nil end
-        return last_window
-    elseif mode == "primary" then
-        return first_window
-    elseif mode == "other" then
-        if last_window == first_window then return nil end
-
-        local current = vim.api.nvim_get_current_win()
-        if current == last_window then
-            return first_window
-        elseif current == first_window then
-            return last_window
-        else
-            return first_window
-        end
-    else
-        assert(false)
-        return first_window
-    end
-end
-
-local toggle_secondary_window = function()
-    local win = get_big_window("secondary", false)
-    if win then
-        vim.api.nvim_win_close(win, false)
-    else
-        get_big_window("secondary", true)
-    end
-end
-
-local open_buffer_in_secondary_window_if_possible = function(buffer_name, focus)
-    local buf = find_buffer(buffer_name)
-    if buf then
-        local win = get_big_window("secondary", true)
-        vim.api.nvim_win_set_buf(win, buf)
-        if focus then
-            vim.api.nvim_set_current_win(win)
-        end
-        return buf, win
-    end
-    return nil, nil
-end
-
-local quickfix_pos = 0
-
--- IMPROVE: add ability to kill a command (jobstop())
-
-local rtrim = function(s)
-    local n = #s
-    while n > 0 and s:find("^%s", n) do n = n - 1 end
-    return s:sub(1, n)
-end
-
-local efm = table.concat({
-    '%f:%l:%c: %t%*[^:]: %m', -- clang format
-
-    -- TypeScript/JavaScript error formats
-    '%A%f:%l:%c',  -- filename:line:col
-    '%ZError: %m', -- Error message
-    '%C%.%#',      -- Continuation lines
-    '%-G%.%#',     -- Ignore other lines
-}, ',')
-
-local run_command = function(command, on_exit)
-    local buf = find_buffer(command_output_buffer_name)
-    if buf then
-        vim.api.nvim_buf_delete(buf, { force = true })
-    end
-
-    local win = get_big_window("secondary", true)
-    assert(win)
-
-    -- If the secondary window is current, move its buffer to the primary window before
-    -- we replace it with the command output buffer.
-    if vim.api.nvim_get_current_win() == win then
-        local b = vim.api.nvim_win_get_buf(win)
-        vim.api.nvim_win_set_buf(get_big_window('primary', false), b)
-    end
-
-    vim.api.nvim_set_current_win(win)
-    local command_buf = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_win_set_buf(win, command_buf)
-
-    vim.fn.setqflist({}, 'r') -- clear quickfix
-    quickfix_pos = 0
-    -- NOTE: using termopen sets the terminal width to the width of the window. This means
-    --       that you might have lines cut in half if they are long.
-    vim.fn.termopen(command, {
-        on_stdout = function(_, d, _)
-            local lines = {}
-            for _, line in pairs(d) do
-                line = rtrim(line)
-                line = line:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") -- remove ANSI colours
-                line = line:gsub('C:\\', '/mnt/c/')                              -- WSL hack
-                local i1, i2 = line:find("clang failed with stderr: ", 1, true)
-                if i1 ~= nil then
-                    table.insert(lines, line:sub(0, i2))
-                    table.insert(lines, line:sub(i2 + 1, line:len()))
-                else
-                    table.insert(lines, line)
-                end
-            end
-            local qf = vim.fn.getqflist({ efm = efm, lines = lines })
-            for _, q in pairs(qf) do
-                vim.fn.setqflist(q, 'a')
-            end
-        end,
-        on_exit = function(job_id, exit_code, event_type)
-            vim.api.nvim_buf_call(command_buf, function()
-                vim.cmd("normal! G") -- scroll to bottom
-                vim.api.nvim_set_option_value("modified", false, { buf = command_buf })
-            end)
-            if on_exit then on_exit(job_id, exit_code, event_type) end
-        end,
-        stderr_buffered = false,
-        stdout_buffered = false
-    })
-
-    vim.api.nvim_buf_attach(command_buf, false, {
-        on_lines = function(_)
-            vim.cmd("normal! G") -- scroll to bottom
-        end
-    })
-
-    vim.api.nvim_buf_set_name(command_buf, command_output_buffer_name)
-
-    vim.api.nvim_set_current_win(get_big_window("primary", true))
-end
-
-vim.api.nvim_create_user_command("Run",
-    function(args)
-        run_command(args.args)
-    end,
-    { nargs = '*' }
-)
+local layout = require("layout")
+local runner = require("runner")
 
 nvim_tree.setup {
     sync_root_with_cwd = true,
     view = {
-        width = default_sidebar_cols(),
+        width = layout.default_sidebar_cols(),
         signcolumn = "auto"
     },
     filters = { custom = { "^.git$" } }
 }
+
+layout.setup()
+runner.setup()
 
 local first_debug_launch = true
 
@@ -383,16 +153,12 @@ vim.keymap.set('n', '<leader>ek', vim.diagnostic.goto_prev, { desc = 'Goto prev 
 -- Task mappings
 vim.keymap.set('n', '<leader>gj', function()
     vim.cmd [[ wa ]]
-    run_command("bash .workshop/build.sh")
+    runner.run("bash .workshop/build.sh")
 end, { desc = 'Build' })
+vim.keymap.set('n', '<leader>gk', function() runner.stop() end, { desc = 'Stop run' })
 
 
 -- Buffer management mappings
-vim.keymap.set('n', '<A-tab>', '<cmd>BufferLineMoveNext<cr>', { desc = 'Move buffer forward' })
-vim.keymap.set('n', '<A-s-tab>', '<cmd>BufferLineMovePrev<cr>', { desc = 'Move buffer backward' })
-vim.keymap.set('n', '<tab>', '<cmd>BufferLineCycleNext<cr>', { desc = 'Next buffer' })
-vim.keymap.set('n', '<s-tab>', '<cmd>BufferLineCyclePrev<cr>', { desc = 'Previous buffer' })
-vim.keymap.set('n', '<leader>i', '<cmd>BufferLinePick<cr>', { desc = 'Pick buffer' })
 vim.keymap.set('n', '<leader>q', function()
     local buf = vim.api.nvim_get_current_buf()
     vim.cmd("bnext")
@@ -400,36 +166,15 @@ vim.keymap.set('n', '<leader>q', function()
 end, { desc = 'Close buffer' })
 
 -- Window management mappings
-vim.keymap.set('n', '<leader>1', function()
-        nvim_tree_api.tree.toggle({ focus = false })
-    end,
-    { desc = 'Toggle files sidebar' })
-vim.keymap.set('n', '<leader>' .. secondary_window_key, toggle_secondary_window, { desc = 'Toggle secondary window' })
-vim.keymap.set('n', '<leader>' .. primary_window_key, function()
-    local secondary = get_big_window("secondary", false)
-    if secondary then
-        vim.api.nvim_win_close(get_big_window("primary", false), false)
-    end
-end, { desc = 'Solo secondary window' })
-vim.keymap.set('n', '<leader>4', function()
-    local secondary = get_big_window("secondary", false)
-    if secondary then
-        local initial_win = vim.api.nvim_get_current_win()
-        local primary = get_big_window("primary", false)
-        local b1 = vim.api.nvim_win_get_buf(primary)
-        local b2 = vim.api.nvim_win_get_buf(secondary)
-        vim.api.nvim_win_set_buf(primary, b2)
-        vim.api.nvim_win_set_buf(secondary, b1)
-
-        if initial_win == primary then
-            vim.api.nvim_set_current_win(secondary)
-        else
-            vim.api.nvim_set_current_win(primary)
-        end
-    end
-end, { desc = 'Swap primary and secondary windows' })
-vim.keymap.set({ 'n' }, '<leader>wh', '<C-w>h', { desc = 'Goto right window' })
-vim.keymap.set({ 'n' }, '<leader>wl', '<C-w>l', { desc = 'Goto left window' })
+vim.keymap.set('n', '<leader>1', layout.focus_sidebar, { desc = 'Focus sidebar (toggle if already there)' })
+vim.keymap.set('n', '<leader>2', function() layout.focus('primary') end, { desc = 'Focus primary' })
+vim.keymap.set('n', '<leader>3', function() layout.focus('secondary') end, { desc = 'Focus secondary' })
+vim.keymap.set('n', '<leader>z', layout.zoom, { desc = 'Zoom: solo current big window' })
+vim.keymap.set('n', '<leader>x', layout.swap_buffers, { desc = 'Swap primary/secondary buffers' })
+vim.keymap.set('n', '<leader>X', layout.close_secondary, { desc = 'Close secondary' })
+vim.keymap.set('n', '<leader><Tab>', layout.toggle_focus, { desc = 'Jump between primary/secondary' })
+vim.keymap.set({ 'n' }, '<leader>wh', '<C-w>h', { desc = 'Goto left window' })
+vim.keymap.set({ 'n' }, '<leader>wl', '<C-w>l', { desc = 'Goto right window' })
 vim.keymap.set({ 'n' }, '<leader>wj', '<C-w>j', { desc = 'Goto down window' })
 vim.keymap.set({ 'n' }, '<leader>wk', '<C-w>k', { desc = 'Goto up window' })
 vim.keymap.set({ 'n' }, '<leader>wy', '<cmd>vertical resize -12<CR>', { desc = 'Decrease window width' })
@@ -463,7 +208,7 @@ local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_typ
     end
 
     require("telescope.actions").close(prompt_bufnr)
-    local win = get_big_window(big_window_type, true)
+    local win = layout.get_window(big_window_type, { create = true })
     vim.api.nvim_set_current_win(win)
     vim.cmd("edit " .. filename)
 end
@@ -503,35 +248,19 @@ telescope.load_extension('fzf')
 telescope.load_extension("smart_open")
 telescope.load_extension("ui-select")
 
-local notify = require('notify')
-
--- Create a notification helper function
-local function notify_debug(msg, level)
-    notify(msg, level, {
-        title = "Debug",
-        icon = "🐛" -- This will only show in GUI clients that support it
-    })
-end
-
 -- Open help files in the secondary window.
 vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = vim.api.nvim_create_augroup("help_secondary_window", {}),
+    group = vim.api.nvim_create_augroup("help_secondary_window", { clear = true }),
     pattern = { "*.txt" },
     callback = function()
-        -- Run every time a help buffer is opened
         if vim.o.filetype == 'help' then
-            -- When a help buffer is first created, it's opened in a new window and it is not 'listed'.
-            -- 'listed' is a var of a buffer that dictates if it should be listed in certain situations.
-            -- For example, bufferline will only show listed buffers.
+            -- First open: buffer is unlisted, in a vim-created window. Re-home
+            -- it in our 'secondary' window.
             local buf = vim.api.nvim_get_current_buf()
-            if not vim.api.nvim_buf_get_option(buf, "buflisted") then
-                -- If the buffer is unlisted it must be the first time it's opened. Let's close the window
-                -- that vim made for us, and put the buffer in our 'secondary' window instead.
-                vim.api.nvim_buf_set_option(buf, "buflisted", true)
+            if not vim.bo[buf].buflisted then
+                vim.bo[buf].buflisted = true
                 vim.api.nvim_win_close(0, false)
-                local win = get_big_window("secondary", true)
-                vim.api.nvim_win_set_buf(win, buf)
-                vim.api.nvim_set_current_win(win)
+                layout.open_buffer(buf, 'secondary', { focus = true })
             end
         end
     end
@@ -661,41 +390,6 @@ for _, server_name in pairs(supported_lsp_servers) do
     vim.lsp.enable(server_name)
 end
 
-local count = 0
-
-local function handle_resize()
-    count = count + 1
-    local secondary_win = get_big_window("secondary", false)
-    if secondary_win then
-        local sidebar_width = get_sidebar_cols()
-
-        local remaining_width = vim.o.columns - sidebar_width
-        local primary_win = get_big_window("primary", false)
-        local main_panels_are_vertical = vim.api.nvim_win_get_position(primary_win)[2] ==
-            vim.api.nvim_win_get_position(secondary_win)[2]
-        if remaining_width >= total_dual_panel_cols then
-            -- we have enough space for both windows, so the secondary window should be on the right, halfway
-            if main_panels_are_vertical then
-                vim.api.nvim_set_current_win(secondary_win)
-                vim.cmd("wincmd L")
-            end
-        else
-            -- we don't have enough space for windows to be side by side, so they should be above and below
-            if not main_panels_are_vertical then
-                local buf = vim.api.nvim_win_get_buf(secondary_win)
-                vim.api.nvim_win_close(secondary_win, false)
-                vim.api.nvim_set_current_win(get_big_window("primary", false))
-                vim.cmd("split")
-                vim.api.nvim_win_set_buf(0, buf)
-            end
-        end
-    end
-end
-
-nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeOpen, handle_resize)
-nvim_tree_api.events.subscribe(nvim_tree_api.events.Event.TreeClose, handle_resize)
-vim.api.nvim_create_autocmd('VimResized', { callback = handle_resize })
-
 require('textcase').setup {}
 
 require('gitsigns').setup()
@@ -716,6 +410,7 @@ require('mini.cmdline').setup()
 require('mini.statusline').setup()
 require('mini.tabline').setup()
 require('mini.trailspace').setup()
+require('mini.notify').setup()
 -- require('mini.clue').setup()
 
 require('note-to-midi')

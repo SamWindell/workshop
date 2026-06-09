@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# lzg
+#
+# First call: opens a full-width ghostty window running `lazygit`.
+#   (niri sizes it via the "lazygit" app-id window rule.)
+# Subsequent calls: focuses the existing window.
+set -euo pipefail
+
+APP_ID="com.mitchellh.ghostty.lazygit"
+
+id=$(niri msg --json windows \
+    | jq -r --arg id "$APP_ID" '.[] | select(.app_id==$id) | .id' \
+    | head -n1)
+
+if [ -z "$id" ]; then
+    exec setsid -f ghostty "--class=$APP_ID" --window-decoration=false -e lazygit "$@" >/dev/null 2>&1
+fi
+
+niri msg action focus-window --id "$id"
