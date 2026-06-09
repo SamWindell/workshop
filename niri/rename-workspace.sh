@@ -1,0 +1,1 @@
+/nix/store/5s474nxhvd7l6d2czs8m7rwi8v84aa80-home-manager-files/.config/niri/rename-workspace.sh

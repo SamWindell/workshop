@@ -47,7 +47,6 @@ in
     pkgs.reuse # https://reuse.software/
     pkgs.cloc # count lines of code
     pkgs.lnav # log file viewer
-    pkgs.git-town
     pkgs.parallel
 
     pkgs.cmake
@@ -77,10 +76,10 @@ in
     pkgs.lua-language-server
     pkgs.nodejs_22
     pkgs.cmake-language-server
-    pkgs.nodePackages.svelte-language-server
-    pkgs.nodePackages.prettier
-    pkgs.nodePackages.typescript-language-server
-    pkgs.nodePackages.typescript
+    pkgs.svelte-language-server
+    pkgs.prettier
+    pkgs.typescript-language-server
+    pkgs.typescript
     pkgs.vscode-langservers-extracted
     pkgs.python3Packages.python-lsp-server
     pkgs.black # python formatter
@@ -129,7 +128,7 @@ in
     pkgs.libreoffice
     pkgs.xdg-utils # xdg-open
     pkgs.gnome-system-monitor
-    pkgs.blueberry # bluetooth manager
+    pkgs.blueman # bluetooth manager
     pkgs.bemoji
     pkgs.wtype
     pkgs.hyprshot # screenshot tool
@@ -139,12 +138,12 @@ in
     pkgs.pavucontrol
     pkgs.kdePackages.kdenlive
     pkgs.libnotify # notify-send
+    pkgs.gnome-usage
 
-    pkgs.tracy-wayland
+    pkgs.tracy
+    specialArgs.pkgs-unstable.nnd
 
     pkgs.ghostty
-
-    pkgs.lutris
 
     (pkgs.whisper-cpp.override {
       cudaSupport = true;
@@ -164,8 +163,8 @@ in
     pkgs.lsp-plugins
     pkgs.distrho-ports
     pkgs.sfizz
-    pkgs.metersLv2
-    pkgs.surge-XT
+    pkgs.meters-lv2
+    pkgs.surge-xt
     pkgs.decent-sampler
     pkgs.fluidsynth
     pkgs.qsynth
@@ -229,9 +228,15 @@ in
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nvim";
     ".config/wezterm/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/wezterm";
+    ".config/yazi/yazi.toml".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/yazi/yazi.toml";
+    ".config/yazi/plugins/audio-preview.yazi".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/yazi/plugins/audio-preview.yazi";
     ".config/starship.toml".source = ./starship/starship.toml;
     ".config/waybar/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/waybar";
+    ".config/niri/".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/niri";
     # nautilus extensions is configured in nixos-configuration.nix
     ".local/share/nautilus-python/extensions/".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.config/home-manager/nautilus";
@@ -317,17 +322,18 @@ in
     enable = true;
     xwayland.enable = true;
     systemd.enable = false;
+    configType = "lua";
     # Use unstable for hyprland + plugins so nixpkgs keeps versions in sync
     package = specialArgs.pkgs-unstable.hyprland;
     # Portal is managed by NixOS programs.hyprland + xdg.portal in nixos-configuration.nix
     portalPackage = null;
     plugins = [
-      # TODO: re-enable once nixpkgs-unstable updates hyprbars to match hyprland 0.54.2
-      # specialArgs.pkgs-unstable.hyprlandPlugins.hyprbars
+      specialArgs.pkgs-unstable.hyprlandPlugins.hyprbars
     ];
     extraConfig = ''
-      exec-once=hyprctl setcursor ${config.home.pointerCursor.name} ${toString config.home.pointerCursor.size}"
-      source = ~/.config/home-manager/hypr/config.conf
+      CURSOR_NAME = "${config.home.pointerCursor.name}"
+      CURSOR_SIZE = ${toString config.home.pointerCursor.size}
+      dofile(os.getenv("HOME") .. "/.config/home-manager/hypr/config.lua")
     '';
   };
   programs.waybar = mkIf (isLinux && withGui) {
@@ -369,28 +375,28 @@ in
 
   services.megasync = {
     enable = isLinux && withGui; # cloud sync program
-    package = specialArgs.pkgs-master.megasync;
+    forceWayland = true;
   };
-  systemd.user.services.megasync = mkIf (isLinux && withGui) {
-    Service = {
-      ExecStart = "${config.services.megasync.package}/bin/megasync";
-      Restart = "always";
-      RestartSec = 3;
-      Type = "simple";
-      Environment = [
-        "PATH=${pkgs.xorg.xrdb}/bin:${config.home.profileDirectory}/bin"
-      ];
-      # Inherit environment variables from user session
-      PassEnvironment = [
-        "XDG_CURRENT_DESKTOP"
-        "WAYLAND_DISPLAY"
-        "XDG_SESSION_TYPE"
-      ];
-    };
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
+  # systemd.user.services.megasync = mkIf (isLinux && withGui) {
+  #   Service = {
+  #     ExecStart = "${config.services.megasync.package}/bin/megasync";
+  #     Restart = "always";
+  #     RestartSec = 3;
+  #     Type = "simple";
+  #     Environment = [
+  #       "PATH=${pkgs.xorg.xrdb}/bin:${config.home.profileDirectory}/bin"
+  #     ];
+  #     # Inherit environment variables from user session
+  #     PassEnvironment = [
+  #       "XDG_CURRENT_DESKTOP"
+  #       "WAYLAND_DISPLAY"
+  #       "XDG_SESSION_TYPE"
+  #     ];
+  #   };
+  #   Install = {
+  #     WantedBy = [ "default.target" ];
+  #   };
+  # };
 
   # notifications
   services.swaync = mkIf (isLinux && withGui) {
@@ -430,6 +436,14 @@ in
     extraPackages = [
       pkgs.bat-extras.batman
     ];
+  };
+
+  programs.direnv = {
+    enable = true;
+    enableBashIntegration = true;
+    nix-direnv = {
+      enable = true;
+    };
   };
 
   gtk = mkIf (isLinux && withGui) {
@@ -498,6 +512,12 @@ in
     enable = true;
   };
 
+  programs.yazi = {
+    enable = true;
+    enableBashIntegration = true;
+    shellWrapperName = "y";
+  };
+
   # nicer grep
   programs.ripgrep = {
     enable = true;
@@ -512,6 +532,7 @@ in
   programs.git = {
     enable = true;
     lfs.enable = true;
+    ignores = [ ".workshop/" ];
     # https://blog.gitbutler.com/how-git-core-devs-configure-git/
     settings = {
       user = {
@@ -570,6 +591,8 @@ in
     viAlias = true;
     vimAlias = true;
     package = specialArgs.pkgs-unstable.neovim-unwrapped;
+    withPython3 = false;
+    withRuby = false;
     plugins =
       with pkgs.vimPlugins;
       let
@@ -597,36 +620,38 @@ in
           };
         };
 
-        lua-json5-bin = pkgs.rustPlatform.buildRustPackage rec {
-          pname = "lua-json5";
-          version = "014fcab8093b48b3932dd0d51ae2d98bbb578d67";
-          src = pkgs.fetchFromGitHub {
-            owner = "Joakker";
-            repo = pname;
-            rev = version;
-            sha256 = "0dhzqrp0jv7nk3m29qibz581bhin738pkg3gn8ahk5dz7dkwzlkj";
-          };
-
-          cargoHash = "sha256-lMBA8OidN1GGHmIGvJhkLudeEe+RODk1+xdDT2ElEhw=";
-          RUSTFLAGS = if isDarwin then "-C link-arg=-undefined -C link-arg=dynamic_lookup" else "";
-        };
-
-        lua-json5 = pkgs.vimUtils.buildVimPlugin rec {
-          name = "lua-json5";
-          src = pkgs.fetchFromGitHub {
-            owner = "Joakker";
-            repo = name;
-            rev = "014fcab8093b48b3932dd0d51ae2d98bbb578d67";
-            sha256 = "sha256-ctLPZzu/lQkVsm+8edE4NsIVUPkr4iTqmPZsCW7GHzY=";
-          };
-
-          postInstall =
-            if isDarwin then
-              "cp ${lua-json5-bin}/lib/liblua_json5.dylib $out/lua/json5.so"
-            else
-              "strip ${lua-json5-bin}/lib/liblua_json5.so -o $out/lua/json5.so";
-          doCheck = false;
-        };
+        # Wrap nixpkgs tree-sitter grammars into a layout Neovim's built-in
+        # treesitter expects: parser/<lang>.so and queries/<lang>/*.scm.
+        # Neovim ships parsers + queries for c, lua, vim, vimdoc, query,
+        # markdown, markdown_inline so we only add ones it doesn't bundle.
+        treesitter-parsers =
+          let
+            grammars = with pkgs.tree-sitter-grammars; {
+              bash = tree-sitter-bash;
+              cpp = tree-sitter-cpp;
+              cmake = tree-sitter-cmake;
+              hyprlang = tree-sitter-hyprlang;
+              nix = tree-sitter-nix;
+              python = tree-sitter-python;
+              zig = tree-sitter-zig;
+            };
+          in
+          pkgs.runCommand "treesitter-parsers" { } ''
+            mkdir -p $out/parser $out/queries
+            ${lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (lang: pkg: ''
+                ln -s ${pkg}/parser $out/parser/${lang}.so
+                # Grammars are inconsistent: some ship queries/<lang>/*.scm,
+                # others put the .scm files flat in queries/. Prefer the
+                # nested form so we don't get queries/<lang>/<lang>/...
+                if [ -d ${pkg}/queries/${lang} ]; then
+                  ln -s ${pkg}/queries/${lang} $out/queries/${lang}
+                elif [ -d ${pkg}/queries ]; then
+                  ln -s ${pkg}/queries $out/queries/${lang}
+                fi
+              '') grammars
+            )}
+          '';
 
       in
       [
@@ -634,55 +659,36 @@ in
           # smart-open requires a path to sqlite, we have to do that here because the
           # path will not stay the same when we use nix
           plugin = pkgs.vimPlugins.sqlite-lua;
-          config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${
+          type = "lua";
+          config = "vim.g.sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${
             if isLinux then "so" else "dylib"
           }'";
         }
 
-        # use unstable nvim-treesitter to match neovim-unwrapped from unstable
-        # (stable's version is too old for the nvim 0.12 treesitter API)
-        specialArgs.pkgs-unstable.vimPlugins.nvim-treesitter
+        treesitter-parsers
         telescope-fzf-native-nvim
         zig-vim
-        bufferline-nvim
-        vim-illuminate
         telescope-nvim
-        telescope-dap-nvim
-        lua-json5
         telescope-ui-select-nvim
         leap-nvim
         gitsigns-nvim
-        nvim-surround
         kanagawa-nvim
         targets-vim
         nvim-lspconfig
         nvim-tree-lua
         nvim-web-devicons
-        lualine-nvim
-        nvim-cmp
-        cmp-nvim-lsp
-        cmp-nvim-lsp-signature-help
-        cmp-cmdline
-        cmp-path
-        cmp_luasnip
-        luasnip
-        comment-nvim
+        mini-nvim
         typescript-vim
-        refactoring-nvim
         plenary-nvim
         text-case-nvim
         vim-just
-        # copilot-vim
-        nvim-dap
         nvim-notify
-        cmp-dap
         vim-repeat
 
         vim-svelte-plugin
         smart-open
       ];
-    extraLuaConfig = ''
-      lldb_vscode_path = '${pkgs.lldb}/bin/lldb-dap'
+    initLua = ''
       require "nvim-init"
     '';
   };

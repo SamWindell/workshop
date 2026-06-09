@@ -12,8 +12,20 @@ $git_branch\
 $git_state\
 $git_status\
 $nix_shell\
+$fill\
+$time\
 $line_break\
 $character"""
+
+[fill]
+symbol = "-"
+style = "bright-black"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+style = "bright-black"
+time_format = "%H:%M:%S"
 
 [directory]
 style = "bright-blue"

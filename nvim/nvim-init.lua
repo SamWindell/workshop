@@ -23,7 +23,7 @@ vim.opt.linebreak = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.mapleader = ' '
-vim.lsp.set_log_level("OFF")
+vim.lsp.log.set_level("OFF")
 
 if vim.loop.os_uname().sysname == "Darwin" then
     vim.keymap.set('i', "<a-3>", "#")
@@ -96,20 +96,20 @@ vim.cmd [[colorscheme kanagawa]]
 require 'nvim-web-devicons'.setup {}
 vim.notify = require("notify")
 
-require("bufferline").setup {
-    options = {
-        numbers = "ordinal",
-        offsets = {
-            {
-                filetype = "NvimTree",
-                text = "Filesystem",
-                highlight = "Directory",
-                separator = true -- use a "true" to enable the default, or set your own character
-            }
-        },
-        separator_style = "slant"
-    }
-}
+-- require("bufferline").setup {
+--     options = {
+--         numbers = "ordinal",
+--         offsets = {
+--             {
+--                 filetype = "NvimTree",
+--                 text = "Filesystem",
+--                 highlight = "Directory",
+--                 separator = true -- use a "true" to enable the default, or set your own character
+--             }
+--         },
+--         separator_style = "slant"
+--     }
+-- }
 
 local nvim_tree = require("nvim-tree")
 local nvim_tree_api = require("nvim-tree.api")
@@ -329,79 +329,6 @@ vim.api.nvim_create_user_command("Run",
     { nargs = '*' }
 )
 
--- I found use :cn and :cp to be annoying when there is only one error in the list,
--- and when you reach the start/end, so these are my alternatives that funciton as I want
-local jump_forward_in_quickfix = function()
-    local list = vim.fn.getqflist()
-    local jumped = false
-    local qf_line = 1
-    local last_error_line = nil
-    for _, v in pairs(list) do
-        if v.lnum > 0 and v.valid then
-            last_error_line = qf_line
-            if qf_line > quickfix_pos then
-                quickfix_pos = qf_line
-                vim.cmd("cc " .. quickfix_pos)
-                jumped = true
-                break
-            end
-        end
-        qf_line = qf_line + 1
-    end
-
-    if not jumped and last_error_line then
-        vim.cmd("cc " .. last_error_line)
-    end
-end
-
-local jump_backward_in_quickfix = function()
-    local list = vim.fn.getqflist()
-    local jumped = false
-    local qf_line = #list
-    local first_error_line = nil
-    for i = #list, 1, -1 do
-        local v = list[i]
-        if v.lnum > 0 and v.valid then
-            first_error_line = qf_line
-            if qf_line < quickfix_pos then
-                quickfix_pos = qf_line
-                vim.cmd("cc " .. quickfix_pos)
-                jumped = true
-                break
-            end
-        end
-        qf_line = qf_line - 1
-    end
-
-    if not jumped and first_error_line then
-        vim.cmd("cc " .. first_error_line)
-    end
-end
-
-local dap = require("dap")
-local dap_ui_widgets = require("dap.ui.widgets")
-local dap_terminal_float = require('dap-terminal-float')
-local dap_repl_float = require('dap-repl-float')
-local dap_vscode = require('dap.ext.vscode')
-dap_vscode.json_decode = require('json5').parse
-
--- Because we are using a non-standard launch.json filename/location, we need to run this
--- init code. This is based on the DAP plugin code.
-dap.providers.configs["dap.launch.json"] = function()
-    local path = vim.fn.getcwd() .. '/.workshop/launch.json5'
-    local ok, configs = pcall(dap_vscode.getconfigs, path)
-    if not ok then
-        local msg = "Can't get configurations from launch.json5:\n%s" .. configs
-        vim.notify_once(msg, vim.log.levels.WARN, { title = "DAP" })
-        return {}
-    end
-    return configs
-end
-
-local function load_launch_json()
-    dap_vscode.load_launchjs(vim.fn.getcwd() .. '/.workshop/launch.json5', nil)
-end
-
 nvim_tree.setup {
     sync_root_with_cwd = true,
     view = {
@@ -414,71 +341,6 @@ nvim_tree.setup {
 local first_debug_launch = true
 
 -- vim.keymap.set({ 'n' }, '<c-a>', '<Cmd>%y+<CR>', { desc = 'Copy all text' })
-
-local dap_frames_view = nil
-local dap_scopes_view = nil
-local dap_threads_view = nil
-
--- DAP mappings
-vim.keymap.set('n', '<F4>', function() dap.pause() end, { desc = '[DAP] pause' })
-vim.keymap.set('n', '<F5>', function()
-    load_launch_json()
-    dap.continue()
-end, { desc = '[DAP] continue' })
-vim.keymap.set('n', '<F6>', function() dap.terminate() end, { desc = '[DAP] terminate' })
-vim.keymap.set('n', '<F10>', function() dap.step_over() end, { desc = '[DAP] step over' })
-vim.keymap.set('n', '<F11>', function() dap.step_into() end, { desc = '[DAP] step into' })
-vim.keymap.set('n', '<F12>', function() dap.step_out() end, { desc = '[DAP] step out' })
-vim.keymap.set('n', '<leader>db', function() dap.toggle_breakpoint() end, { desc = '[DAP] toggle breakpoint' })
-vim.keymap.set('n', '<leader>dB', function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
-    { desc = '[DAP] set condition breakpoint' })
-vim.keymap.set('n', '<leader>dl', function() dap.list_breakpoints(true) end, { desc = '[DAP] list breakpoints' })
-vim.keymap.set('n', '<leader>dd', function() dap.clear_breakpoints() end, { desc = '[DAP] clear breakpoints' })
-vim.keymap.set('n', '<leader>do', dap_terminal_float.toggle_dap_float,
-    { noremap = true, silent = true, desc = "Toggle DAP Terminal" })
-vim.keymap.set('n', '<leader>dq', function() dap.terminate() end, { desc = '[DAP] terminate' })
-vim.keymap.set('n', '<leader>dr', function() dap.run_to_cursor() end, { desc = '[DAP] run to cursor' })
-vim.keymap.set('n', '<leader>dc', dap_repl_float.toggle_dap_repl,
-    { noremap = true, silent = true, desc = "Toggle DAP REPL" })
-vim.keymap.set('n', '<leader>dk', function() dap_ui_widgets.hover() end, { desc = '[DAP] hover' })
-vim.keymap.set('n', '<leader>dp', function() dap_ui_widgets.preview() end, { desc = '[DAP] preview' })
-vim.keymap.set('n', '<leader>df', function()
-        if dap_frames_view then
-            dap_frames_view.toggle()
-        else
-            dap_frames_view = dap_ui_widgets.centered_float(dap_ui_widgets.frames)
-        end
-    end,
-    { desc = '[DAP] frames window' })
-vim.keymap.set('n', '<leader>ds', function()
-        if dap_scopes_view then
-            dap_scopes_view.toggle()
-        else
-            dap_scopes_view = dap_ui_widgets.centered_float(dap_ui_widgets.scopes)
-        end
-    end,
-    { desc = '[DAP] scopes window' })
-vim.keymap.set('n', '<leader>dt', function()
-        if dap_threads_view then
-            dap_threads_view.toggle()
-        else
-            dap_threads_view = dap_ui_widgets.centered_float(dap_ui_widgets.threads)
-        end
-    end,
-    { desc = '[DAP] scopes window' })
-vim.keymap.set('n', '<leader>dy', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
-    { desc = '[DAP] log point message' })
-vim.keymap.set('n', '<leader>da', function()
-    dap.run({
-        type = 'lldb',
-        request = 'attach',
-        name = 'Attach to process',
-        pid = require('dap.utils').pick_process,
-        -- program = function()
-        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        -- end,
-    })
-end, { desc = '[DAP] attach to process' })
 
 -- Find related mappings
 vim.keymap.set('n', '<leader>fj', function() require("telescope").extensions.smart_open.smart_open({}) end,
@@ -517,8 +379,6 @@ vim.keymap.set('t', 'kj', '<C-\\><C-n>', { desc = 'Normal mode' })
 vim.keymap.set('n', '<leader>eK', vim.diagnostic.open_float, { desc = 'Open diagnostic float' })
 vim.keymap.set('n', '<leader>ej', vim.diagnostic.goto_next, { desc = 'Goto next diagnostic' })
 vim.keymap.set('n', '<leader>ek', vim.diagnostic.goto_prev, { desc = 'Goto prev diagnostic' })
-vim.keymap.set('n', '<leader>eh', jump_forward_in_quickfix, { desc = 'Goto next quickfix' })
-vim.keymap.set('n', '<leader>el', jump_backward_in_quickfix, { desc = 'Goto prev quickfix' })
 
 -- Task mappings
 vim.keymap.set('n', '<leader>gj', function()
@@ -526,21 +386,6 @@ vim.keymap.set('n', '<leader>gj', function()
     run_command("bash .workshop/build.sh")
 end, { desc = 'Build' })
 
-
-vim.keymap.set('n', '<leader>gk', function()
-    vim.cmd [[ wa ]]
-    run_command("bash .workshop/pre-debug.sh", function(_, exit_code, _)
-        if exit_code == 0 then
-            load_launch_json()
-            if first_debug_launch then
-                first_debug_launch = false
-                dap.continue()
-            else
-                dap.run_last()
-            end
-        end
-    end)
-end, { desc = 'Debug' })
 
 -- Buffer management mappings
 vim.keymap.set('n', '<A-tab>', '<cmd>BufferLineMoveNext<cr>', { desc = 'Move buffer forward' })
@@ -592,13 +437,6 @@ vim.keymap.set({ 'n' }, '<leader>wo', '<cmd>vertical resize +12<CR>', { desc = '
 vim.keymap.set({ 'n' }, '<leader>wi', '<cmd>resize +8<CR>', { desc = 'Increase window height' })
 vim.keymap.set({ 'n' }, '<leader>wu', '<cmd>resize -8<CR>', { desc = 'Decrease window height' })
 
--- Refactoring
-vim.keymap.set(
-    { "n", "x" },
-    "<leader>fl",
-    function() require('telescope').extensions.refactoring.refactors() end
-)
-
 -- Copilot
 -- vim.keymap.set('i', '<C-O>', 'copilot#Accept("\\<CR>")', {
 --     expr = true,
@@ -609,21 +447,6 @@ vim.keymap.set(
 
 
 --=================================================================
-require("bufferline")
-
-require('refactoring').setup({
-    -- prompt for return type
-    prompt_func_return_type = {
-        cpp = true,
-        c = true,
-    },
-    -- prompt for function parameters
-    prompt_func_param_type = {
-        cpp = true,
-        c = true,
-    },
-})
-
 
 local handle_telescope_open_split_helper = function(prompt_bufnr, big_window_type)
     local action_state = require('telescope.actions.state')
@@ -677,16 +500,8 @@ telescope.setup({
     }
 })
 telescope.load_extension('fzf')
-telescope.load_extension('dap')
 telescope.load_extension("smart_open")
-telescope.load_extension("refactoring")
 telescope.load_extension("ui-select")
-
-dap.adapters.lldb = {
-    type = 'executable',
-    command = lldb_vscode_path,
-    name = 'lldb',
-}
 
 local notify = require('notify')
 
@@ -697,30 +512,6 @@ local function notify_debug(msg, level)
         icon = "🐛" -- This will only show in GUI clients that support it
     })
 end
-
--- Set up listeners for debug events
--- Debug continue
-dap.listeners.after['event_continue']['dap-notify'] = function()
-    notify_debug("Continuing debug session", "info")
-end
-
--- Debug stopped
-dap.listeners.after['event_stopped']['dap-notify'] = function(_, body)
-    local reason = body.reason or "Unknown"
-    if reason ~= "step" then
-        notify_debug("Stopped: " .. reason, "warn")
-    end
-end
-
--- Debug exited
-dap.listeners.after['event_exited']['dap-notify'] = function(_, body)
-    local exitCode = body.exitCode or "Unknown"
-    notify_debug("Debug session exited (code " .. exitCode .. ")", "info")
-end
-
-
-vim.fn.sign_define('DapBreakpoint', { text = '🛑', texthl = '', linehl = '', numhl = '' })
-
 
 -- Open help files in the secondary window.
 vim.api.nvim_create_autocmd("BufWinEnter", {
@@ -802,7 +593,7 @@ local supported_lsp_servers = {
 }
 
 -- Base capabilities for all servers
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local capabilities = {}
 capabilities.general = capabilities.general or {}
 capabilities.general.positionEncodings = { "utf-16" }
 capabilities.offsetEncoding = { 'utf-16' }
@@ -870,54 +661,6 @@ for _, server_name in pairs(supported_lsp_servers) do
     vim.lsp.enable(server_name)
 end
 
-
-local cmp = require('cmp')
-require('cmp_luasnip')
-cmp.setup({
-    snippet = {
-        expand = function(args)
-            require('luasnip').lsp_expand(args.body)
-        end,
-    },
-    mapping = cmp.mapping.preset.insert({
-        ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-f>'] = cmp.mapping.scroll_docs(4),
-        ['<C-Space>'] = cmp.mapping.complete({}),
-        ['<Tab>'] = cmp.mapping.confirm({ select = true }),
-        ['<C-j>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-        ['<C-k>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-    }),
-    sources = {
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'nvim_lsp_signature_help' },
-        { name = 'path' },
-    },
-    enabled = function()
-        return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
-            or require("cmp_dap").is_dap_buffer()
-    end
-})
-
-
-require("cmp").setup.filetype({ "dap-repl" }, {
-    sources = {
-        { name = "dap" },
-    },
-})
-
 local count = 0
 
 local function handle_resize()
@@ -956,49 +699,33 @@ vim.api.nvim_create_autocmd('VimResized', { callback = handle_resize })
 require('textcase').setup {}
 
 require('gitsigns').setup()
-require('illuminate').configure({ delay = 50 })
 
 -- Leap keymaps (default arrangement)
-vim.keymap.set({'n', 'x', 'o'}, 's', '<Plug>(leap)')
+vim.keymap.set({ 'n', 'x', 'o' }, 's', '<Plug>(leap)')
 vim.keymap.set('n', 'S', '<Plug>(leap-from-window)')
 
-require("nvim-surround").setup()
-require('snippets')
-
--- Normal Mode
--- `gcc` - Toggles the current line using linewise comment.
--- `gbc` - Toggles the current line using blockwise comment.
--- `[count]gcc` - Toggles the number of line given as a prefix-count using linewise.
--- `[count]gbc` - Toggles the number of line given as a prefix-count using blockwise.
--- `gc[count]{motion}` - (Op-pending) Toggles the region using linewise comment.
--- `gb[count]{motion}` - (Op-pending) Toggles the region using blockwise comment.
--- `gco` - Insert comment to the next line and enters INSERT mode.
--- `gcO` - Insert comment to the previous line and enters INSERT mode.
--- `gcA` - Insert comment to end of the current line and enters INSERT mode.
-require('Comment').setup()
-require('Comment.ft').set('objcpp', '//%s')
+require('mini.comment').setup()
+require('mini.icons').setup()
+require('mini.snippets').setup()
+require('mini.completion').setup()
+require('mini.surround').setup()
+require('mini.cursorword').setup()
+require('mini.ai').setup()
+require('mini.bracketed').setup()
+require('mini.cmdline').setup()
+require('mini.statusline').setup()
+require('mini.tabline').setup()
+require('mini.trailspace').setup()
+-- require('mini.clue').setup()
 
 require('note-to-midi')
 
-local function dap_status()
-    if dap.session() then
-        return '🐛 ' .. dap.status()
-    end
-    return ''
-end
+-- .sh files get filetype `sh`, but our parser is named `bash`.
+vim.treesitter.language.register('bash', 'sh')
 
-require('lualine').setup(
-    {
-        extensions = { 'nvim-tree' },
-        sections = { lualine_x = { dap_status, 'searchcount', 'filetype' } }
-    })
-
--- Neovim 0.12 ships built-in treesitter highlighting; disable it for filetypes
--- whose syntax we prefer over the treesitter highlights.
-vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'nix', 'c', 'cpp', 'lua', 'json', 'yaml', 'toml', 'html', 'css', 'javascript', 'typescript', 'svelte', 'markdown', 'markdown_inline' },
-    callback = function(ev) vim.treesitter.stop(ev.buf) end,
-})
+-- tree-sitter-nix highlights use `is-not?`, which core nvim doesn't ship.
+-- Stub it out so the parser's queries don't error.
+vim.treesitter.query.add_predicate('is-not?', function() return true end, { force = true })
 
 vim.filetype.add({
     extension = {

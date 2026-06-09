@@ -63,6 +63,7 @@
   environment.systemPackages = [
     pkgs.nautilus
     pkgs.nautilus-python
+    pkgs.xwayland-satellite
   ];
 
   programs.nautilus-open-any-terminal = {
@@ -104,9 +105,13 @@
     portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
+  programs.niri = {
+    enable = true;
+  };
+
   xdg.portal = {
     enable = true;
-    xdgOpenUsePortal = true;
+    xdgOpenUsePortal = false;
     config = {
       hyprland = {
         default = [

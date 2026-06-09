@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# dbg [nnd-args...]
+#
+# First call: opens a full-width ghostty window running `nnd <args>`.
+#   (niri sizes it via the "nnd-debugger" app-id window rule.)
+# Subsequent calls: focuses the existing window and restarts the debuggee
+#   by sending Ctrl-K (kill) then r (run) to nnd. Args are ignored when an
+#   existing window is reused — nnd re-runs with whatever it was started with.
+set -euo pipefail
+
+APP_ID="com.mitchellh.ghostty.nnd-debugger"
+
+id=$(niri msg --json windows \
+    | jq -r --arg id "$APP_ID" '.[] | select(.app_id==$id) | .id' \
+    | head -n1)
+
+if [ -z "$id" ]; then
+    exec setsid -f ghostty "--class=$APP_ID" -e nnd "$@" >/dev/null 2>&1
+fi
+
+niri msg action focus-window --id "$id"
+sleep 0.1
+wtype -M ctrl -k k -m ctrl
+sleep 0.15
+wtype r

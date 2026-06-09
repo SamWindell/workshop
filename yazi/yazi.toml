@@ -1,0 +1,8 @@
+[plugin]
+prepend_previewers = [
+  { mime = "audio/*", run = "audio-preview" },
+]
+
+prepend_preloaders = [
+  { mime = "audio/*", run = "audio-preview" },
+]
